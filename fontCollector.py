@@ -22,8 +22,8 @@ LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
 INT_PATTERN = re.compile(r"[+-]?\d+")
 
 TAG_R_PATTERN = re.compile(r"\\r")
-TAG_ITALIC_PATTERN = re.compile(r"\\i[0-9]*")
-TAG_BOLD_PATTERN = re.compile(r"\\b[0-9]*")
+TAG_ITALIC_PATTERN = re.compile(r"\\i[0-9]+|\\i\+[0-9]+|\\i\-[0-9]+")
+TAG_BOLD_PATTERN = re.compile(r"\\b[0-9]+|\\b\+[0-9]+|\\b\-[0-9]+")
 TAG_FN_PATTERN = re.compile(
     r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=fn)(.*?)(\()(.*?)(\))|(?<=\\fn)(.*?)(?=\\)|(?<=\\fn)(.*?)(?=\)$)|(?<=\\fn)(.*?)(?=\)\\)")
 
@@ -79,13 +79,16 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
                 style = style._replace(italic=True)
 
         # Get the last occurence + the first element in the array.
-        font = TAG_FN_PATTERN.findall(cleanTag)[-1][0]
+        font = TAG_FN_PATTERN.findall(cleanTag)
 
-        # Aegisub does not allow "(" or ")" in a fontName
-        if("(" not in font and ")" not in font):
-            style = style._replace(fontName=font)
-        else:
-            print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
+        if(len(font) > 0 and len(font[-1]) > 0):
+            font = font[-1][0]
+            
+            # Aegisub does not allow "(" or ")" in a fontName
+            if("(" not in font and ")" not in font):
+                style = style._replace(fontName=font)
+            else:
+                print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
 
     return style
 
@@ -122,14 +125,12 @@ def getAssStyle(subtitle: ass.Document) -> set:
 
             try:
                 style = styles[line.style]
+                parse_line(line.text, style)
 
             except KeyError:
-                print(f"Warning: Unknown style {line.style} on line {nline}; assuming default style")
-                
-                # I write "aqqiwjwj", because we can't get the path of the default without doing that
-                style = AssStyle(font_manager.findfont("aqqiwjwj"), False, False)
+                print(Fore.RED + f"Warning: Unknown style {line.style} on line {nline}." + Fore.WHITE)
 
-            parse_line(line.text, style)
+                
 
     uniqueStyle = set(styleCollection)
 
@@ -219,12 +220,18 @@ def copyFont(styleList:list, outputDirectory: str):
         styleList (list): It contains all the needed style of an .ASS file
         outputDirectory (str): Directory where to save the font file
     """
+    fontsMissing = []
+
 
     for style in styleList:
         fontMatch = searchFontByName(style.fontName)
 
+        print("test: ", len(fontMatch))
+
         if(len(fontMatch) == 1):
             shutil.copy(fontMatch[0].fontPath, outputDirectory)
+        elif(fontMatch is None or len(fontMatch) == 0):
+            fontsMissing.append(style.fontName)
         else:
             font = None
             if(style.bold and style.italic):
@@ -233,11 +240,16 @@ def copyFont(styleList:list, outputDirectory: str):
                 font = searchFontBold(fontMatch)
             elif(style.italic):
                 font = searchFontItalic(fontMatch)
-
             if(font is None):
                 font = searchFontRegular(fontMatch)
 
             shutil.copy(font.fontPath, outputDirectory)
+
+    if(len(fontsMissing) > 0):
+        print(Fore.RED + "\nSome fonts were not found. Are they installed? :")
+        print("\n".join(fontsMissing))
+        print(Fore.WHITE + "\n")
+
 
 
 def getFontName(font_path: str):
@@ -263,8 +275,13 @@ def getFontName(font_path: str):
             except UnicodeDecodeError:
                 details[x.nameID] = x.string.decode(errors='ignore')
 
-    return details[1], details[2]
+    fontName = details[1]
+    style = "Regular"
+    
+    if(2 in details):
+        style = details[2]
 
+    return fontName, style
 
 def parseStyle(style: str):
     """
