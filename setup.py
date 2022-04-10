@@ -30,7 +30,7 @@ setuptools.setup(
     description="FontCollector for Advanced SubStation Alpha file.",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
-    version=find_version("pyonfx", "fontCollector.py"),
+    version=find_version("fontCollector.py"),
     python_requires=">=3.7",
     install_requires=[
         'argparse',
