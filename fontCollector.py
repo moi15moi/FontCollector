@@ -318,7 +318,7 @@ def main():
 
     args = parser.parse_args()
     
-    if(os.path.isfile(args.input)):
+    if(args.input is not None and os.path.isfile(args.input)):
         split_tup = os.path.splitext(args.input)
         file_extension = split_tup[1]
 
@@ -338,7 +338,7 @@ def main():
 
     uniqueStyle = getAssStyle(subtitles)
 
-    copyFont(uniqueStyle, args.output)
+    copyFont(uniqueStyle, os.path.dirname(args.output))
 
 
 if __name__ == "__main__":
