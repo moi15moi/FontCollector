@@ -1,6 +1,6 @@
 # FontCollector
 FontCollector for Advanced SubStation Alpha file.
-##Installation
+## Installation
 ```text
 pip install git+https://github.com/moi15moi/FontCollector.git
 ```
