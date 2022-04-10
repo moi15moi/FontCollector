@@ -31,6 +31,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     version=find_version("fontCollector.py"),
     python_requires=">=3.7",
+    py_modules=['fontCollector'],
     install_requires=[
         'argparse',
         'ass',
@@ -38,6 +39,9 @@ setuptools.setup(
         'matplotlib>=3.5',
         'colorama'
     ],
+    entry_points={
+        "console_scripts": ["fontCollector=fontCollector:main"]
+    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Other Audience",

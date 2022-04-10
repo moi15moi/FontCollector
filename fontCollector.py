@@ -12,7 +12,7 @@ from fontTools import ttLib
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.1"
+__version__ = "0.2"
 
 # GLOBAL VARIABLES
 fontCollection = []
