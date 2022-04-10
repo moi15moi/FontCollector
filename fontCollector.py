@@ -128,7 +128,7 @@ def getAssStyle(subtitle: ass.Document) -> set:
                 parse_line(line.text, style)
 
             except KeyError:
-                print(Fore.RED + f"Warning: Unknown style {line.style} on line {nline}." + Fore.WHITE)
+                sys.exit(print(Fore.RED + f"Warning: Unknown style {line.style} on line {nline}. You need to correct the .ass file and" + Fore.WHITE))
 
                 
 
@@ -269,11 +269,13 @@ def getFontName(font_path: str):
 
     details = {}
     for x in names:
-        if x.langID == 0 or x.langID == 1033:
-            try:
-                details[x.nameID] = x.toUnicode()
-            except UnicodeDecodeError:
-                details[x.nameID] = x.string.decode(errors='ignore')
+        try:
+            details[x.nameID] = x.toUnicode()
+        except UnicodeDecodeError:
+            details[x.nameID] = x.string.decode(errors='ignore')
+    """if("F5AJJI3A.TTF" in font_path):
+        details[1].encode('utf16')
+        print(details[1])"""
 
     fontName = details[1]
     style = "Regular"
