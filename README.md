@@ -8,7 +8,8 @@ pip install git+https://github.com/moi15moi/FontCollector.git
 ## Usage
 
 ```text
-usage: fontCollector.py [-h] [--input file] [--output path]
+$ fontCollector --help
+usage: fontCollector [-h] [--input file] [--output path]
 
 FontCollector for Advanced SubStation Alpha file.
 
