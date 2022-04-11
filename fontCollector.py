@@ -283,8 +283,8 @@ def getFontName(font_path: str):
     fontName = details[1]
     style = "Regular"
     
-    if(2 in details):
-        style = details[2]
+    if(6 in details):
+        style = details[6]
 
     return fontName, style
 
