@@ -9,14 +9,16 @@ pip install git+https://github.com/moi15moi/FontCollector.git
 
 ```text
 $ fontCollector --help
-usage: fontCollector [-h] [--input file] [--output path]
+usage: fontCollector.py [-h] [--output path] <Ass file>
 
 FontCollector for Advanced SubStation Alpha file.
 
+positional arguments:
+  <Ass file>                Subtitles file. Must be an ASS file.
+
 optional arguments:
-  -h, --help            	show this help message and exit
-  --input file, -i file		Subtitles file. Must be an ASS file.
-  --output path, -o path	Destination path of the font
+  -h, --help                show this help message and exit
+  --output path, -o path    Destination path of the font. If not specified, it will be the current path.
 ```
 
 ## Know issues
