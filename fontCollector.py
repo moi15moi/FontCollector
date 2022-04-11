@@ -277,7 +277,10 @@ def getFontName(font_path: str):
         try:
             details[x.nameID] = x.toUnicode()
         except UnicodeDecodeError:
-            details[x.nameID] = x.string.decode(errors='ignore')
+            if(x.nameID == 1):
+                details[x.nameID] = font['name'].names[1].toBytes().decode('shift-jis')
+            else:
+                details[x.nameID] = x.string.decode(errors='ignore')
 
     fontName = details[1]
     style = "Regular"
