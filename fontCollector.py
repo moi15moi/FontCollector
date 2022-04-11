@@ -224,7 +224,7 @@ def copyFont(styleList:list, outputDirectory: Path):
         styleList (list): It contains all the needed style of an .ASS file
         outputDirectory (str): Directory where to save the font file
     """
-    fontsMissing = []
+    fontsMissing = set()
 
 
     for style in styleList:
@@ -233,7 +233,7 @@ def copyFont(styleList:list, outputDirectory: Path):
         if(len(fontMatch) == 1):
             shutil.copy(fontMatch[0].fontPath, outputDirectory)
         elif(fontMatch is None or len(fontMatch) == 0):
-            fontsMissing.append(style.fontName)
+            fontsMissing.add(style.fontName)
         else:
             font = None
             if(style.bold and style.italic):
