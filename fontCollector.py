@@ -13,7 +13,7 @@ from pathlib import Path
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.2"
+__version__ = "0.2.1"
 
 # GLOBAL VARIABLES
 fontCollection = set()
