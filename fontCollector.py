@@ -8,6 +8,7 @@ from matplotlib import font_manager
 from contextlib import redirect_stderr
 from typing import NamedTuple
 from fontTools import ttLib
+from pathlib import Path
 
 from colorama import Fore, init
 init(convert=True)
@@ -215,7 +216,7 @@ def searchFontRegular(fontList:list) -> Font:
             return font
 
 
-def copyFont(styleList:list, outputDirectory: str):
+def copyFont(styleList:list, outputDirectory: Path):
     """
     Copy font to an directory.
 
@@ -330,37 +331,43 @@ def initializeFontCollection():
 
 def main():
     parser = argparse.ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
-    parser.add_argument('--input', '-i', metavar="file", help="""
+    parser.add_argument('input', metavar="<Ass file>", help="""
     Subtitles file. Must be an ASS file.
     """)
     parser.add_argument('--output', '-o', metavar="path", help="""
-    Destination path of the font
+    Destination path of the font. If not specified, it will be the current path.
     """)
 
     args = parser.parse_args()
+
     
-    if(args.input is not None and os.path.isfile(args.input)):
-        split_tup = os.path.splitext(args.input)
+    # Parse args
+    if(os.path.isfile(args.input)):
+        input = Path(args.input)
+
+        split_tup = os.path.splitext(input)
         file_extension = split_tup[1]
 
         if(".ass" != file_extension):
             return print(Fore.RED + "fontCollector.py: error: the input file is not an ASS file." + Fore.WHITE)
-    else:
-        return print(Fore.RED + "fontCollector.py: error: the input file does not exist." + Fore.WHITE)
 
     if args.output is not None:
-        if not os.path.isdir((os.path.dirname(args.output))):
-            return print(Fore.RED + "fontCollector.py: error: output path is not a valid folder." + Fore.WHITE)
+        output = Path(args.output)
 
+        if not os.path.isdir(output):
+            return print(Fore.RED + "fontCollector.py: error: output path is not a valid folder." + Fore.WHITE)
+    else:
+        output = os.getcwd()
+
+    # Get font, parse ass and copy font
     initializeFontCollection()
 
-    with open(args.input, encoding='utf_8_sig') as f:
+    with open(input, encoding='utf_8_sig') as f:
         subtitles = ass.parse(f)
 
     uniqueStyle = getAssStyle(subtitles)
 
-    copyFont(uniqueStyle, os.path.dirname(args.output))
-
+    copyFont(uniqueStyle, output)
 
 if __name__ == "__main__":
     sys.exit(main())
