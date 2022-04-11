@@ -37,7 +37,7 @@ class Font(NamedTuple):
     def __eq__(self, other):
         return self.fontName == other.fontName and self.bold == other.bold and self.italic == other.italic
     
-    def hash(self) -> int:
+    def __hash__(self):
         return hash((self.fontName, self.bold, self.italic))
 
 class AssStyle(NamedTuple):
@@ -228,8 +228,6 @@ def copyFont(styleList:list, outputDirectory: str):
 
     for style in styleList:
         fontMatch = searchFontByName(style.fontName)
-
-        print("test: ", len(fontMatch))
 
         if(len(fontMatch) == 1):
             shutil.copy(fontMatch[0].fontPath, outputDirectory)
