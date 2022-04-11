@@ -15,7 +15,7 @@ init(convert=True)
 __version__ = "0.2"
 
 # GLOBAL VARIABLES
-fontCollection = []
+fontCollection = set()
 styleCollection = []
 
 LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -36,6 +36,9 @@ class Font(NamedTuple):
 
     def __eq__(self, other):
         return self.fontName == other.fontName and self.bold == other.bold and self.italic == other.italic
+    
+    def hash(self) -> int:
+        return hash((self.fontName, self.bold, self.italic))
 
 class AssStyle(NamedTuple):
     fontName: str
@@ -263,6 +266,8 @@ def getFontName(font_path: str):
     Thanks to https://gist.github.com/pklaus/dce37521579513c574d0?permalink_comment_id=3507444#gistcomment-3507444
     """
 
+    # Know issues: If the font name contains chinese or japanese character, it won't be parsed properly
+
     font = ttLib.TTFont(font_path, fontNumber=0, ignoreDecompileErrors=True)
     with redirect_stderr(None):
         names = font['name'].names
@@ -273,9 +278,6 @@ def getFontName(font_path: str):
             details[x.nameID] = x.toUnicode()
         except UnicodeDecodeError:
             details[x.nameID] = x.string.decode(errors='ignore')
-    """if("F5AJJI3A.TTF" in font_path):
-        details[1].encode('utf16')
-        print(details[1])"""
 
     fontName = details[1]
     style = "Regular"
@@ -322,8 +324,7 @@ def initializeFontCollection():
         fontName, style = getFontName(fontPath)
 
         bold, italic = parseStyle(style)
-
-        fontCollection.append(Font(fontPath, fontName, bold, italic))
+        fontCollection.add(Font(fontPath, fontName, bold, italic))
 
 
 def main():
