@@ -18,3 +18,6 @@ optional arguments:
   --input file, -i file		Subtitles file. Must be an ASS file.
   --output path, -o path	Destination path of the font
 ```
+
+## Know issues
+Currently, FontCollector can't collect font if the fontName contains Japanese or Chinese characters.
