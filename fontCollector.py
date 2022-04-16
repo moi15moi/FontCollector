@@ -226,11 +226,7 @@ def getFontName(font_path: str):
         font_path (str): Font path. The font can be a .ttf, .otf or .ttc
     Returns:
         The font name, Style
-
-    Thanks to https://gist.github.com/pklaus/dce37521579513c574d0?permalink_comment_id=3507444#gistcomment-3507444
     """
-
-    # Read more about that: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L89
 
     font = ttLib.TTFont(font_path, fontNumber=0, ignoreDecompileErrors=True)
     with redirect_stderr(None):
@@ -239,10 +235,11 @@ def getFontName(font_path: str):
     details = {}
     for x in names:
         try:
-            details[x.nameID] = x.toUnicode()
+            details[x.nameID] = x.toStr()
         except UnicodeDecodeError:
             details[x.nameID] = x.string.decode(errors='ignore')
 
+    # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
 
     # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
@@ -250,6 +247,11 @@ def getFontName(font_path: str):
 
     # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
     weight = font['OS/2'].usWeightClass
+
+
+    # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
+    if(weight <= 9):
+        weight *= 100
 
     return Font(font_path, fontName, isItalic, weight)
 
