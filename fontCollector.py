@@ -32,25 +32,25 @@ TAG_FN_PATTERN = re.compile(
 class Font(NamedTuple):
     fontPath: str
     fontName: str
-    bold: bool
     italic: bool
+    weight: int
 
     def __eq__(self, other):
-        return self.fontName == other.fontName and self.bold == other.bold and self.italic == other.italic
+        return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
     
     def __hash__(self):
-        return hash((self.fontName, self.bold, self.italic))
+        return hash((self.fontName, self.italic, self.weight))
 
 class AssStyle(NamedTuple):
     fontName: str
-    bold: bool
+    weight: int # a.k.a bold
     italic: bool
 
     def __eq__(self, other):
-        return self.fontName == other.fontName and self.bold == other.bold and self.italic == other.italic
+        return self.fontName == other.fontName and self.weight == other.weight and self.italic == other.italic
 
     def __str__(self):
-        return "FontName: " + self.fontName + " Bold: " + str(self.bold) + " Italic: " + str(self.italic)
+        return "FontName: " + self.fontName + " Weight: " + str(self.weight) + " Italic: " + str(self.italic)
 
 
 def parse_tags(tags: str, style: AssStyle) -> AssStyle:
@@ -69,10 +69,31 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
         bold = TAG_BOLD_PATTERN.findall(cleanTag)
         if(bold):
             # We do [-1], because we only want the last match
-            boldNumber = INT_PATTERN.findall(bold[-1])
+            boldNumber = int(INT_PATTERN.findall(bold[-1])[0])
 
-            if(boldNumber[0] == "1"):
-                style = style._replace(bold=True)
+            # Yes, that's not a good way to do it, but I did not find any other solution.
+            if boldNumber <= 0:
+                style = style._replace(weight=400)
+            elif boldNumber == 1:
+                style = style._replace(weight=700)
+            elif 2 <= boldNumber <= 150:
+                style = style._replace(weight=100)
+            elif 151 <= boldNumber <= 250:
+                style = style._replace(weight=200)
+            elif 251 <= boldNumber <= 350:
+                style = style._replace(weight=300)
+            elif 351 <= boldNumber <= 450:
+                style = style._replace(weight=400)
+            elif 451 <= boldNumber <= 550:
+                style = style._replace(weight=500)
+            elif 551 <= boldNumber <= 650:
+                style = style._replace(weight=600)
+            elif 651 <= boldNumber <= 750:
+                style = style._replace(weight=700)
+            elif 751 <= boldNumber <= 850:
+                style = style._replace(weight=800)
+            elif 851 <= boldNumber:
+                style = style._replace(weight=900)
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
         if(italic):
@@ -90,7 +111,7 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
             
             # Aegisub does not allow "(" or ")" in a fontName
             if("(" not in font and ")" not in font):
-                style = style._replace(fontName=font)
+                style = style._replace(fontName=font.strip().lower())
             else:
                 print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
 
@@ -108,11 +129,14 @@ def parse_line(line_raw_text: str, style: AssStyle):
     # The last match of the regex is useless, so we remove it
     for tags, text in LINE_PATTERN.findall(line_raw_text)[:-1]:
 
-        allLineTags += tags
+        """I add \\} at each tags block.
+        Example if I don't add \\}:
+        {\b1\fnJester}FontCollectorTest{this is an commentaire} --> Would give me the fontName Jesterthis is an commentaire"""
+        allLineTags += tags + "\\}"
         styleCollection.append(parse_tags(allLineTags, style))
 
 
-def getAssStyle(subtitle: ass.Document) -> set:
+def getAssStyle(subtitle: ass.Document, filename:str) -> set:
     """
     Parameters:
         subtitle (ass.Document): Ass Document
@@ -120,7 +144,7 @@ def getAssStyle(subtitle: ass.Document) -> set:
         A set containing all unique style
     """
 
-    styles = {style.name: AssStyle(style.fontname, style.bold, style.italic)
+    styles = {style.name: AssStyle(style.fontname, 700 if style.bold else 400, style.italic)
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
@@ -132,89 +156,39 @@ def getAssStyle(subtitle: ass.Document) -> set:
                 parse_line(line.text, style)
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Warning: Unknown style {line.style} on line {nline}. You need to correct the .ass file and" + Fore.WHITE))
-
-                
+                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {nline}. You need to correct the .ass file named \"{filename}\"" + Fore.WHITE))
 
     uniqueStyle = set(styleCollection)
 
     return uniqueStyle
 
 
-def searchFontByName(fontName: str) -> list:
+def searchFontByName(style: AssStyle) -> list:
     """
     Parameters:
-        fontName (str): Font name
+        style (AssStyle): Font name
     Returns:
         A list containing all font that match with the fontName
     """
     fontMatch = []
 
-    for font in fontCollection:
-        if(font.fontName.lower() == fontName.lower()):
-            fontMatch.append(font)
+    for fontI in fontCollection:
+        if(fontI.fontName == style.fontName):
+            
+            # I am not sure if it work like this in libass.
+            if(fontI.weight < style.weight - 150 and style.weight <= 850):
+                fontI = fontI._replace(weight=fontI.weight+150)
+
+            fontMatch.append(fontI)
+
+
+    # The sort is very important ! https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+    if(style.italic):
+        fontMatch.sort(key=lambda font: (-font.italic, abs(style.weight - font.weight), font.weight))
+    else:
+        fontMatch.sort(key=lambda font: (abs(style.weight - font.weight), font.weight))
 
     return fontMatch
-
-
-def searchFontBoldAndItalic(fontList:list) -> Font:
-    """
-    Parameters:
-        fontList (list): List that contains font
-    Returns:
-        Font
-    """
-
-    for font in fontList:
-        if(font.bold and font.italic):
-            return font
-
-    font = searchFontBold(fontList)
-
-    if(font is None):
-        return searchFontItalic(fontList)
-    else:
-        return font
-
-
-def searchFontBold(fontList:list) -> Font:
-    """
-    Parameters:
-        fontList (list): List that contains font
-    Returns:
-        Font
-    """
-
-    for font in fontList:
-        if(font.bold and not font.italic):
-            return font
-
-
-def searchFontItalic(fontList:list) -> Font:
-    """
-    Parameters:
-        fontList (list): List that contains font
-    Returns:
-        Font
-    """
-
-    for font in fontList:
-        if(font.italic and not font.bold):
-            return font
-
-
-def searchFontRegular(fontList:list) -> Font:
-    """
-    Parameters:
-        fontList (list): List that contains font
-    Returns:
-        Font
-    """
-
-    for font in fontList:
-        if(not font.italic and not font.bold):
-            return font
-
 
 def copyFont(styleList:list, outputDirectory: Path):
     """
@@ -228,29 +202,20 @@ def copyFont(styleList:list, outputDirectory: Path):
 
 
     for style in styleList:
-        fontMatch = searchFontByName(style.fontName)
+        fontMatch = searchFontByName(style)
 
-        if(len(fontMatch) == 1):
+        if(len(fontMatch) != 0):
             shutil.copy(fontMatch[0].fontPath, outputDirectory)
-        elif(fontMatch is None or len(fontMatch) == 0):
-            fontsMissing.add(style.fontName)
         else:
-            font = None
-            if(style.bold and style.italic):
-                font = searchFontBoldAndItalic(fontMatch)
-            elif(style.bold):
-                font = searchFontBold(fontMatch)
-            elif(style.italic):
-                font = searchFontItalic(fontMatch)
-            if(font is None):
-                font = searchFontRegular(fontMatch)
-
-            shutil.copy(font.fontPath, outputDirectory)
+            fontsMissing.add(style.fontName)
 
     if(len(fontsMissing) > 0):
         print(Fore.RED + "\nSome fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
         print(Fore.WHITE + "\n")
+    else:
+        print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
+
 
 
 
@@ -265,50 +230,28 @@ def getFontName(font_path: str):
     Thanks to https://gist.github.com/pklaus/dce37521579513c574d0?permalink_comment_id=3507444#gistcomment-3507444
     """
 
-    # Know issues: If the font name contains chinese or japanese character, it won't be parsed properly
+    # Read more about that: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L89
 
     font = ttLib.TTFont(font_path, fontNumber=0, ignoreDecompileErrors=True)
     with redirect_stderr(None):
         names = font['name'].names
-
+    
     details = {}
     for x in names:
         try:
             details[x.nameID] = x.toUnicode()
         except UnicodeDecodeError:
-            if(x.nameID == 1):
-                details[x.nameID] = font['name'].names[1].toBytes().decode('shift-jis')
-            else:
-                details[x.nameID] = x.string.decode(errors='ignore')
+            details[x.nameID] = x.string.decode(errors='ignore')
 
-    fontName = details[1]
-    style = "Regular"
-    
-    if(6 in details):
-        style = details[6]
+    fontName = details[1].strip().lower()
 
-    return fontName, style
+    # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
+    isItalic = font["OS/2"].fsSelection & 0b1 > 0
 
-def parseStyle(style: str):
-    """
-    ParseStyle
+    # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+    weight = font['OS/2'].usWeightClass
 
-    Parameters:
-        style (str): Style 
-            Ex: "Bold Italic", "Bold", "Italic", "Regular", "SOME_FONT_NAME"
-    Returns:
-        IsBold, IsItalic
-    """
-    isBold = False
-    isItalic = False
-
-    if("bold" in style.lower()):
-        isBold = True
-    if("italic" in style.lower()):
-        isItalic = True
-
-    return isBold, isItalic
-
+    return Font(font_path, fontName, isItalic, weight)
 
 def initializeFontCollection():
     """
@@ -323,10 +266,7 @@ def initializeFontCollection():
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
 
     for fontPath in fontsPath:
-        fontName, style = getFontName(fontPath)
-
-        bold, italic = parseStyle(style)
-        fontCollection.add(Font(fontPath, fontName, bold, italic))
+        fontCollection.add(getFontName(fontPath))
 
 
 def main():
@@ -365,7 +305,8 @@ def main():
     with open(input, encoding='utf_8_sig') as f:
         subtitles = ass.parse(f)
 
-    uniqueStyle = getAssStyle(subtitles)
+
+    uniqueStyle = getAssStyle(subtitles, os.path.basename(input))
 
     copyFont(uniqueStyle, output)
 
