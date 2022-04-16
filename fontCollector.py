@@ -156,7 +156,7 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
         A set containing all unique style
     """
 
-    styles = {style.name: AssStyle(strip_fontname(style.fontname), 700 if style.bold else 400, style.italic)
+    styles = {style.name: AssStyle(strip_fontname(style.fontname.strip().lower()), 700 if style.bold else 400, style.italic)
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
