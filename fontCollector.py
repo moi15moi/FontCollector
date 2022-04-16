@@ -13,7 +13,7 @@ from pathlib import Path
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.2.1"
+__version__ = "0.3.1"
 
 # GLOBAL VARIABLES
 fontCollection = set()
@@ -37,7 +37,7 @@ class Font(NamedTuple):
 
     def __eq__(self, other):
         return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
-    
+
     def __hash__(self):
         return hash((self.fontName, self.italic, self.weight))
 
@@ -51,6 +51,18 @@ class AssStyle(NamedTuple):
 
     def __str__(self):
         return "FontName: " + self.fontName + " Weight: " + str(self.weight) + " Italic: " + str(self.italic)
+
+def strip_fontname(fontName:str):
+    """
+    Parameters:
+        fontName (str): The font name.
+    Returns:
+        The font without an @ at the beginning
+    """
+    if fontName.startswith('@'):
+        return fontName[1:]
+    else:
+        return fontName
 
 
 def parse_tags(tags: str, style: AssStyle) -> AssStyle:
@@ -108,10 +120,10 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
 
         if(len(font) > 0 and len(font[-1]) > 0):
             font = font[-1][0]
-            
+
             # Aegisub does not allow "(" or ")" in a fontName
             if("(" not in font and ")" not in font):
-                style = style._replace(fontName=font.strip().lower())
+                style = style._replace(fontName=strip_fontname(font.strip().lower()))
             else:
                 print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
 
@@ -136,7 +148,7 @@ def parse_line(line_raw_text: str, style: AssStyle):
         styleCollection.append(parse_tags(allLineTags, style))
 
 
-def getAssStyle(subtitle: ass.Document, filename:str) -> set:
+def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
     """
     Parameters:
         subtitle (ass.Document): Ass Document
@@ -144,7 +156,7 @@ def getAssStyle(subtitle: ass.Document, filename:str) -> set:
         A set containing all unique style
     """
 
-    styles = {style.name: AssStyle(style.fontname, 700 if style.bold else 400, style.italic)
+    styles = {style.name: AssStyle(strip_fontname(style.fontname), 700 if style.bold else 400, style.italic)
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
@@ -156,7 +168,7 @@ def getAssStyle(subtitle: ass.Document, filename:str) -> set:
                 parse_line(line.text, style)
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {nline}. You need to correct the .ass file named \"{filename}\"" + Fore.WHITE))
+                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {nline}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
 
     uniqueStyle = set(styleCollection)
 
@@ -174,7 +186,7 @@ def searchFontByName(style: AssStyle) -> list:
 
     for fontI in fontCollection:
         if(fontI.fontName == style.fontName):
-            
+
             # I am not sure if it work like this in libass.
             if(fontI.weight < style.weight - 150 and style.weight <= 850):
                 fontI = fontI._replace(weight=fontI.weight+150)
@@ -217,21 +229,19 @@ def copyFont(styleList:list, outputDirectory: Path):
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
 
 
-
-
-def getFontName(font_path: str):
+def getFontName(fontPath: str):
     """
     Get font name
     Parameters:
-        font_path (str): Font path. The font can be a .ttf, .otf or .ttc
+        fontPath (str): Font path. The font can be a .ttf, .otf or .ttc
     Returns:
         The font name, Style
     """
 
-    font = ttLib.TTFont(font_path, fontNumber=0, ignoreDecompileErrors=True)
+    font = ttLib.TTFont(fontPath, fontNumber=0, ignoreDecompileErrors=True)
     with redirect_stderr(None):
         names = font['name'].names
-    
+
     details = {}
     for x in names:
         try:
@@ -253,7 +263,7 @@ def getFontName(font_path: str):
     if(weight <= 9):
         weight *= 100
 
-    return Font(font_path, fontName, isItalic, weight)
+    return Font(fontPath, fontName, isItalic, weight)
 
 def initializeFontCollection():
     """
@@ -282,7 +292,7 @@ def main():
 
     args = parser.parse_args()
 
-    
+
     # Parse args
     if(os.path.isfile(args.input)):
         input = Path(args.input)
