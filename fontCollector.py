@@ -251,13 +251,16 @@ def getFontName(fontPath: str):
 
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
+    
+    try:
+        # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
+        isItalic = font["OS/2"].fsSelection & 0b1 > 0
 
-    # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
-    isItalic = font["OS/2"].fsSelection & 0b1 > 0
-
-    # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
-    weight = font['OS/2'].usWeightClass
-
+        # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+        weight = font['OS/2'].usWeightClass
+    except:
+        isItalic = False
+        weight = 400
 
     # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
     if(weight <= 9):
@@ -316,7 +319,6 @@ def main():
 
     with open(input, encoding='utf_8_sig') as f:
         subtitles = ass.parse(f)
-
 
     uniqueStyle = getAssStyle(subtitles, os.path.basename(input))
 
