@@ -261,6 +261,7 @@ def getFontName(fontPath: str):
     except:
         isItalic = False
         weight = 400
+        print(Fore.RED + "Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
 
     # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
     if(weight <= 9):
