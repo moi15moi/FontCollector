@@ -15,7 +15,7 @@ import subprocess
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
