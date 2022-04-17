@@ -198,7 +198,7 @@ def searchFontByName(style: AssStyle) -> list:
     if(style.italic):
         fontMatch.sort(key=lambda font: (-font.italic, abs(style.weight - font.weight), font.weight))
     else:
-        fontMatch.sort(key=lambda font: (abs(style.weight - font.weight), font.weight))
+        fontMatch.sort(key=lambda font: (font.italic, abs(style.weight - font.weight), font.weight))
 
     return fontMatch
 
