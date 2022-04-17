@@ -24,6 +24,6 @@ optional arguments:
 ## Know issues
 Currently, FontCollector can't collect font if the fontName contains Japanese or Chinese characters.
 
-
-Inspired by [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts) and [fontmerge](https://github.com/WheneverDev/fontmerge)
-Huge thanks to them 😄
+## Acknowledgments
+ - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts)
+ - [fontmerge](https://github.com/WheneverDev/fontmerge)
