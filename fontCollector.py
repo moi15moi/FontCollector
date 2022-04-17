@@ -13,20 +13,16 @@ from pathlib import Path
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 # GLOBAL VARIABLES
-fontCollection = set()
-styleCollection = []
-
 LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
 INT_PATTERN = re.compile(r"[+-]?\d+")
 
 TAG_R_PATTERN = re.compile(r"\\r")
 TAG_ITALIC_PATTERN = re.compile(r"\\i[0-9]+|\\i\+[0-9]+|\\i\-[0-9]+")
 TAG_BOLD_PATTERN = re.compile(r"\\b[0-9]+|\\b\+[0-9]+|\\b\-[0-9]+")
-TAG_FN_PATTERN = re.compile(
-    r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=fn)(.*?)(\()(.*?)(\))|(?<=\\fn)(.*?)(?=\\)|(?<=\\fn)(.*?)(?=\)$)|(?<=\\fn)(.*?)(?=\)\\)")
+TAG_FN_PATTERN = re.compile(r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=fn)(.*?)(\()(.*?)(\))|(?<=\\fn)(.*?)(?=\\)|(?<=\\fn)(.*?)(?=\)$)|(?<=\\fn)(.*?)(?=\)\\)")
 
 
 class Font(NamedTuple):
@@ -42,6 +38,10 @@ class Font(NamedTuple):
         return hash((self.fontName, self.italic, self.weight))
 
 class AssStyle(NamedTuple):
+    """
+    AssStyle is an instance that does not only represent "[V4+ Styles]" section of an .ass script.
+    It can also represent the style at X line.
+    """
     fontName: str
     weight: int # a.k.a bold
     italic: bool
@@ -130,22 +130,27 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
     return style
 
 
-def parse_line(line_raw_text: str, style: AssStyle):
+def parseLine(lineRawText: str, style: AssStyle) -> set:
     """
     Parameters:
-        line_raw_text (str): Ass line
-        style (AssStyle): Style of the line_raw_text
+        lineRawText (str): Ass line. Example: {\fnJester\b1}This is an example!
+        style (AssStyle): Style applied to this line
     """
     allLineTags = ""
+    styleSet = set()
 
     # The last match of the regex is useless, so we remove it
-    for tags, text in LINE_PATTERN.findall(line_raw_text)[:-1]:
+    for tags, text in LINE_PATTERN.findall(lineRawText)[:-1]:
 
-        """I add \\} at each tags block.
+        """
+        I add \\} at each tags block.
         Example if I don't add \\}:
-        {\b1\fnJester}FontCollectorTest{this is an commentaire} --> Would give me the fontName Jesterthis is an commentaire"""
+        {\b1\fnJester}FontCollectorTest{this is an commentaire} --> Would give me the fontName Jesterthis is an commentaire
+        """
         allLineTags += tags + "\\}"
-        styleCollection.append(parse_tags(allLineTags, style))
+        styleSet.add(parse_tags(allLineTags, style))
+    
+    return styleSet
 
 
 def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
@@ -155,27 +160,23 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
     Returns:
         A set containing all unique style
     """
-
+    styleSet = set()
     styles = {style.name: AssStyle(strip_fontname(style.fontname.strip().lower()), 700 if style.bold else 400, style.italic)
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
-        nline = i + 1
         if(isinstance(line, ass.Dialogue)):
-
             try:
                 style = styles[line.style]
-                parse_line(line.text, style)
+                styleSet.update(parseLine(line.text, style))
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {nline}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
+                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
 
-    uniqueStyle = set(styleCollection)
-
-    return uniqueStyle
+    return styleSet
 
 
-def searchFontByName(style: AssStyle) -> list:
+def searchFont(fontCollection:set, style: AssStyle) -> list:
     """
     Parameters:
         style (AssStyle): Font name
@@ -193,8 +194,7 @@ def searchFontByName(style: AssStyle) -> list:
 
             fontMatch.append(fontI)
 
-
-    # The sort is very important ! https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+    # The sort is very important !
     if(style.italic):
         fontMatch.sort(key=lambda font: (-font.italic, abs(style.weight - font.weight), font.weight))
     else:
@@ -202,19 +202,20 @@ def searchFontByName(style: AssStyle) -> list:
 
     return fontMatch
 
-def copyFont(styleList:list, outputDirectory: Path):
+
+def copyFont(fontCollection:set, styleCollection:set, outputDirectory: Path):
     """
     Copy font to an directory.
 
     Parameters:
         styleList (list): It contains all the needed style of an .ASS file
-        outputDirectory (str): Directory where to save the font file
+        outputDirectory (Path): Directory where to save the font file
     """
     fontsMissing = set()
 
 
-    for style in styleList:
-        fontMatch = searchFontByName(style)
+    for style in styleCollection:
+        fontMatch = searchFont(fontCollection, style)
 
         if(len(fontMatch) != 0):
             shutil.copy(fontMatch[0].fontPath, outputDirectory)
@@ -229,13 +230,12 @@ def copyFont(styleList:list, outputDirectory: Path):
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
 
 
-def getFontName(fontPath: str):
+def createFont(fontPath: str) -> Font:
     """
-    Get font name
     Parameters:
         fontPath (str): Font path. The font can be a .ttf, .otf or .ttc
     Returns:
-        The font name, Style
+        An Font object
     """
 
     font = ttLib.TTFont(fontPath, fontNumber=0, ignoreDecompileErrors=True)
@@ -269,12 +269,14 @@ def getFontName(fontPath: str):
 
     return Font(fontPath, fontName, isItalic, weight)
 
-def initializeFontCollection():
+def initializeFontCollection() -> set:
     """
     This method initialize the font collection.
 
     It search all the installed font and save it in fontCollection
     """
+    fontCollection = set()
+
     # TODO See if this line is required
     # font_manager._load_fontmanager(try_read_cache=False)
 
@@ -282,7 +284,9 @@ def initializeFontCollection():
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
 
     for fontPath in fontsPath:
-        fontCollection.add(getFontName(fontPath))
+        fontCollection.add(createFont(fontPath))
+
+    return fontCollection
 
 
 def main():
@@ -305,25 +309,26 @@ def main():
         file_extension = split_tup[1]
 
         if(".ass" != file_extension):
-            return print(Fore.RED + "fontCollector.py: error: the input file is not an ASS file." + Fore.WHITE)
+            return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
+    else:
+        return print(Fore.RED + "Error: the input file is not an actual file" + Fore.WHITE)
 
     if args.output is not None:
         output = Path(args.output)
 
         if not os.path.isdir(output):
-            return print(Fore.RED + "fontCollector.py: error: output path is not a valid folder." + Fore.WHITE)
+            return print(Fore.RED + "Error: output path is not a valid folder." + Fore.WHITE)
     else:
         output = os.getcwd()
 
-    # Get font, parse ass and copy font
-    initializeFontCollection()
+    fontCollection = initializeFontCollection()
 
     with open(input, encoding='utf_8_sig') as f:
         subtitles = ass.parse(f)
 
-    uniqueStyle = getAssStyle(subtitles, os.path.basename(input))
+    styleCollection = getAssStyle(subtitles, os.path.basename(input))
 
-    copyFont(uniqueStyle, output)
+    copyFont(fontCollection, styleCollection, output)
 
 if __name__ == "__main__":
     sys.exit(main())
