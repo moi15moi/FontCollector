@@ -365,7 +365,6 @@ def main():
 
     args = parser.parse_args()
 
-
     # Parse args
     if(os.path.isfile(args.input)):
         input = Path(args.input)
@@ -397,7 +396,7 @@ def main():
 
     mkvpropedit = ""
     if mkvFile:
-        if args.mkvpropedit is None and not distutils.spawn.find_executable("mkvpropedit.exe"):
+        if args.mkvpropedit is None or not distutils.spawn.find_executable("mkvpropedit.exe"):
             return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
         else:
             mkvpropedit = Path(args.mkvpropedit)
