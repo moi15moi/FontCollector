@@ -160,7 +160,7 @@ def parseLine(lineRawText: str, style: AssStyle) -> set:
         """
         allLineTags += tags + "\\}"
         styleSet.add(parse_tags(allLineTags, style))
-    
+
     return styleSet
 
 
@@ -244,7 +244,7 @@ def findUsedFont(fontCollection:set, styleCollection:set) -> set:
         print(Fore.WHITE + "\n")
     else:
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
-    
+
     return fontsFound
 
 
@@ -269,7 +269,7 @@ def createFont(fontPath: str) -> Font:
 
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
-    
+
     try:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
         isItalic = font["OS/2"].fsSelection & 0b1 > 0
@@ -306,22 +306,43 @@ def initializeFontCollection() -> set:
 
     return fontCollection
 
+def deleteFonts(mkvFile:Path, mkvpropedit:Path):
 
-def merge(fonts:set, mkvFile:Path, mkvmerge:Path, output:Path):
-
-    mkvmerge_args = [
-        "-o",
-        '"' + str(output) + '"',
-        '"' + str(mkvFile) + '"',
+    mkvpropedit_args = [
+        '"' + str(mkvFile) + '"'
         ]
 
-    mkvmerge_args.insert(0, str(mkvmerge))
+    mkvpropedit_args.insert(0, str(mkvpropedit))
+
+    # We only want to remove ttf, ttc or otf file
+    # This is from mpv: https://github.com/mpv-player/mpv/blob/305332f8a06e174c5c45c9c4547293502ac7ecdb/sub/sd_ass.c#L101
+    mkvpropedit_args.append("--delete-attachment mime-type:application/x-truetype-font")
+    mkvpropedit_args.append("--delete-attachment mime-type:application/vnd.ms-opentype")
+    mkvpropedit_args.append("--delete-attachment mime-type:application/x-font-ttf")
+    mkvpropedit_args.append("--delete-attachment mime-type:application/x-font")
+    mkvpropedit_args.append("--delete-attachment mime-type:application/font-sfnt")
+    mkvpropedit_args.append("--delete-attachment mime-type:font/collection")
+    mkvpropedit_args.append("--delete-attachment mime-type:font/otf")
+    mkvpropedit_args.append("--delete-attachment mime-type:font/sfnt")
+    mkvpropedit_args.append("--delete-attachment mime-type:font/ttf")
+
+    subprocess.call(" ".join(mkvpropedit_args))
+    print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts with mkv" + Fore.WHITE)
+
+
+def merge(fonts:set, mkvFile:Path, mkvpropedit:Path):
+
+    mkvpropedit_args = [
+        '"' + str(mkvFile) + '"'
+        ]
+
+    mkvpropedit_args.insert(0, str(mkvpropedit))
 
 
     for font in fonts:
-        mkvmerge_args.append("--attach-file " + '"' + font.fontPath + '"')
+        mkvpropedit_args.append("--add-attachment " + '"' + font.fontPath + '"')
 
-    subprocess.call(" ".join(mkvmerge_args))
+    subprocess.call(" ".join(mkvpropedit_args))
     print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.WHITE)
 
 def main():
@@ -335,8 +356,11 @@ def main():
     parser.add_argument('--output', '-o', nargs='?', const='', metavar="path", help="""
     Destination path of the font. If not specified, it will be the current path.
     """)
-    parser.add_argument('-mkvmerge', metavar="path", help="""
-    Path to mkvmerge.exe if not in variable environments.
+    parser.add_argument('-mkvpropedit', metavar="path", help="""
+    Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
+    """)
+    parser.add_argument('--delete-fonts', '-d', action='store_true', help="""
+    If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
     """)
 
     args = parser.parse_args()
@@ -370,13 +394,15 @@ def main():
             return print(Fore.RED + "Error: the mkv file specified does not exist." + Fore.WHITE)
         elif not isMkv(mkvFile):
             return print(Fore.RED + "Error: the mkv file specified is not an .mkv file." + Fore.WHITE)
-    
-    mkvmerge = ""
+
+    mkvpropedit = ""
     if mkvFile:
-        if args.mkvmerge is None and not distutils.spawn.find_executable("mkvmerge.exe"):
-            return print(Fore.RED + "Error: mkvmerge in not in your environnements variable, add it or specify the path to mkvmerge.exe with -mkvmerge." + Fore.WHITE)
+        if args.mkvpropedit is None and not distutils.spawn.find_executable("mkvpropedit.exe"):
+            return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
         else:
-            mkvmerge = Path(args.mkvmerge)
+            mkvpropedit = Path(args.mkvpropedit)
+
+        delete_fonts = args.delete_fonts
 
 
     fontCollection = initializeFontCollection()
@@ -392,7 +418,10 @@ def main():
         copyFont(fontsUsed, output)
 
     if mkvFile:
-        merge(fontsUsed, mkvFile, mkvmerge, os.path.splitext(mkvFile)[0] + " MERGED.mkv")
+        if delete_fonts:
+            deleteFonts(mkvFile, mkvpropedit)
+
+        merge(fontsUsed, mkvFile, mkvpropedit)
 
 
 if __name__ == "__main__":
