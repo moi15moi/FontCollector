@@ -9,6 +9,8 @@ from contextlib import redirect_stderr
 from typing import NamedTuple
 from fontTools import ttLib
 from pathlib import Path
+import distutils.spawn
+import subprocess
 
 from colorama import Fore, init
 init(convert=True)
@@ -52,7 +54,16 @@ class AssStyle(NamedTuple):
     def __str__(self):
         return "FontName: " + self.fontName + " Weight: " + str(self.weight) + " Italic: " + str(self.italic)
 
-def strip_fontname(fontName:str):
+
+def isMkv(filename:Path):
+    """
+    Thanks to https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts
+    """
+    with open(filename, 'rb') as f:
+        return f.read(4) == b'\x1a\x45\xdf\xa3'
+
+
+def stripFontname(fontName:str):
     """
     Parameters:
         fontName (str): The font name.
@@ -123,7 +134,7 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
 
             # Aegisub does not allow "(" or ")" in a fontName
             if("(" not in font and ")" not in font):
-                style = style._replace(fontName=strip_fontname(font.strip().lower()))
+                style = style._replace(fontName=stripFontname(font.strip().lower()))
             else:
                 print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
 
@@ -161,7 +172,7 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
         A set containing all unique style
     """
     styleSet = set()
-    styles = {style.name: AssStyle(strip_fontname(style.fontname.strip().lower()), 700 if style.bold else 400, style.italic)
+    styles = {style.name: AssStyle(stripFontname(style.fontname.strip().lower()), 700 if style.bold else 400, style.italic)
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
@@ -174,6 +185,11 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
                 sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
 
     return styleSet
+
+def copyFont(fontCollection:set, outputDirectory:Path):
+
+    for font in fontCollection:
+        shutil.copy(font.fontPath, outputDirectory)
 
 
 def searchFont(fontCollection:set, style: AssStyle) -> list:
@@ -203,7 +219,7 @@ def searchFont(fontCollection:set, style: AssStyle) -> list:
     return fontMatch
 
 
-def copyFont(fontCollection:set, styleCollection:set, outputDirectory: Path):
+def findUsedFont(fontCollection:set, styleCollection:set) -> set:
     """
     Copy font to an directory.
 
@@ -212,13 +228,13 @@ def copyFont(fontCollection:set, styleCollection:set, outputDirectory: Path):
         outputDirectory (Path): Directory where to save the font file
     """
     fontsMissing = set()
-
+    fontsFound = set()
 
     for style in styleCollection:
         fontMatch = searchFont(fontCollection, style)
 
         if(len(fontMatch) != 0):
-            shutil.copy(fontMatch[0].fontPath, outputDirectory)
+            fontsFound.add(fontMatch[0])
         else:
             fontsMissing.add(style.fontName)
 
@@ -228,6 +244,8 @@ def copyFont(fontCollection:set, styleCollection:set, outputDirectory: Path):
         print(Fore.WHITE + "\n")
     else:
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
+    
+    return fontsFound
 
 
 def createFont(fontPath: str) -> Font:
@@ -289,13 +307,37 @@ def initializeFontCollection() -> set:
     return fontCollection
 
 
+def merge(fonts:set, mkvFile:Path, mkvmerge:Path, output:Path):
+    print("Merging matroska file with %d fonts" % (len(fonts)))
+
+    mkvmerge_args = [
+        "-o",
+        '"' + str(output) + '"',
+        '"' + str(mkvFile) + '"',
+        ]
+
+    mkvmerge_args.insert(0, str(mkvmerge))
+
+
+    for font in fonts:
+        mkvmerge_args.append("--attach-file " + '"' + font.fontPath + '"')
+
+    subprocess.call(" ".join(mkvmerge_args))
+    print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.WHITE)
+
 def main():
     parser = argparse.ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
-    parser.add_argument('input', metavar="<Ass file>", help="""
+    parser.add_argument('--input', '-i', required=True, metavar="<.ass file>", help="""
     Subtitles file. Must be an ASS file.
     """)
-    parser.add_argument('--output', '-o', metavar="path", help="""
+    parser.add_argument('-mkv', metavar=".mkv input file", help="""
+    Video where the fonts will be merge. Must be a Matroska file. If not specified, the collected fonts will be pasted in the output directory.
+    """)
+    parser.add_argument('--output', '-o', nargs='?', const='', metavar="path", help="""
     Destination path of the font. If not specified, it will be the current path.
+    """)
+    parser.add_argument('-mkvmerge', metavar="path", help="""
+    Path to mkvmerge.exe if not in variable environments.
     """)
 
     args = parser.parse_args()
@@ -317,9 +359,26 @@ def main():
         output = Path(args.output)
 
         if not os.path.isdir(output):
-            return print(Fore.RED + "Error: output path is not a valid folder." + Fore.WHITE)
-    else:
+            return print(Fore.RED + "Error: the output path is not a valid folder." + Fore.WHITE)
+    elif hasattr(args, 'output'):
         output = os.getcwd()
+
+    mkvFile = ""
+    if args.mkv is not None:
+        mkvFile = Path(args.mkv)
+
+        if not os.path.isfile(mkvFile):
+            return print(Fore.RED + "Error: the mkv file specified does not exist." + Fore.WHITE)
+        elif not isMkv(mkvFile):
+            return print(Fore.RED + "Error: the mkv file specified is not an .mkv file." + Fore.WHITE)
+    
+    mkvmerge = ""
+    if mkvFile:
+        if args.mkvmerge is None and not distutils.spawn.find_executable("mkvmerge.exe"):
+            return print(Fore.RED + "fontmerge.py: error: mkvmerge in not in your environnements variable, add it or specify the path to mkvmerge.exe with -mkvmerge." + Fore.WHITE)
+        else:
+            mkvmerge = Path(args.mkvmerge)
+
 
     fontCollection = initializeFontCollection()
 
@@ -328,7 +387,14 @@ def main():
 
     styleCollection = getAssStyle(subtitles, os.path.basename(input))
 
-    copyFont(fontCollection, styleCollection, output)
+    fontsUsed = findUsedFont(fontCollection, styleCollection)
+
+    if output:
+        copyFont(fontsUsed, output)
+
+    if mkvFile:
+        merge(fontsUsed, mkvFile, mkvmerge, os.path.splitext(mkvFile)[0] + " MERGED.mkv")
+
 
 if __name__ == "__main__":
     sys.exit(main())
