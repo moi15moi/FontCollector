@@ -9,8 +9,7 @@ pip install git+https://github.com/moi15moi/FontCollector.git
 
 ```text
 $ fontCollector --help
-usage: fontCollector.py [-h] --input <.ass file> [-mkv .mkv input file] [--output [path]] [-mkvmerge path]
-
+usage: fontCollector.py [-h] --input <.ass file> [-mkv .mkv input file] [--output [path]] [-mkvpropedit path] [--delete-fonts]
 FontCollector for Advanced SubStation Alpha file.
 
 optional arguments:
