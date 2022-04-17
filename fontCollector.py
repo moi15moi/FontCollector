@@ -136,7 +136,7 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
             if("(" not in font and ")" not in font):
                 style = style._replace(fontName=stripFontname(font.strip().lower()))
             else:
-                print(Fore.RED + "FontName can not contains \"(\" or \")\"." + Fore.WHITE)
+                print(Fore.LIGHTRED_EX + "Warning: fontName can not contains \"(\" or \")\"." + Fore.WHITE)
 
     return style
 
@@ -182,7 +182,7 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
                 styleSet.update(parseLine(line.text, style))
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
+                sys.exit(print(Fore.RED + f"Error: unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
 
     return styleSet
 
@@ -279,7 +279,7 @@ def createFont(fontPath: str) -> Font:
     except:
         isItalic = False
         weight = 400
-        print(Fore.RED + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
+        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
 
     # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
     if(weight <= 9):
@@ -308,7 +308,6 @@ def initializeFontCollection() -> set:
 
 
 def merge(fonts:set, mkvFile:Path, mkvmerge:Path, output:Path):
-    print("Merging matroska file with %d fonts" % (len(fonts)))
 
     mkvmerge_args = [
         "-o",
@@ -331,7 +330,7 @@ def main():
     Subtitles file. Must be an ASS file.
     """)
     parser.add_argument('-mkv', metavar=".mkv input file", help="""
-    Video where the fonts will be merge. Must be a Matroska file. If not specified, the collected fonts will be pasted in the output directory.
+    Video where the fonts will be merge. Must be a Matroska file.
     """)
     parser.add_argument('--output', '-o', nargs='?', const='', metavar="path", help="""
     Destination path of the font. If not specified, it will be the current path.
@@ -375,7 +374,7 @@ def main():
     mkvmerge = ""
     if mkvFile:
         if args.mkvmerge is None and not distutils.spawn.find_executable("mkvmerge.exe"):
-            return print(Fore.RED + "fontmerge.py: error: mkvmerge in not in your environnements variable, add it or specify the path to mkvmerge.exe with -mkvmerge." + Fore.WHITE)
+            return print(Fore.RED + "Error: mkvmerge in not in your environnements variable, add it or specify the path to mkvmerge.exe with -mkvmerge." + Fore.WHITE)
         else:
             mkvmerge = Path(args.mkvmerge)
 
