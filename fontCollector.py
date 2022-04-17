@@ -376,14 +376,14 @@ def main():
             return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
     else:
         return print(Fore.RED + "Error: the input file is not an actual file" + Fore.WHITE)
-
+   
+    output = ""
     if args.output is not None:
+
         output = Path(args.output)
 
         if not os.path.isdir(output):
             return print(Fore.RED + "Error: the output path is not a valid folder." + Fore.WHITE)
-    elif hasattr(args, 'output'):
-        output = os.getcwd()
 
     mkvFile = ""
     if args.mkv is not None:
@@ -396,10 +396,12 @@ def main():
 
     mkvpropedit = ""
     if mkvFile:
-        if args.mkvpropedit is None or not distutils.spawn.find_executable("mkvpropedit.exe"):
-            return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
-        else:
+        if(args.mkvpropedit is not None and os.path.isfile(args.mkvpropedit)):
             mkvpropedit = Path(args.mkvpropedit)
+        elif distutils.spawn.find_executable("mkvpropedit.exe"):
+            mkvpropedit = distutils.spawn.find_executable("mkvpropedit.exe")
+        else:
+            return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
 
         delete_fonts = args.delete_fonts
 
