@@ -9,24 +9,28 @@ pip install git+https://github.com/moi15moi/FontCollector.git
 
 ```text
 $ fontCollector --help
-usage: fontCollector.py [-h] --input <.ass file> [-mkv .mkv input file] [--output [path]] [-mkvpropedit path] [--delete-fonts]
+usage: fontCollector.py [-h] --input [.ass file] [-mkv [.mkv input file]] [--output [path]] [-mkvpropedit [path]]
+                        [--delete-fonts] [--additional-fonts [path [path ...]]]
+
 FontCollector for Advanced SubStation Alpha file.
 
-required argument:
-  --input <.ass file>, -i <.ass file>
+optional arguments:
+  --input [.ass file], -i [.ass file]
 	Subtitles file. Must be an ASS file.
 
 optional arguments:
-  -h, --help            
+  -h, --help
 	show this help message and exit
-  -mkv .mkv input file  
+  -mkv [.mkv input file]
 	Video where the fonts will be merge. Must be a Matroska file.
   --output [path], -o [path]
 	Destination path of the font. If not specified, it will be the current path.
-  -mkvpropedit path     
+  -mkvpropedit [path]
 	Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
-  --delete-fonts, -d    
+  --delete-fonts, -d
 	If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
+  --additional-fonts [path [path ...]]
+	May be a directory containing font files or a single font file.
 ```
 
 ## Know issues
