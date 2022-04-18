@@ -267,6 +267,7 @@ def createFont(fontPath: str) -> Font:
         except UnicodeDecodeError:
             details[x.nameID] = x.string.decode(errors='ignore')
 
+
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
 
@@ -287,7 +288,7 @@ def createFont(fontPath: str) -> Font:
 
     return Font(fontPath, fontName, isItalic, weight)
 
-def initializeFontCollection() -> set:
+def initializeFontCollection(additionalFontsDirectoryPath:list, additionalFontsFilePath:list) -> set:
     """
     This method initialize the font collection.
 
@@ -300,6 +301,10 @@ def initializeFontCollection() -> set:
 
     # Even if I write ttf, it will also search for .otf and .ttc file
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+    fontsPath.extend(additionalFontsFilePath)
+
+    for fontPath in additionalFontsDirectoryPath:
+        fontsPath.extend(font_manager.findSystemFonts(fontpaths=fontPath, fontext='ttf'))
 
     for fontPath in fontsPath:
         fontCollection.add(createFont(fontPath))
@@ -362,6 +367,9 @@ def main():
     parser.add_argument('--delete-fonts', '-d', action='store_true', help="""
     If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
     """)
+    parser.add_argument('--additional-fonts', nargs='*', help="""
+    May be a directory containing font files or a single font file.
+    """)
 
     args = parser.parse_args()
 
@@ -404,9 +412,19 @@ def main():
             return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
 
         delete_fonts = args.delete_fonts
+    
+    additionalFontsDirectoryPath = []
+    additionalFontsFilePath = []
+    if(args.additional_fonts is not None):
+        for additional_font in args.additional_fonts:
+            path = Path(additional_font)
 
+            if path.is_dir():
+                additionalFontsDirectoryPath.append(str(path))
+            elif path.is_file():
+                additionalFontsFilePath.append(str(path))
 
-    fontCollection = initializeFontCollection()
+    fontCollection = initializeFontCollection(additionalFontsDirectoryPath, additionalFontsFilePath)
 
     with open(input, encoding='utf_8_sig') as f:
         subtitles = ass.parse(f)
