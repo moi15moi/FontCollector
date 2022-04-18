@@ -352,22 +352,22 @@ def merge(fonts:set, mkvFile:Path, mkvpropedit:Path):
 
 def main():
     parser = argparse.ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
-    parser.add_argument('--input', '-i', required=True, metavar="<.ass file>", help="""
+    parser.add_argument('--input', '-i', required=True, metavar="[.ass file]", help="""
     Subtitles file. Must be an ASS file.
     """)
-    parser.add_argument('-mkv', metavar=".mkv input file", help="""
+    parser.add_argument('-mkv', metavar="[.mkv input file]", help="""
     Video where the fonts will be merge. Must be a Matroska file.
     """)
     parser.add_argument('--output', '-o', nargs='?', const='', metavar="path", help="""
     Destination path of the font. If not specified, it will be the current path.
     """)
-    parser.add_argument('-mkvpropedit', metavar="path", help="""
+    parser.add_argument('-mkvpropedit', metavar="[path]", help="""
     Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
     """)
     parser.add_argument('--delete-fonts', '-d', action='store_true', help="""
     If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
     """)
-    parser.add_argument('--additional-fonts', nargs='*', help="""
+    parser.add_argument('--additional-fonts', metavar="path", nargs='*', help="""
     May be a directory containing font files or a single font file.
     """)
 
