@@ -1,5 +1,6 @@
 import os
 import shutil
+from struct import error as struct_error
 import sys
 import re
 import ass
@@ -256,7 +257,7 @@ def createFont(fontPath: str) -> Font:
         An Font object
     """
 
-    font = ttLib.TTFont(fontPath, fontNumber=0, ignoreDecompileErrors=True)
+    font = ttLib.TTFont(fontPath, fontNumber=0)
     with redirect_stderr(None):
         names = font['name'].names
 
@@ -277,10 +278,10 @@ def createFont(fontPath: str) -> Font:
 
         # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
         weight = font['OS/2'].usWeightClass
-    except:
+    except struct_error:
+        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
         isItalic = False
         weight = 400
-        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
 
     # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
     if(weight <= 9):
@@ -444,4 +445,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    #sys.exit(main())
+    createFont("C:\\Users\\Admin\\Downloads\\Mona.TTF")
