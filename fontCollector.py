@@ -10,7 +10,6 @@ from contextlib import redirect_stderr
 from typing import NamedTuple
 from fontTools import ttLib
 from pathlib import Path
-import distutils.spawn
 import subprocess
 
 from colorama import Fore, init
@@ -384,7 +383,7 @@ def main():
         if(".ass" != file_extension):
             return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
     else:
-        return print(Fore.RED + "Error: the input file is not an actual file" + Fore.WHITE)
+        return print(Fore.RED + "Error: the input file does not exist" + Fore.WHITE)
    
     output = ""
     if args.output is not None:
@@ -407,10 +406,11 @@ def main():
     if mkvFile:
         if(args.mkvpropedit is not None and os.path.isfile(args.mkvpropedit)):
             mkvpropedit = Path(args.mkvpropedit)
-        elif distutils.spawn.find_executable("mkvpropedit.exe"):
-            mkvpropedit = distutils.spawn.find_executable("mkvpropedit.exe")
         else:
-            return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
+            mkvpropedit = shutil.which("mkvpropedit.exe")
+
+            if not mkvpropedit:
+                return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
 
         delete_fonts = args.delete_fonts
     
@@ -445,5 +445,4 @@ def main():
 
 
 if __name__ == "__main__":
-    #sys.exit(main())
-    createFont("C:\\Users\\Admin\\Downloads\\Mona.TTF")
+    sys.exit(main())
