@@ -1,4 +1,5 @@
 import ass
+import fixedint
 import os
 import re
 import shutil
@@ -31,6 +32,7 @@ class Font(NamedTuple):
     fontName: str
     weight: int
     italic: bool
+    weightCompare: fixedint.Int32
 
     def __eq__(self, other):
         return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
@@ -101,28 +103,12 @@ def parseTags(tags: str, style: AssStyle) -> AssStyle:
             boldNumber = int(INT_PATTERN.findall(bold[-1])[0])
 
             # Yes, that's not a good way to do it, but I did not find any other solution.
-            if boldNumber <= 0:
+            if boldNumber <= 0 or 2 <= boldNumber < 100:
                 style = style._replace(weight=400)
             elif boldNumber == 1:
                 style = style._replace(weight=700)
-            elif 2 <= boldNumber <= 150:
-                style = style._replace(weight=100)
-            elif 151 <= boldNumber <= 250:
-                style = style._replace(weight=200)
-            elif 251 <= boldNumber <= 350:
-                style = style._replace(weight=300)
-            elif 351 <= boldNumber <= 450:
-                style = style._replace(weight=400)
-            elif 451 <= boldNumber <= 550:
-                style = style._replace(weight=500)
-            elif 551 <= boldNumber <= 650:
-                style = style._replace(weight=600)
-            elif 651 <= boldNumber <= 750:
-                style = style._replace(weight=700)
-            elif 751 <= boldNumber <= 850:
-                style = style._replace(weight=800)
-            elif 851 <= boldNumber:
-                style = style._replace(weight=900)
+            else:
+                style = style._replace(weight=boldNumber)
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
         if(italic):
@@ -216,20 +202,24 @@ def searchFont(fontCollection: Set[Font], style: AssStyle) -> List[Font]:
     """
     fontMatch = []
 
-    for fontI in fontCollection:
-        if(fontI.fontName == style.fontName):
+    for font in fontCollection:
+        if(font.fontName == style.fontName):
 
-            # I am not sure if it work like this in libass.
-            if(fontI.weight < style.weight - 150 and style.weight <= 850):
-                fontI = fontI._replace(weight=fontI.weight+150)
+            font = font._replace(weightCompare=fixedint.Int32(abs(style.weight - font.weight)))
 
-            fontMatch.append(fontI)
+            if((style.weight - font.weight) > 150):
+                font = font._replace(weightCompare=fixedint.Int32(font.weightCompare-120))
 
-    # The sort is very important !
+            # Thanks to rcombs@github: https://github.com/libass/libass/issues/613#issuecomment-1102994528
+            font = font._replace(weightCompare=(((((((font.weightCompare)<<3)+(font.weightCompare))<<3))+(font.weightCompare))>>8))
+
+            fontMatch.append(font)
+
+    # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic
     if(style.italic):
-        fontMatch.sort(key=lambda font: (-font.italic, abs(style.weight - font.weight), font.weight))
+        fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, abs(style.weight - font.weight), font.weight))
     else:
-        fontMatch.sort(key=lambda font: (font.italic, abs(style.weight - font.weight), font.weight))
+        fontMatch.sort(key=lambda font: (font.italic, font.weightCompare, abs(style.weight - font.weight), font.weight))
 
     return fontMatch
 
@@ -298,7 +288,7 @@ def createFont(fontPath: str) -> Font:
     if(weight <= 9):
         weight *= 100
 
-    return Font(fontPath, fontName, weight, isItalic)
+    return Font(fontPath, fontName, weight, isItalic, fixedint.Int32(0))
 
 
 def initializeFontCollection(additionalFontsDirectoryPath: List[str], additionalFontsFilePath: List[str]) -> Set[Font]:

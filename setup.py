@@ -35,6 +35,7 @@ setuptools.setup(
     install_requires=[
         'argparse',
         'ass',
+        'fixedint',
         'fontTools',
         'matplotlib>=3.5',
         'colorama'
