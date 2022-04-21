@@ -217,9 +217,9 @@ def searchFont(fontCollection: Set[Font], style: AssStyle) -> List[Font]:
 
     # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic
     if(style.italic):
-        fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, abs(style.weight - font.weight), font.weight))
+        fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, font.weight))
     else:
-        fontMatch.sort(key=lambda font: (font.italic, font.weightCompare, abs(style.weight - font.weight), font.weight))
+        fontMatch.sort(key=lambda font: (font.italic, font.weightCompare, font.weight))
 
     return fontMatch
 
