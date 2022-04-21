@@ -1,16 +1,15 @@
-import os
-import shutil
-from struct import error as struct_error
-import sys
-import re
 import ass
-import argparse
-from matplotlib import font_manager
-from contextlib import redirect_stderr
-from typing import NamedTuple
-from fontTools import ttLib
-from pathlib import Path
+import os
+import re
+import shutil
 import subprocess
+import sys
+from argparse import ArgumentParser
+from fontTools import ttLib
+from matplotlib import font_manager
+from pathlib import Path
+from struct import error as struct_error
+from typing import List, NamedTuple, Set
 
 from colorama import Fore, init
 init(convert=True)
@@ -30,8 +29,8 @@ TAG_FN_PATTERN = re.compile(r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))
 class Font(NamedTuple):
     fontPath: str
     fontName: str
-    italic: bool
     weight: int
+    italic: bool
 
     def __eq__(self, other):
         return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
@@ -55,20 +54,27 @@ class AssStyle(NamedTuple):
         return "FontName: " + self.fontName + " Weight: " + str(self.weight) + " Italic: " + str(self.italic)
 
 
-def isMkv(filename:Path):
+def isMkv(fileName:Path) -> bool:
     """
-    Thanks to https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts
+    Parameters:
+        fileName (Path): The file name. Example: "example.mkv"
+    Returns:
+        True if the mkv is an mkv file, false in any others cases
+
+    Thanks to https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts/blob/f2a52ee38eeb60934175722fa9d7f2c2aae015c6/scripts/fontvalidator/fontvalidator.py#L414
     """
-    with open(filename, 'rb') as f:
+    with open(fileName, 'rb') as f:
         return f.read(4) == b'\x1a\x45\xdf\xa3'
 
 
-def stripFontname(fontName:str):
+def stripFontname(fontName:str) -> str:
     """
     Parameters:
         fontName (str): The font name.
     Returns:
         The font without an @ at the beginning
+
+    Thanks to https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts/blob/f2a52ee38eeb60934175722fa9d7f2c2aae015c6/scripts/fontvalidator/fontvalidator.py#L33
     """
     if fontName.startswith('@'):
         return fontName[1:]
@@ -76,14 +82,14 @@ def stripFontname(fontName:str):
         return fontName
 
 
-def parse_tags(tags: str, style: AssStyle) -> AssStyle:
+def parseTags(tags: str, style: AssStyle) -> AssStyle:
     """
     Parameters:
-        tags (str): A str containing tag. Ex: "\fnBell MT\r\i1\b1"
+        tags (str): A string containing tag. Ex: "\fnBell MT\r\i1\b1"
+        style (AssStyle): The line style of the tags we received
     Returns:
-        The current text (text does not means line!) AssStyle
+        The new AssStyle according to the tags
     """
-
     tagsList = TAG_R_PATTERN.split(tags)
 
     cleanTag = tagsList[-1]
@@ -141,11 +147,13 @@ def parse_tags(tags: str, style: AssStyle) -> AssStyle:
     return style
 
 
-def parseLine(lineRawText: str, style: AssStyle) -> set:
+def parseLine(lineRawText: str, style: AssStyle) -> Set[AssStyle]:
     """
     Parameters:
         lineRawText (str): Ass line. Example: {\fnJester\b1}This is an example!
         style (AssStyle): Style applied to this line
+    Returns:
+        A set that contains all the possible style in a line.
     """
     allLineTags = ""
     styleSet = set()
@@ -159,17 +167,18 @@ def parseLine(lineRawText: str, style: AssStyle) -> set:
         {\b1\fnJester}FontCollectorTest{this is an commentaire} --> Would give me the fontName Jesterthis is an commentaire
         """
         allLineTags += tags + "\\}"
-        styleSet.add(parse_tags(allLineTags, style))
+        styleSet.add(parseTags(allLineTags, style))
 
     return styleSet
 
 
-def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
+def getAssStyle(subtitle: ass.Document, fileName:str) -> Set[AssStyle]:
     """
     Parameters:
         subtitle (ass.Document): Ass Document
+        fileName (str): The file name of the ass. Ex: "test.ass"
     Returns:
-        A set containing all unique style
+        A set containing all style
     """
     styleSet = set()
     styles = {style.name: AssStyle(stripFontname(style.fontname.strip().lower()), 700 if style.bold else 400, style.italic)
@@ -186,18 +195,24 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> set:
 
     return styleSet
 
-def copyFont(fontCollection:set, outputDirectory:Path):
 
+def copyFont(fontCollection: Set[Font], outputDirectory: Path):
+    """
+    Parameters:
+        fontCollection (Set[Font]): Font collection
+        outputDirectory (Path): The output directory where the font are going to be save
+    """
     for font in fontCollection:
         shutil.copy(font.fontPath, outputDirectory)
 
 
-def searchFont(fontCollection:set, style: AssStyle) -> list:
+def searchFont(fontCollection: Set[Font], style: AssStyle) -> List[Font]:
     """
     Parameters:
-        style (AssStyle): Font name
+        fontCollection (Set[Font]): Font collection
+        style (AssStyle): An AssStyle
     Returns:
-        A list containing all font that match with the fontName
+        The font that match the best to the AssStyle
     """
     fontMatch = []
 
@@ -219,13 +234,13 @@ def searchFont(fontCollection:set, style: AssStyle) -> list:
     return fontMatch
 
 
-def findUsedFont(fontCollection:set, styleCollection:set) -> set:
+def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> Set[Font]:
     """
-    Copy font to an directory.
-
     Parameters:
-        styleList (list): It contains all the needed style of an .ASS file
-        outputDirectory (Path): Directory where to save the font file
+        fontCollection (Set[Font]): Font collection
+        styleCollection (Set[AssStyle]): Style collection
+    Returns:
+        A set containing all the font that match the styleCollection
     """
     fontsMissing = set()
     fontsFound = set()
@@ -239,7 +254,7 @@ def findUsedFont(fontCollection:set, styleCollection:set) -> set:
             fontsMissing.add(style.fontName)
 
     if(len(fontsMissing) > 0):
-        print(Fore.RED + "\nSome fonts were not found. Are they installed? :")
+        print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
         print(Fore.WHITE + "\n")
     else:
@@ -253,20 +268,17 @@ def createFont(fontPath: str) -> Font:
     Parameters:
         fontPath (str): Font path. The font can be a .ttf, .otf or .ttc
     Returns:
-        An Font object
+        An Font object that represent the file at the fontPath
     """
 
     font = ttLib.TTFont(fontPath, fontNumber=0)
-    with redirect_stderr(None):
-        names = font['name'].names
 
     details = {}
-    for x in names:
+    for x in font['name'].names:
         try:
             details[x.nameID] = x.toStr()
         except UnicodeDecodeError:
             details[x.nameID] = x.string.decode(errors='ignore')
-
 
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
@@ -286,13 +298,17 @@ def createFont(fontPath: str) -> Font:
     if(weight <= 9):
         weight *= 100
 
-    return Font(fontPath, fontName, isItalic, weight)
+    return Font(fontPath, fontName, weight, isItalic)
 
-def initializeFontCollection(additionalFontsDirectoryPath:list, additionalFontsFilePath:list) -> set:
+
+def initializeFontCollection(additionalFontsDirectoryPath: List[str], additionalFontsFilePath: List[str]) -> Set[Font]:
     """
-    This method initialize the font collection.
-
-    It search all the installed font and save it in fontCollection
+    Search all the installed font and save it in fontCollection
+    Parameters:
+        additionalFontsDirectoryPath (List[str]): List of directory which potentially contain fonts Ex: ["C:\\Users\\Admin\\Documents\\Personnal Font Collection"]
+        additionalFontsFilePath (List[str]): List of file path Ex: ["C:\\Users\\Admin\\Desktop\\example_font.ttf"]
+    Returns:
+        List that contains all the font that the system could find including the one in additionalFontsDirectoryPath and additionalFontsFilePath
     """
     fontCollection = set()
 
@@ -301,8 +317,8 @@ def initializeFontCollection(additionalFontsDirectoryPath:list, additionalFontsF
 
     # Even if I write ttf, it will also search for .otf and .ttc file
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
-    fontsPath.extend(additionalFontsFilePath)
 
+    fontsPath.extend(additionalFontsFilePath)
     for fontPath in additionalFontsDirectoryPath:
         fontsPath.extend(font_manager.findSystemFonts(fontpaths=fontPath, fontext='ttf'))
 
@@ -311,8 +327,15 @@ def initializeFontCollection(additionalFontsDirectoryPath:list, additionalFontsF
 
     return fontCollection
 
-def deleteFonts(mkvFile:Path, mkvpropedit:Path):
 
+def deleteFonts(mkvFile:Path, mkvpropedit:Path):
+    """
+    Delete all mkv attached font
+
+    Parameters:
+        mkvFile (Path): Path to mkvFile
+        mkvpropedit (Path): Path to mkvpropedit
+    """
     mkvpropedit_args = [
         '"' + str(mkvFile) + '"'
         ]
@@ -335,8 +358,13 @@ def deleteFonts(mkvFile:Path, mkvpropedit:Path):
     print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts with mkv" + Fore.WHITE)
 
 
-def merge(fonts:set, mkvFile:Path, mkvpropedit:Path):
-
+def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
+    """
+    Parameters:
+        fontCollection (Path): All font needed to be merge in the mkv
+        mkvFile (Path): Mkv file path
+        mkvpropedit (Path): Mkvpropedit file path
+    """
     mkvpropedit_args = [
         '"' + str(mkvFile) + '"'
         ]
@@ -344,14 +372,15 @@ def merge(fonts:set, mkvFile:Path, mkvpropedit:Path):
     mkvpropedit_args.insert(0, str(mkvpropedit))
 
 
-    for font in fonts:
+    for font in fontCollection:
         mkvpropedit_args.append("--add-attachment " + '"' + font.fontPath + '"')
 
     subprocess.call(" ".join(mkvpropedit_args))
     print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.WHITE)
 
+
 def main():
-    parser = argparse.ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
+    parser = ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
     parser.add_argument('--input', '-i', required=True, metavar="[.ass file]", help="""
     Subtitles file. Must be an ASS file.
     """)
@@ -384,7 +413,7 @@ def main():
             return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
     else:
         return print(Fore.RED + "Error: the input file does not exist" + Fore.WHITE)
-   
+
     output = ""
     if args.output is not None:
 
@@ -407,13 +436,13 @@ def main():
         if(args.mkvpropedit is not None and os.path.isfile(args.mkvpropedit)):
             mkvpropedit = Path(args.mkvpropedit)
         else:
-            mkvpropedit = shutil.which("mkvpropedit.exe")
+            mkvpropedit = shutil.which("mkvpropedit")
 
             if not mkvpropedit:
                 return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
 
         delete_fonts = args.delete_fonts
-    
+
     additionalFontsDirectoryPath = []
     additionalFontsFilePath = []
     if(args.additional_fonts is not None):
@@ -441,7 +470,7 @@ def main():
         if delete_fonts:
             deleteFonts(mkvFile, mkvpropedit)
 
-        merge(fontsUsed, mkvFile, mkvpropedit)
+        mergeFont(fontsUsed, mkvFile, mkvpropedit)
 
 
 if __name__ == "__main__":
