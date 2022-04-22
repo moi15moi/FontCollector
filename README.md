@@ -59,5 +59,5 @@ Currently, FontCollector does not always collect font when the font is Japanese 
 
 ## Acknowledgments
  - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
- - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts). Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
- - [PyonFX](https://github.com/CoffeeStraw/PyonFX). I inspired myself from his setup.py to create mine.
+ - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts) Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
+ - [PyonFX](https://github.com/CoffeeStraw/PyonFX) I inspired myself from his setup.py to create mine.
