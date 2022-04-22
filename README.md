@@ -51,7 +51,7 @@ fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\M
 |Color|What it means|
 |--|--|
 |![#E74856](https://via.placeholder.com/15/E74856/000000?text=+)|It is just a Warning. You have nothing to do.|
-|![#AE0D1B](https://via.placeholder.com/15/AE0D1B/000000?text=+)|Error. The program will stop. You must do something in order for the task to be completed properly.|
+|![#AE0D1B](https://via.placeholder.com/15/AE0D1B/000000?text=+)|Error. The program will stop. You must to do something to get the task accomplished properly.|
 |![#14B30B](https://via.placeholder.com/15/14B30B/000000?text=+)|A task went well|
 
 ## Know issues
