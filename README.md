@@ -34,13 +34,19 @@ optional arguments:
 ```
 ## Examples
 Recover fonts from 2 .ass files and save them in the current folder
-```fontCollector -i "file1.ass" "file2.ass" -o```
+```
+fontCollector -i "file1.ass" "file2.ass" -o
+```
 
 Mux font from .ass file into an mkv
-```fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"```
+```text
+fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"
+```
 
 Mux the font from the .ass file into an mkv and delete the currently attached fonts.
-```fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe" -d```
+```text
+fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe" -d
+```
 
 ## Know issues
 Currently, FontCollector does not always collect font when the font is Japanese or Chinese. It seems to be a problem from [FontTools](https://github.com/fonttools/fonttools) that do not decode the fontname correctly.
