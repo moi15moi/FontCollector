@@ -247,16 +247,12 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
             # That's why we redo a search
             fontMatch = searchFont(fontCollection, style, False)
 
-            if(len(fontMatch) == 0):
-                # That was the first possibility
-                fontsMissing.add(style.fontName)
-            else:
-                # That was the second possibility
-                fontsFound.add(fontMatch[0])
+        if(len(fontMatch) == 0):
+            # That was the first possibility
+            fontsMissing.add(style.fontName)
         else:
-
+            # That was the second possibility
             fontsFound.add(fontMatch[0])
-
 
     if(len(fontsMissing) > 0):
         print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
