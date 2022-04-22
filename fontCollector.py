@@ -33,6 +33,7 @@ class Font(NamedTuple):
     weight: int
     italic: bool
     weightCompare: fixedint.Int32
+    exact_name: str # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the postscript name
 
     def __eq__(self, other):
         return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
@@ -150,7 +151,7 @@ def parseLine(lineRawText: str, style: AssStyle) -> Set[AssStyle]:
         """
         I add \\} at each tags block.
         Example if I don't add \\}:
-        {\b1\fnJester}FontCollectorTest{this is an commentaire} --> Would give me the fontName Jesterthis is an commentaire
+        {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
         """
         allLineTags += tags + "\\}"
         styleSet.add(parseTags(allLineTags, style))
@@ -192,18 +193,19 @@ def copyFont(fontCollection: Set[Font], outputDirectory: Path):
         shutil.copy(font.fontPath, outputDirectory)
 
 
-def searchFont(fontCollection: Set[Font], style: AssStyle) -> List[Font]:
+def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFontName: bool = True) -> List[Font]:
     """
     Parameters:
         fontCollection (Set[Font]): Font collection
         style (AssStyle): An AssStyle
+        searchByFontName (bool): If true, it will search the font by it's name. If false, it will search the font by it's exact_name.
     Returns:
         The font that match the best to the AssStyle
     """
     fontMatch = []
 
     for font in fontCollection:
-        if(font.fontName == style.fontName):
+        if(searchByFontName and font.fontName == style.fontName) or (not searchByFontName and font.exact_name == style.fontName):
 
             font = font._replace(weightCompare=fixedint.Int32(abs(style.weight - font.weight)))
 
@@ -215,7 +217,8 @@ def searchFont(fontCollection: Set[Font], style: AssStyle) -> List[Font]:
 
             fontMatch.append(font)
 
-    # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic
+    # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic.
+    # Also, the last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one and the other is random, so VSFilter will not always display the same font.
     if(style.italic):
         fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, font.weight))
     else:
@@ -238,10 +241,23 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     for style in styleCollection:
         fontMatch = searchFont(fontCollection, style)
 
-        if(len(fontMatch) != 0):
-            fontsFound.add(fontMatch[0])
+        if(len(fontMatch) == 0):
+            # if we get here, there is two possibility.
+            # 1 - We don't have the font
+            # 2 - We have the font, but it match with the Font.exact_name
+            # That's why we redo a search
+            fontMatch = searchFont(fontCollection, style, False)
+
+            if(len(fontMatch) == 0):
+                # That was the first possibility
+                fontsMissing.add(style.fontName)
+            else:
+                # That was the second possibility
+                fontsFound.add(fontMatch[0])
         else:
-            fontsMissing.add(style.fontName)
+
+            fontsFound.add(fontMatch[0])
+
 
     if(len(fontsMissing) > 0):
         print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
@@ -273,6 +289,12 @@ def createFont(fontPath: str) -> Font:
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
 
+    # Thanks to Myaa for this: https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts/blob/f2a52ee38eeb60934175722fa9d7f2c2aae015c6/scripts/fontvalidator/fontvalidator.py#L139
+    # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
+    # If TrueType, take "full names" which has the id 4
+    # If OpenType, ttake "PostScript" which has the id 6
+    exact_names = (details[6] if (font.has_key("CFF ") and details[6]) else details[4]).strip().lower()
+
     try:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
         isItalic = font["OS/2"].fsSelection & 0b1 > 0
@@ -280,7 +302,7 @@ def createFont(fontPath: str) -> Font:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
         weight = font['OS/2'].usWeightClass
     except struct_error:
-        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors." + Fore.WHITE)
+        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied" + Fore.WHITE)
         isItalic = False
         weight = 400
 
@@ -288,7 +310,8 @@ def createFont(fontPath: str) -> Font:
     if(weight <= 9):
         weight *= 100
 
-    return Font(fontPath, fontName, weight, isItalic, fixedint.Int32(0))
+    # The weightCompare is set to 0. It could be any value. It does not care
+    return Font(fontPath, fontName, weight, isItalic, fixedint.Int32(0), exact_names)
 
 
 def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
@@ -308,7 +331,6 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
 
     for fontPath in additionalFontsPath:
-
         if fontPath.is_dir():
             fontsPath.extend(font_manager.findSystemFonts(fontpaths=str(fontPath), fontext='ttf'))
         elif fontPath.is_file():
