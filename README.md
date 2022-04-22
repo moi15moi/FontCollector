@@ -1,5 +1,6 @@
 # FontCollector
 FontCollector for Advanced SubStation Alpha file.
+This tool allows to recover and/or mux the fonts necessary in an mkv.
 ## Installation
 ```text
 pip install git+https://github.com/moi15moi/FontCollector.git
@@ -31,10 +32,20 @@ optional arguments:
   --additional-fonts [path [path ...]]
 		May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
 ```
+## Examples
+Recover fonts from 2 .ass files and save them in the current folder
+```fontCollector -i "file1.ass" "file2.ass" -o```
+
+Mux font from .ass file into an mkv
+```fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"```
+
+Mux the font from the .ass file into an mkv and delete the currently attached fonts.
+```fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe" -d```
 
 ## Know issues
 Currently, FontCollector does not always collect font when the font is Japanese or Chinese. It seems to be a problem from [FontTools](https://github.com/fonttools/fonttools) that do not decode the fontname correctly.
 
 ## Acknowledgments
- - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts)
- - [fontmerge](https://github.com/WheneverDev/fontmerge)
+ - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
+ - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts). Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
+ - [PyonFX](https://github.com/CoffeeStraw/PyonFX). I inspired myself from his setup.py to create mine.
