@@ -266,7 +266,7 @@ def createFont(fontPath: str) -> Font:
     details = {}
     for x in font['name'].names:
         try:
-            details[x.nameID] = x.toStr()
+            details[x.nameID] = x.toUnicode()
         except UnicodeDecodeError:
             details[x.nameID] = x.string.decode(errors='ignore')
 
@@ -371,8 +371,8 @@ def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
 
 def main():
     parser = ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
-    parser.add_argument('--input', '-i', required=True, metavar="[.ass file]", help="""
-    Subtitles file. Must be an ASS file.
+    parser.add_argument('--input', '-i', nargs='+', required=True, metavar="[.ass file]", help="""
+    Subtitles file. Must be an ASS file. You can specify more than one .ass file.
     """)
     parser.add_argument('-mkv', metavar="[.mkv input file]", help="""
     Video where the fonts will be merge. Must be a Matroska file.
@@ -386,23 +386,27 @@ def main():
     parser.add_argument('--delete-fonts', '-d', action='store_true', help="""
     If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
     """)
-    parser.add_argument('--additional-fonts', metavar="path", nargs='*', help="""
-    May be a directory containing font files or a single font file.
+    parser.add_argument('--additional-fonts', nargs='*', metavar="path", help="""
+    May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
     """)
 
     args = parser.parse_args()
 
     # Parse args
-    if(os.path.isfile(args.input)):
-        input = Path(args.input)
+    assFileList = []
+    for input in args.input:
+        if(os.path.isfile(input)):
+            input = Path(input)
 
-        split_tup = os.path.splitext(input)
-        file_extension = split_tup[1]
+            split_tup = os.path.splitext(input)
+            file_extension = split_tup[1]
 
-        if(".ass" != file_extension):
-            return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
-    else:
-        return print(Fore.RED + "Error: the input file does not exist" + Fore.WHITE)
+            if(".ass" != file_extension):
+                return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
+            else:
+                assFileList.append(input)
+        else:
+            return print(Fore.RED + "Error: the input file does not exist" + Fore.WHITE)
 
     output = ""
     if args.output is not None:
@@ -446,10 +450,12 @@ def main():
 
     fontCollection = initializeFontCollection(additionalFontsDirectoryPath, additionalFontsFilePath)
 
-    with open(input, encoding='utf_8_sig') as f:
-        subtitles = ass.parse(f)
+    styleCollection = set()
+    for assInput in assFileList:
+        with open(assInput, encoding='utf_8_sig') as f:
+            subtitles = ass.parse(f)
 
-    styleCollection = getAssStyle(subtitles, os.path.basename(input))
+        styleCollection.update(getAssStyle(subtitles, os.path.basename(assInput)))
 
     fontsUsed = findUsedFont(fontCollection, styleCollection)
 
