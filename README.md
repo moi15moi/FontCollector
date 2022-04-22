@@ -39,9 +39,8 @@ fontCollector -i "file1.ass" "file2.ass" -o
 ```
 
 Mux font from .ass file into an mkv
-```text
-fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"
-```
+	fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"
+
 
 Mux the font from the .ass file into an mkv and delete the currently attached fonts.
 ```text
