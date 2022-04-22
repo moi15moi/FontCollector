@@ -246,7 +246,7 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     if(len(fontsMissing) > 0):
         print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
-        print(Fore.WHITE + "\n")
+        print(Fore.WHITE, end = "")
     else:
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
 
@@ -291,12 +291,11 @@ def createFont(fontPath: str) -> Font:
     return Font(fontPath, fontName, weight, isItalic, fixedint.Int32(0))
 
 
-def initializeFontCollection(additionalFontsDirectoryPath: List[str], additionalFontsFilePath: List[str]) -> Set[Font]:
+def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
     """
     Search all the installed font and save it in fontCollection
     Parameters:
-        additionalFontsDirectoryPath (List[str]): List of directory which potentially contain fonts Ex: ["C:\\Users\\Admin\\Documents\\Personnal Font Collection"]
-        additionalFontsFilePath (List[str]): List of file path Ex: ["C:\\Users\\Admin\\Desktop\\example_font.ttf"]
+        additionalFontsPath (List[Path]): List of path that contains font. The list can contains directory and/or file
     Returns:
         List that contains all the font that the system could find including the one in additionalFontsDirectoryPath and additionalFontsFilePath
     """
@@ -308,9 +307,12 @@ def initializeFontCollection(additionalFontsDirectoryPath: List[str], additional
     # Even if I write ttf, it will also search for .otf and .ttc file
     fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
 
-    fontsPath.extend(additionalFontsFilePath)
-    for fontPath in additionalFontsDirectoryPath:
-        fontsPath.extend(font_manager.findSystemFonts(fontpaths=fontPath, fontext='ttf'))
+    for fontPath in additionalFontsPath:
+
+        if fontPath.is_dir():
+            fontsPath.extend(font_manager.findSystemFonts(fontpaths=str(fontPath), fontext='ttf'))
+        elif fontPath.is_file():
+            fontsPath.append(str(fontPath))
 
     for fontPath in fontsPath:
         fontCollection.add(createFont(fontPath))
@@ -437,18 +439,13 @@ def main():
 
         delete_fonts = args.delete_fonts
 
-    additionalFontsDirectoryPath = []
-    additionalFontsFilePath = []
+    additionalFonts = []
     if(args.additional_fonts is not None):
         for additional_font in args.additional_fonts:
             path = Path(additional_font)
+            additionalFonts.append(path)
 
-            if path.is_dir():
-                additionalFontsDirectoryPath.append(str(path))
-            elif path.is_file():
-                additionalFontsFilePath.append(str(path))
-
-    fontCollection = initializeFontCollection(additionalFontsDirectoryPath, additionalFontsFilePath)
+    fontCollection = initializeFontCollection(additionalFonts)
 
     styleCollection = set()
     for assInput in assFileList:
