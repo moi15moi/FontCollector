@@ -103,7 +103,6 @@ def parseTags(tags: str, style: AssStyle) -> AssStyle:
             # We do [-1], because we only want the last match
             boldNumber = int(INT_PATTERN.findall(bold[-1])[0])
 
-            # Yes, that's not a good way to do it, but I did not find any other solution.
             if boldNumber <= 0 or 2 <= boldNumber < 100:
                 style = style._replace(weight=400)
             elif boldNumber == 1:
@@ -218,7 +217,7 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFontName: boo
             fontMatch.append(font)
 
     # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic.
-    # Also, the last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one and the other is random, so VSFilter will not always display the same font.
+    # Also, the last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
     if(style.italic):
         fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, font.weight))
     else:
