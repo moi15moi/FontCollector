@@ -146,14 +146,14 @@ def parseLine(lineRawText: str, style: AssStyle) -> Set[AssStyle]:
 
     # The last match of the regex is useless, so we remove it
     for tags, text in LINE_PATTERN.findall(lineRawText)[:-1]:
-
-        """
-        I add \\} at each tags block.
-        Example if I don't add \\}:
-        {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
-        """
-        allLineTags += tags + "\\}"
-        styleSet.add(parseTags(allLineTags, style))
+        if text:
+            """
+            I add \\} at each tags block.
+            Example if I don't add \\}:
+            {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
+            """
+            allLineTags += tags + "\\}"
+            styleSet.add(parseTags(allLineTags, style))
 
     return styleSet
 
