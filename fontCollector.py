@@ -15,7 +15,7 @@ from typing import Dict, List, NamedTuple, Set
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.4.4"
+__version__ = "0.5.1"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
