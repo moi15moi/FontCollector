@@ -10,7 +10,7 @@ from fontTools import ttLib
 from matplotlib import font_manager
 from pathlib import Path
 from struct import error as struct_error
-from typing import List, NamedTuple, Set
+from typing import Dict, List, NamedTuple, Set
 
 from colorama import Fore, init
 init(convert=True)
@@ -21,10 +21,10 @@ __version__ = "0.4.4"
 LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
 INT_PATTERN = re.compile(r"[+-]?\d+")
 
-TAG_R_PATTERN = re.compile(r"\\r")
 TAG_ITALIC_PATTERN = re.compile(r"\\i[0-9]+|\\i\+[0-9]+|\\i\-[0-9]+")
 TAG_BOLD_PATTERN = re.compile(r"\\b[0-9]+|\\b\+[0-9]+|\\b\-[0-9]+")
 TAG_FN_PATTERN = re.compile(r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=fn)(.*?)(\()(.*?)(\))|(?<=\\fn)(.*?)(?=\\)|(?<=\\fn)(.*?)(?=\)$)|(?<=\\fn)(.*?)(?=\)\\)")
+TAG_R_PATTERN = re.compile(r"(?<=\\r)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=r)(.*?)(\()(.*?)(\))|(?<=\\r)(.*?)(?=\\)|(?<=\\r)(.*?)(?=\)$)|(?<=\\r)(.*?)(?=\)\\)")
 
 
 class Font(NamedTuple):
@@ -85,16 +85,28 @@ def stripFontname(fontName:str) -> str:
         return fontName
 
 
-def parseTags(tags: str, style: AssStyle) -> AssStyle:
+def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssStyle:
     """
     Parameters:
         tags (str): A string containing tag. Ex: "\fnBell MT\r\i1\b1"
+        styles (Dict[str, AssStyle]): The key is the style name. It contains all the style in the [V4+ Styles] section of an .ass
         style (AssStyle): The line style of the tags we received
     Returns:
         The new AssStyle according to the tags
     """
-    tagsList = TAG_R_PATTERN.split(tags)
+    styleName = TAG_R_PATTERN.findall(tags)
 
+    if(len(styleName) > 0 and len(styleName[-1]) > 0):
+        styleName = styleName[-1][0]
+
+        # VSFilter does not allow "(" or ")" in a fontName. Also it do not whitespace at the beginning. Ex: "\r Jester" would be invalid
+        if("(" not in styleName and ")" not in styleName and styleName.lstrip() == styleName):
+            if styleName.rstrip() in styles:
+                style = styles[styleName.rstrip()]
+        else:
+            print(Fore.LIGHTRED_EX + f"Warning: style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.WHITE)
+    
+    tagsList = TAG_R_PATTERN.split(tags)
     cleanTag = tagsList[-1]
 
     if(cleanTag):
@@ -133,10 +145,11 @@ def parseTags(tags: str, style: AssStyle) -> AssStyle:
     return style
 
 
-def parseLine(lineRawText: str, style: AssStyle) -> Set[AssStyle]:
+def parseLine(lineRawText: str, styles: Dict[str, AssStyle], style: AssStyle) -> Set[AssStyle]:
     """
     Parameters:
         lineRawText (str): Ass line. Example: {\fnJester\b1}This is an example!
+        styles (Dict[str, AssStyle]): The key is the style name. It contains all the style in the [V4+ Styles] section of an .ass
         style (AssStyle): Style applied to this line
     Returns:
         A set that contains all the possible style in a line.
@@ -153,7 +166,7 @@ def parseLine(lineRawText: str, style: AssStyle) -> Set[AssStyle]:
             {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
             """
             allLineTags += tags + "\\}"
-            styleSet.add(parseTags(allLineTags, style))
+            styleSet.add(parseTags(allLineTags, styles, style))
 
     return styleSet
 
@@ -174,7 +187,7 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> Set[AssStyle]:
         if(isinstance(line, ass.Dialogue)):
             try:
                 style = styles[line.style]
-                styleSet.update(parseLine(line.text, style))
+                styleSet.update(parseLine(line.text, styles, style))
 
             except KeyError:
                 sys.exit(print(Fore.RED + f"Error: unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
