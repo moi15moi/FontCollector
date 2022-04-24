@@ -35,10 +35,11 @@ setuptools.setup(
     install_requires=[
         'argparse',
         'ass',
+        'colorama',
         'fixedint',
         'fontTools',
         'matplotlib>=3.5',
-        'colorama'
+        'regex'
     ],
     entry_points={
         "console_scripts": ["fontCollector=fontCollector:main"]

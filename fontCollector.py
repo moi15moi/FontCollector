@@ -1,7 +1,7 @@
 import ass
 import fixedint
 import os
-import re
+import regex
 import shutil
 import subprocess
 import sys
@@ -18,13 +18,13 @@ init(convert=True)
 __version__ = "0.5.1"
 
 # GLOBAL VARIABLES
-LINE_PATTERN = re.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
-INT_PATTERN = re.compile(r"[+-]?\d+")
+LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
+INT_PATTERN = regex.compile(r"[+-]?\d+")
 
-TAG_ITALIC_PATTERN = re.compile(r"\\i[0-9]+|\\i\+[0-9]+|\\i\-[0-9]+")
-TAG_BOLD_PATTERN = re.compile(r"\\b[0-9]+|\\b\+[0-9]+|\\b\-[0-9]+")
-TAG_FN_PATTERN = re.compile(r"(?<=\\fn)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=fn)(.*?)(\()(.*?)(\))|(?<=\\fn)(.*?)(?=\\)|(?<=\\fn)(.*?)(?=\)$)|(?<=\\fn)(.*?)(?=\)\\)")
-TAG_R_PATTERN = re.compile(r"(?<=\\r)(.*?)(?=\)\\|\\|(?<=\w)(?=$)(?<=\w)(?=$))|(?<=r)(.*?)(\()(.*?)(\))|(?<=\\r)(.*?)(?=\\)|(?<=\\r)(.*?)(?=\)$)|(?<=\\r)(.*?)(?=\)\\)")
+TAG_ITALIC_PATTERN = regex.compile(r"\\\s*i[+-]?\d*")
+TAG_BOLD_PATTERN = regex.compile(r"\\\s*b[+-]?\d*")
+TAG_FN_PATTERN = regex.compile(r"(?<=\\\s*fn).*?(?=\\|(?<=\(.*?\)|\)))")
+TAG_R_PATTERN = regex.compile(r"(?<=\\\s*r).*?(?=\\|(?<=\(.*?\)|\)))")
 
 
 class Font(NamedTuple):
@@ -96,10 +96,11 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
     """
     styleName = TAG_R_PATTERN.findall(tags)
 
-    if(len(styleName) > 0 and len(styleName[-1]) > 0):
-        styleName = styleName[-1][0]
 
-        # VSFilter does not allow "(" or ")" in a fontName. Also it do not whitespace at the beginning. Ex: "\r Jester" would be invalid
+    if(len(styleName) > 0 and len(styleName[0]) > 0 and len(styleName[-1]) > 0):
+        styleName = styleName[-1]
+
+        # We do not allow "(" or ")" in a fontName. Also it can start with whitespace at the beginning. Ex: "\r Jester" would be invalid
         if("(" not in styleName and ")" not in styleName and styleName.lstrip() == styleName):
             if styleName.rstrip() in styles:
                 style = styles[styleName.rstrip()]
@@ -113,30 +114,34 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
         bold = TAG_BOLD_PATTERN.findall(cleanTag)
         if(bold):
             # We do [-1], because we only want the last match
-            boldNumber = int(INT_PATTERN.findall(bold[-1])[0])
+            boldNumber = INT_PATTERN.findall(bold[-1])
 
-            if boldNumber <= 0 or 2 <= boldNumber < 100:
-                style = style._replace(weight=400)
-            elif boldNumber == 1:
-                style = style._replace(weight=700)
-            else:
-                style = style._replace(weight=boldNumber)
+            if len(boldNumber) > 0:
+                boldNumber = int(boldNumber[0])
+
+                if boldNumber <= 0 or 2 <= boldNumber < 100:
+                    style = style._replace(weight=400)
+                elif boldNumber == 1:
+                    style = style._replace(weight=700)
+                else:
+                    style = style._replace(weight=boldNumber)
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
+
         if(italic):
             # We do [-1], because we only want the last match
             italicNumber = INT_PATTERN.findall(italic[-1])
 
-            if(italicNumber[0] == "1"):
+            if(len(italicNumber) > 0 and italicNumber[0] == "1"):
                 style = style._replace(italic=True)
 
         # Get the last occurence + the first element in the array.
         font = TAG_FN_PATTERN.findall(cleanTag)
 
-        if(len(font) > 0 and len(font[-1]) > 0):
-            font = font[-1][0]
+        if(len(font) > 0 and len(font[0]) > 0 and len(font[-1]) > 0):
+            font = font[-1]
 
-            # Aegisub does not allow "(" or ")" in a fontName
+            # We do not allow "(" or ")" in a fontName
             if("(" not in font and ")" not in font):
                 style = style._replace(fontName=stripFontname(font.strip().lower()))
             else:
@@ -165,7 +170,7 @@ def parseLine(lineRawText: str, styles: Dict[str, AssStyle], style: AssStyle) ->
             Example if I don't add \\}:
             {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
             """
-            allLineTags += tags + "\\}"
+            allLineTags += tags + "\\"
             styleSet.add(parseTags(allLineTags, styles, style))
 
     return styleSet
@@ -286,14 +291,23 @@ def createFont(fontPath: str) -> Font:
     """
 
     font = ttLib.TTFont(fontPath, fontNumber=0)
-
     details = {}
-    for x in font['name'].names:
-        try:
-            details[x.nameID] = x.toUnicode()
-        except UnicodeDecodeError:
-            details[x.nameID] = x.string.decode(errors='ignore')
+    found = False
+    for record in font['name'].names:
+        if record.langID == 0 or record.langID == 1033:
+            try:
+                details[record.nameID] = record.toUnicode()
+                found = True
 
+            except UnicodeDecodeError:
+                pass
+        elif not found:
+            if b'\x00' in record.string:
+                try:
+                    details[record.nameID] = record.string.decode('utf-16-be')
+                except UnicodeDecodeError:
+                    pass
+    
     # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
     fontName = details[1].strip().lower()
 
