@@ -15,7 +15,7 @@ from typing import Dict, List, NamedTuple, Set
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -119,11 +119,14 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
             if len(boldNumber) > 0:
                 boldNumber = int(boldNumber[0])
 
-                if boldNumber <= 0 or 2 <= boldNumber < 100:
+                if boldNumber == 0:
                     style = style._replace(weight=400)
                 elif boldNumber == 1:
                     style = style._replace(weight=700)
-                else:
+                
+                # if the \bX is less than 0 or [2,100[, it will take the style weight.
+                # Everything else will take the X of \bX
+                elif not (boldNumber < 0 or 2 <= boldNumber < 100):
                     style = style._replace(weight=boldNumber)
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
