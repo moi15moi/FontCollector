@@ -19,10 +19,10 @@ __version__ = "0.6.2"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
-INT_PATTERN = regex.compile(r"[+-]?\d+")
+FIRST_COMMENT = regex.compile(r"^.*?(?<=\\)")
 
-TAG_ITALIC_PATTERN = regex.compile(r"\\\s*i[+-]?\d*")
-TAG_BOLD_PATTERN = regex.compile(r"\\\s*b[+-]?\d*")
+TAG_ITALIC_PATTERN = regex.compile(r"(?<=\\\s*i\s*)[+-]?\d*(?=\s*\)*\s*\\|\s*\)*\s*$)")
+TAG_BOLD_PATTERN = regex.compile(r"(?<=\\\s*b\s*)[+-]?\d*(?=\s*\)*\s*\\|\s*\)*\s*$)")
 TAG_FN_PATTERN = regex.compile(r"(?<=\\\s*fn).*?(?=\\|(?<=\(.*?\)|\)))")
 TAG_R_PATTERN = regex.compile(r"(?<=\\\s*r).*?(?=\\|(?<=\(.*?\)|\)))")
 
@@ -105,38 +105,34 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
             if styleName.rstrip() in styles:
                 style = styles[styleName.rstrip()]
         else:
-            print(Fore.LIGHTRED_EX + f"Warning: style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.WHITE)
+            print(Fore.LIGHTRED_EX + f"Warning: style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
     
     tagsList = TAG_R_PATTERN.split(tags)
     cleanTag = tagsList[-1]
 
     if(cleanTag):
         bold = TAG_BOLD_PATTERN.findall(cleanTag)
-        if(bold):
+
+        if(bold and bold[-1]):
             # We do [-1], because we only want the last match
-            boldNumber = INT_PATTERN.findall(bold[-1])
+            boldNumber = int(bold[-1])
 
-            if len(boldNumber) > 0:
-                boldNumber = int(boldNumber[0])
-
-                if boldNumber == 0:
-                    style = style._replace(weight=400)
-                elif boldNumber == 1:
-                    style = style._replace(weight=700)
+            if boldNumber == 0:
+                style = style._replace(weight=400)
+            elif boldNumber == 1:
+                style = style._replace(weight=700)
                 
-                # if the \bX is less than 0 or [2,100[, it will take the style weight.
-                # Everything else will take the X of \bX
-                elif not (boldNumber < 0 or 2 <= boldNumber < 100):
-                    style = style._replace(weight=boldNumber)
+            # if the \bX is less than 0 or [2,100[, it will take the style weight.
+            # Everything else will take the X of \bX
+            elif not (boldNumber < 0 or 2 <= boldNumber < 100):
+                style = style._replace(weight=boldNumber)
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
 
-        if(italic):
+        if(italic and italic[-1]):
             # We do [-1], because we only want the last match
-            italicNumber = INT_PATTERN.findall(italic[-1])
-
-            if(len(italicNumber) > 0 and italicNumber[0] == "1"):
-                style = style._replace(italic=True)
+            italicNumber = int(italic[-1])
+            style = style._replace(italic=bool(italicNumber))
 
         # Get the last occurence + the first element in the array.
         font = TAG_FN_PATTERN.findall(cleanTag)
@@ -148,7 +144,7 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
             if("(" not in font and ")" not in font):
                 style = style._replace(fontName=stripFontname(font.strip().lower()))
             else:
-                print(Fore.LIGHTRED_EX + "Warning: fontName can not contains \"(\" or \")\"." + Fore.WHITE)
+                print(Fore.LIGHTRED_EX + "Warning: fontName can not contains \"(\" or \")\"." + Fore.RESET)
 
     return style
 
@@ -169,11 +165,21 @@ def parseLine(lineRawText: str, styles: Dict[str, AssStyle], style: AssStyle) ->
     for tags, text in LINE_PATTERN.findall(lineRawText)[:-1]:
         if text:
             """
-            I add \\} at each tags block.
-            Example if I don't add \\}:
-            {\b1\fnJester}FontCollectorTest{this is an comment} --> Would give me the fontName Jesterthis is an comment
+            I add \\ at the end of each tags block, because the regex could not work properly.
+
+            Moreover, I remove any "FIRST_COMMENT".
+            Example 1:
+            {blablabla\b1\fnJester}FontCollectorTest --> Would remove "blablabla". So, we only have "\b1\fnJester\"
+            
+            Example 2:
+            {\b1\fnJester}FontCollectorTest{this is an comment} --> Would remove "this is an comment". So, we only have "\b1\fnJester\\"
+
+
+            Moreover, I add a \\ at the beginning because the regex remove the first \\
             """
-            allLineTags += tags + "\\"
+            tags += "\\"
+            allLineTags += "\\" + FIRST_COMMENT.sub('',tags)
+            print(allLineTags)
             styleSet.add(parseTags(allLineTags, styles, style))
 
     return styleSet
@@ -198,7 +204,7 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> Set[AssStyle]:
                 styleSet.update(parseLine(line.text, styles, style))
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Error: unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.WHITE))
+                sys.exit(print(Fore.RED + f"Error: unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.RESET))
 
     return styleSet
 
@@ -278,9 +284,9 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     if(len(fontsMissing) > 0):
         print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
-        print(Fore.WHITE, end = "")
+        print(Fore.RESET, end = "")
     else:
-        print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.WHITE)
+        print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.RESET)
 
     return fontsFound
 
@@ -327,7 +333,7 @@ def createFont(fontPath: str) -> Font:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
         weight = font['OS/2'].usWeightClass
     except struct_error:
-        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied" + Fore.WHITE)
+        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied" + Fore.RESET)
         isItalic = False
         weight = 400
 
@@ -394,7 +400,7 @@ def deleteFonts(mkvFile:Path, mkvpropedit:Path):
     mkvpropedit_args.append("--delete-attachment mime-type:font/ttf")
 
     subprocess.call(" ".join(mkvpropedit_args))
-    print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts with mkv" + Fore.WHITE)
+    print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts with mkv" + Fore.RESET)
 
 
 def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
@@ -415,7 +421,7 @@ def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
         mkvpropedit_args.append("--add-attachment " + '"' + font.fontPath + '"')
 
     subprocess.call(" ".join(mkvpropedit_args))
-    print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.WHITE)
+    print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.RESET)
 
 
 def main():
@@ -451,11 +457,11 @@ def main():
             file_extension = split_tup[1]
 
             if(".ass" != file_extension):
-                return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.WHITE)
+                return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.RESET)
             else:
                 assFileList.append(input)
         else:
-            return print(Fore.RED + "Error: the input file does not exist" + Fore.WHITE)
+            return print(Fore.RED + "Error: the input file does not exist" + Fore.RESET)
 
     output = ""
     if args.output is not None:
@@ -463,16 +469,16 @@ def main():
         output = Path(args.output)
 
         if not os.path.isdir(output):
-            return print(Fore.RED + "Error: the output path is not a valid folder." + Fore.WHITE)
+            return print(Fore.RED + "Error: the output path is not a valid folder." + Fore.RESET)
 
     mkvFile = ""
     if args.mkv is not None:
         mkvFile = Path(args.mkv)
 
         if not os.path.isfile(mkvFile):
-            return print(Fore.RED + "Error: the mkv file specified does not exist." + Fore.WHITE)
+            return print(Fore.RED + "Error: the mkv file specified does not exist." + Fore.RESET)
         elif not isMkv(mkvFile):
-            return print(Fore.RED + "Error: the mkv file specified is not an .mkv file." + Fore.WHITE)
+            return print(Fore.RED + "Error: the mkv file specified is not an .mkv file." + Fore.RESET)
 
     mkvpropedit = ""
     if mkvFile:
@@ -482,7 +488,7 @@ def main():
             mkvpropedit = shutil.which("mkvpropedit")
 
             if not mkvpropedit:
-                return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.WHITE)
+                return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.RESET)
 
         delete_fonts = args.delete_fonts
 
