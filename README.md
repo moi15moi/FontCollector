@@ -1,14 +1,14 @@
 # FontCollector
 FontCollector for Advanced SubStation Alpha file.
 This tool allows to recover and/or mux the fonts necessary in an mkv.
-## Installation
-```text
+## Installation and Update
+```
 pip install git+https://github.com/moi15moi/FontCollector.git
 ```
 
 ## Usage
 
-```text
+```console
 $ fontCollector --help
 usage: fontCollector.py [-h] --input [.ass file] [[.ass file] ...] [-mkv [.mkv input file]] [--output [path]]
                         [-mkvpropedit [path]] [--delete-fonts] [--additional-fonts [path [path ...]]]
@@ -39,23 +39,20 @@ fontCollector -i "file1.ass" "file2.ass" -o
 ```
 
 Mux font from .ass file into an mkv
-```text
+```
 fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe"
 ```
 
 Mux the font from the .ass file into an mkv and delete the currently attached fonts.
-```text
+```
 fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe" -d
 ```
 ## Color code
 |Color|What it means|
 |--|--|
-|![#E74856](https://via.placeholder.com/15/E74856/000000?text=+)|It is just a Warning. You have nothing to do.|
-|![#AE0D1B](https://via.placeholder.com/15/AE0D1B/000000?text=+)|Error. You must to do something to get the task accomplished properly.|
-|![#14B30B](https://via.placeholder.com/15/14B30B/000000?text=+)|A task went well|
-
-## Know issues
-Currently, FontCollector does not always collect font when the font is Japanese or Chinese. It seems to be a problem from [FontTools](https://github.com/fonttools/fonttools) that do not decode the fontname correctly.
+|![Light red - #E74856](https://via.placeholder.com/15/E74856/000000?text=+)|It is just a Warning. You have nothing to do.|
+|![Red - #AE0D1B](https://via.placeholder.com/15/AE0D1B/000000?text=+)|Error. You must to do something to get the task accomplished properly.|
+|![Light green - #14B30B](https://via.placeholder.com/15/14B30B/000000?text=+)|A task went well|
 
 ## Acknowledgments
  - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
