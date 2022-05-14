@@ -109,7 +109,7 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
                 print(Fore.LIGHTRED_EX + f"Warning: The style \"{styleName}\" will be ignored, because it is not in the [V4+ Styles] section." + Fore.RESET)
         else:
             print(Fore.LIGHTRED_EX + f"Warning: Style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
-    
+
     tagsList = TAG_R_PATTERN.split(tags)
     cleanTag = tagsList[-1]
 
@@ -123,7 +123,7 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
                 style = style._replace(weight=400)
             elif boldNumber == 1:
                 style = style._replace(weight=700)
-                
+
             # if the \bX is less than 0 or [2,100[, it will take the style weight.
             # Everything else will take the X of \bX
             elif not (boldNumber < 0 or 2 <= boldNumber < 100):
@@ -167,10 +167,9 @@ def parseLine(lineRawText: str, styles: Dict[str, AssStyle], style: AssStyle) ->
         I remove any "FIRST_COMMENT".
         Example 1:
         {blablabla\b1\fnJester}FontCollectorTest --> Would remove "blablabla". So, we only have "\b1\fnJester"
-        
+
         Example 2:
         {\b1\fnJester}FontCollectorTest{this is an comment} --> Would remove "this is an comment". So, we only have "\b1\fnJester"
-
 
         Moreover, I add a \\ at the beginning because the regex remove the first \\
         """
