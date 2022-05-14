@@ -1,12 +1,13 @@
 import ass
-import fixedint
 import os
 import regex
 import shutil
 import subprocess
 import sys
 from argparse import ArgumentParser
+from fixedint import Int32
 from fontTools import ttLib
+from io import BufferedReader
 from matplotlib import font_manager
 from pathlib import Path
 from struct import error as struct_error
@@ -19,12 +20,12 @@ __version__ = "0.6.2"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
-FIRST_COMMENT = regex.compile(r"^.*?(?<=\\)")
+FIRST_COMMENT = regex.compile(r"^[^\\]*(?=\\|$)")
 
-TAG_ITALIC_PATTERN = regex.compile(r"(?<=\\\s*i\s*)[+-]?\d*(?=\s*\)*\s*\\|\s*\)*\s*$)")
-TAG_BOLD_PATTERN = regex.compile(r"(?<=\\\s*b\s*)[+-]?\d*(?=\s*\)*\s*\\|\s*\)*\s*$)")
-TAG_FN_PATTERN = regex.compile(r"(?<=\\\s*fn).*?(?=\\|(?<=\(.*?\)|\)))")
-TAG_R_PATTERN = regex.compile(r"(?<=\\\s*r).*?(?=\\|(?<=\(.*?\)|\)))")
+TAG_ITALIC_PATTERN = regex.compile(r"(?<=\\ *i *)(?! |clip|\S*\\i *(?!clip))\d*")
+TAG_BOLD_PATTERN = regex.compile(r"(?<=\\ *b *)(?! |lur|ord|e|\S*\\b *(?!lur|ord|e))\d*")
+TAG_FN_PATTERN = regex.compile(r"(?<=\\t\s*\(.*\\\s*fn)(?!.*\\\s*fn)[^\\)]*(?=\))|(?<=\\\s*fn)(?!\)$)(?!.*\\\s*fn)[^\\]*(?=\\|$)")
+TAG_R_PATTERN = regex.compile(r"(?<=\\t\s*\(.*\\\s*r)(?!.*\\\s*r)[^\\)]*(?=\))|(?<=\\\s*r)(?!\)$)(?!.*\\\s*r)[^\\]*(?=\\|$)")
 
 
 class Font(NamedTuple):
@@ -32,11 +33,11 @@ class Font(NamedTuple):
     fontName: str
     weight: int
     italic: bool
-    weightCompare: fixedint.Int32
-    exact_name: str # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the postscript name
+    weightCompare: Int32
+    exactName: str # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
 
     def __eq__(self, other):
-        return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight
+        return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight and self.exactName == other.exactName
 
     def __hash__(self):
         return hash((self.fontName, self.italic, self.weight))
@@ -50,7 +51,7 @@ class AssStyle(NamedTuple):
     weight: int # a.k.a bold
     italic: bool
 
-    def __eq__(self, other):
+    def __eq__(self, other: Font):
         return self.fontName == other.fontName and self.weight == other.weight and self.italic == other.italic
 
     def __str__(self):
@@ -67,6 +68,7 @@ def isMkv(fileName:Path) -> bool:
     Thanks to https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts/blob/f2a52ee38eeb60934175722fa9d7f2c2aae015c6/scripts/fontvalidator/fontvalidator.py#L414
     """
     with open(fileName, 'rb') as f:
+        # From https://en.wikipedia.org/wiki/List_of_file_signatures
         return f.read(4) == b'\x1a\x45\xdf\xa3'
 
 
@@ -96,26 +98,26 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
     """
     styleName = TAG_R_PATTERN.findall(tags)
 
+    if styleName and styleName[0]:
+        styleName = styleName[0]
 
-    if(len(styleName) > 0 and len(styleName[0]) > 0 and len(styleName[-1]) > 0):
-        styleName = styleName[-1]
-
-        # We do not allow "(" or ")" in a fontName. Also it can start with whitespace at the beginning. Ex: "\r Jester" would be invalid
-        if("(" not in styleName and ")" not in styleName and styleName.lstrip() == styleName):
+        # We do not allow "(" or ")" in a fontName. Also it can't start with whitespace at the beginning. Ex: "\r Italic" would be invalid
+        if "(" not in styleName and ")" not in styleName and styleName.lstrip() == styleName:
             if styleName.rstrip() in styles:
                 style = styles[styleName.rstrip()]
+            else:
+                print(Fore.LIGHTRED_EX + f"Warning: The style \"{styleName}\" will be ignored, because it is not in the [V4+ Styles] section." + Fore.RESET)
         else:
-            print(Fore.LIGHTRED_EX + f"Warning: style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
+            print(Fore.LIGHTRED_EX + f"Warning: Style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
     
     tagsList = TAG_R_PATTERN.split(tags)
     cleanTag = tagsList[-1]
 
-    if(cleanTag):
+    if cleanTag:
         bold = TAG_BOLD_PATTERN.findall(cleanTag)
 
-        if(bold and bold[-1]):
-            # We do [-1], because we only want the last match
-            boldNumber = int(bold[-1])
+        if bold and bold[0]:
+            boldNumber = int(bold[0])
 
             if boldNumber == 0:
                 style = style._replace(weight=400)
@@ -129,22 +131,20 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
 
         italic = TAG_ITALIC_PATTERN.findall(cleanTag)
 
-        if(italic and italic[-1]):
-            # We do [-1], because we only want the last match
-            italicNumber = int(italic[-1])
+        if italic and italic[0]:
+            italicNumber = int(italic[0])
             style = style._replace(italic=bool(italicNumber))
 
-        # Get the last occurence + the first element in the array.
         font = TAG_FN_PATTERN.findall(cleanTag)
 
-        if(len(font) > 0 and len(font[0]) > 0 and len(font[-1]) > 0):
-            font = font[-1]
+        if font and font[0]:
+            font = font[0]
 
             # We do not allow "(" or ")" in a fontName
             if("(" not in font and ")" not in font):
                 style = style._replace(fontName=stripFontname(font.strip().lower()))
             else:
-                print(Fore.LIGHTRED_EX + "Warning: fontName can not contains \"(\" or \")\"." + Fore.RESET)
+                print(Fore.LIGHTRED_EX + "Warning: FontName can not contains \"(\" or \")\"." + Fore.RESET)
 
     return style
 
@@ -163,23 +163,20 @@ def parseLine(lineRawText: str, styles: Dict[str, AssStyle], style: AssStyle) ->
 
     # The last match of the regex is useless, so we remove it
     for tags, text in LINE_PATTERN.findall(lineRawText)[:-1]:
+        """
+        I remove any "FIRST_COMMENT".
+        Example 1:
+        {blablabla\b1\fnJester}FontCollectorTest --> Would remove "blablabla". So, we only have "\b1\fnJester"
+        
+        Example 2:
+        {\b1\fnJester}FontCollectorTest{this is an comment} --> Would remove "this is an comment". So, we only have "\b1\fnJester"
+
+
+        Moreover, I add a \\ at the beginning because the regex remove the first \\
+        """
+
+        allLineTags += FIRST_COMMENT.sub('', tags)
         if text:
-            """
-            I add \\ at the end of each tags block, because the regex could not work properly.
-
-            Moreover, I remove any "FIRST_COMMENT".
-            Example 1:
-            {blablabla\b1\fnJester}FontCollectorTest --> Would remove "blablabla". So, we only have "\b1\fnJester\"
-            
-            Example 2:
-            {\b1\fnJester}FontCollectorTest{this is an comment} --> Would remove "this is an comment". So, we only have "\b1\fnJester\\"
-
-
-            Moreover, I add a \\ at the beginning because the regex remove the first \\
-            """
-            tags += "\\"
-            allLineTags += "\\" + FIRST_COMMENT.sub('',tags)
-            print(allLineTags)
             styleSet.add(parseTags(allLineTags, styles, style))
 
     return styleSet
@@ -198,13 +195,13 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> Set[AssStyle]:
               for style in subtitle.styles}
 
     for i, line in enumerate(subtitle.events):
-        if(isinstance(line, ass.Dialogue)):
+        if isinstance(line, ass.Dialogue):
             try:
                 style = styles[line.style]
                 styleSet.update(parseLine(line.text, styles, style))
 
             except KeyError:
-                sys.exit(print(Fore.RED + f"Error: unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"" + Fore.RESET))
+                sys.exit(print(Fore.RED + f"Error: Unknown style \"{line.style}\" on line {i+1}. You need to correct the .ass file named \"{fileName}\"." + Fore.RESET))
 
     return styleSet
 
@@ -213,7 +210,7 @@ def copyFont(fontCollection: Set[Font], outputDirectory: Path):
     """
     Parameters:
         fontCollection (Set[Font]): Font collection
-        outputDirectory (Path): The output directory where the font are going to be save
+        outputDirectory (Path): The directory where the font are going to be save
     """
     for font in fontCollection:
         shutil.copy(font.fontPath, outputDirectory)
@@ -224,31 +221,30 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFontName: boo
     Parameters:
         fontCollection (Set[Font]): Font collection
         style (AssStyle): An AssStyle
-        searchByFontName (bool): If true, it will search the font by it's name. If false, it will search the font by it's exact_name.
+        searchByFontName (bool): If true, it will search the font by it's name (which is the family name). If false, it will search the font by it's exactName.
     Returns:
-        The font that match the best to the AssStyle
+        Ordered list of the font that match the best to the AssStyle
     """
     fontMatch = []
 
     for font in fontCollection:
-        if(searchByFontName and font.fontName == style.fontName) or (not searchByFontName and font.exact_name == style.fontName):
+        if (searchByFontName and font.fontName == style.fontName) or (not searchByFontName and font.exactName == style.fontName):
 
-            font = font._replace(weightCompare=fixedint.Int32(abs(style.weight - font.weight)))
+            font = font._replace(weightCompare=Int32(abs(style.weight - font.weight)))
 
-            if((style.weight - font.weight) > 150):
-                font = font._replace(weightCompare=fixedint.Int32(font.weightCompare-120))
+            if (style.weight - font.weight) > 150:
+                font = font._replace(weightCompare=Int32(font.weightCompare-120))
 
             # Thanks to rcombs@github: https://github.com/libass/libass/issues/613#issuecomment-1102994528
             font = font._replace(weightCompare=(((((((font.weightCompare)<<3)+(font.weightCompare))<<3))+(font.weightCompare))>>8))
 
             fontMatch.append(font)
 
-    # I sort the italic, because I think we prefer a font weight that do not match the weight and is not italic.
-    # Also, the last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
-    if(style.italic):
-        fontMatch.sort(key=lambda font: (-font.italic, font.weightCompare, font.weight))
+    # The last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
+    if style.italic:
+        fontMatch.sort(key=lambda font: (font.weightCompare, -font.italic, font.weight))
     else:
-        fontMatch.sort(key=lambda font: (font.italic, font.weightCompare, font.weight))
+        fontMatch.sort(key=lambda font: (font.weightCompare, font.italic, font.weight))
 
     return fontMatch
 
@@ -267,21 +263,21 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     for style in styleCollection:
         fontMatch = searchFont(fontCollection, style)
 
-        if(len(fontMatch) == 0):
+        if len(fontMatch) == 0:
             # if we get here, there is two possibility.
             # 1 - We don't have the font
-            # 2 - We have the font, but it match with the Font.exact_name
+            # 2 - We have the font, but it match with the Font.exactName
             # That's why we redo a search
             fontMatch = searchFont(fontCollection, style, False)
 
-        if(len(fontMatch) == 0):
+        if len(fontMatch) == 0:
             # That was the first possibility
             fontsMissing.add(style.fontName)
         else:
-            # That was the second possibility
+            # That was the second possibility.
             fontsFound.add(fontMatch[0])
 
-    if(len(fontsMissing) > 0):
+    if len(fontsMissing) > 0:
         print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
         print(Fore.RESET, end = "")
@@ -291,58 +287,59 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     return fontsFound
 
 
-def createFont(fontPath: str) -> Font:
+def createFont(fontPath: str) -> List[Font]:
     """
     Parameters:
         fontPath (str): Font path. The font can be a .ttf, .otf or .ttc
     Returns:
         An Font object that represent the file at the fontPath
     """
+    fontsTtLib = []
+    fonts = []
+    isOpenType = False
 
-    font = ttLib.TTFont(fontPath, fontNumber=0)
-    details = {}
-    found = False
-    for record in font['name'].names:
-        if record.langID == 0 or record.langID == 1033:
-            try:
-                details[record.nameID] = record.toUnicode()
-                found = True
+    with open(fontPath, 'rb') as fontFile:
+        fontType = fontFile.read(4)
 
-            except UnicodeDecodeError:
-                pass
-        elif not found:
-            if b'\x00' in record.string:
-                try:
-                    details[record.nameID] = record.string.decode('utf-16-be')
-                except UnicodeDecodeError:
-                    pass
-    
-    # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
-    fontName = details[1].strip().lower()
+    if fontType == (b'ttcf'):
+        fontsTtLib.extend(ttLib.ttCollection.TTCollection(fontPath).fonts)
+    else:
+        fontsTtLib.append(ttLib.TTFont(fontPath))
 
-    # Thanks to Myaa for this: https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts/blob/f2a52ee38eeb60934175722fa9d7f2c2aae015c6/scripts/fontvalidator/fontvalidator.py#L139
-    # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
-    # If TrueType, take "full names" which has the id 4
-    # If OpenType, ttake "PostScript" which has the id 6
-    exact_names = (details[6] if (font.has_key("CFF ") and details[6]) else details[4]).strip().lower()
+        if fontType ==b'OTTO':
+            isOpenType = True
 
-    try:
-        # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
-        isItalic = font["OS/2"].fsSelection & 0b1 > 0
+    for fontTtLib in fontsTtLib:
+        # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
+        fontName = fontTtLib['name'].getDebugName(1).strip().lower()
 
-        # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
-        weight = font['OS/2'].usWeightClass
-    except struct_error:
-        print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied" + Fore.RESET)
-        isItalic = False
-        weight = 400
+        # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
+        # If TrueType, take "full names" which has the id 4
+        # If OpenType, take "PostScript" which has the id 6
+        if isOpenType:
+            exactNames = fontTtLib['name'].getDebugName(6).strip().lower()
+        else:
+            # If not OpenType, it is TrueType
+            exactNames = fontTtLib['name'].getDebugName(4).strip().lower()
 
-    # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
-    if(weight <= 9):
-        weight *= 100
+        try:
+            # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
+            isItalic = bool(fontTtLib["OS/2"].fsSelection & 1)
 
-    # The weightCompare is set to 0. It could be any value. It does not care
-    return Font(fontPath, fontName, weight, isItalic, fixedint.Int32(0), exact_names)
+            # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+            weight = fontTtLib['OS/2'].usWeightClass
+        except struct_error:
+            print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied." + Fore.RESET)
+            isItalic = False
+            weight = 400
+
+        # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
+        if weight <= 9:
+            weight *= 100
+
+        # The weightCompare is set to 0. It could be any value. It does not care
+        fonts.append(Font(fontPath, fontName, weight, isItalic, Int32(0), exactNames))
+    return fonts
 
 
 def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
@@ -358,17 +355,17 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
     # TODO See if this line is required
     # font_manager._load_fontmanager(try_read_cache=False)
 
-    # Even if I write ttf, it will also search for .otf and .ttc file
-    fontsPath = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+    # It will return all TrueType and OpenType file
+    fontsPath = font_manager.findSystemFonts()
 
     for fontPath in additionalFontsPath:
         if fontPath.is_dir():
-            fontsPath.extend(font_manager.findSystemFonts(fontpaths=str(fontPath), fontext='ttf'))
+            fontsPath.extend(font_manager.findSystemFonts(fontpaths=str(fontPath)))
         elif fontPath.is_file():
             fontsPath.append(str(fontPath))
 
     for fontPath in fontsPath:
-        fontCollection.add(createFont(fontPath))
+        fontCollection.update(createFont(fontPath))
 
     return fontCollection
 
@@ -450,50 +447,50 @@ def main():
     # Parse args
     assFileList = []
     for input in args.input:
-        if(os.path.isfile(input)):
+        if os.path.isfile(input):
             input = Path(input)
 
             split_tup = os.path.splitext(input)
             file_extension = split_tup[1]
 
-            if(".ass" != file_extension):
-                return print(Fore.RED + "Error: the input file is not an .ass file." + Fore.RESET)
+            if ".ass" != file_extension:
+                return print(Fore.RED + "Error: The input file is not an .ass file." + Fore.RESET)
             else:
                 assFileList.append(input)
         else:
-            return print(Fore.RED + "Error: the input file does not exist" + Fore.RESET)
+            return print(Fore.RED + "Error: The input file does not exist." + Fore.RESET)
 
-    output = ""
+    outputDirectory = ""
     if args.output is not None:
 
-        output = Path(args.output)
+        outputDirectory = Path(args.output)
 
-        if not os.path.isdir(output):
-            return print(Fore.RED + "Error: the output path is not a valid folder." + Fore.RESET)
+        if not os.path.isdir(outputDirectory):
+            return print(Fore.RED + "Error: The output path is not a valid folder." + Fore.RESET)
 
     mkvFile = ""
     if args.mkv is not None:
         mkvFile = Path(args.mkv)
 
         if not os.path.isfile(mkvFile):
-            return print(Fore.RED + "Error: the mkv file specified does not exist." + Fore.RESET)
+            return print(Fore.RED + "Error: The mkv file specified does not exist." + Fore.RESET)
         elif not isMkv(mkvFile):
-            return print(Fore.RED + "Error: the mkv file specified is not an .mkv file." + Fore.RESET)
+            return print(Fore.RED + "Error: The mkv file specified is not an .mkv file." + Fore.RESET)
 
     mkvpropedit = ""
     if mkvFile:
-        if(args.mkvpropedit is not None and os.path.isfile(args.mkvpropedit)):
+        if args.mkvpropedit is not None and os.path.isfile(args.mkvpropedit):
             mkvpropedit = Path(args.mkvpropedit)
         else:
             mkvpropedit = shutil.which("mkvpropedit")
 
             if not mkvpropedit:
-                return print(Fore.RED + "Error: mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.RESET)
+                return print(Fore.RED + "Error: Mkvpropedit in not in your environnements variable, add it or specify the path to mkvpropedit.exe with -mkvpropedit." + Fore.RESET)
 
         delete_fonts = args.delete_fonts
 
     additionalFonts = []
-    if(args.additional_fonts is not None):
+    if args.additional_fonts is not None:
         for additional_font in args.additional_fonts:
             path = Path(additional_font)
             additionalFonts.append(path)
@@ -509,8 +506,8 @@ def main():
 
     fontsUsed = findUsedFont(fontCollection, styleCollection)
 
-    if output:
-        copyFont(fontsUsed, output)
+    if outputDirectory:
+        copyFont(fontsUsed, outputDirectory)
 
     if mkvFile:
         if delete_fonts:
