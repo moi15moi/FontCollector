@@ -7,16 +7,17 @@ import sys
 from argparse import ArgumentParser
 from fixedint import Int32
 from fontTools import ttLib
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from io import BufferedReader
 from matplotlib import font_manager
 from pathlib import Path
 from struct import error as struct_error
-from typing import Dict, List, NamedTuple, Set
+from typing import Dict, List, NamedTuple, Set, Tuple
 
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -30,17 +31,17 @@ TAG_R_PATTERN = regex.compile(r"(?<=\\t\s*\(.*\\\s*r)(?!.*\\\s*r)[^\\)]*(?=\))|(
 
 class Font(NamedTuple):
     fontPath: str
-    fontName: str
+    familyName: Set[str]
     weight: int
     italic: bool
     weightCompare: Int32
-    exactName: str # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
+    exactName: Set[str] # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
 
     def __eq__(self, other):
-        return self.fontName == other.fontName and self.italic == other.italic and self.weight == other.weight and self.exactName == other.exactName
+        return self.familyName == other.familyName and self.italic == other.italic and self.weight == other.weight and self.exactName == other.exactName
 
     def __hash__(self):
-        return hash((self.fontName, self.italic, self.weight))
+        return hash((tuple(self.familyName), self.italic, self.weight))
 
 class AssStyle(NamedTuple):
     """
@@ -51,11 +52,8 @@ class AssStyle(NamedTuple):
     weight: int # a.k.a bold
     italic: bool
 
-    def __eq__(self, other: Font):
+    def __eq__(self, other):
         return self.fontName == other.fontName and self.weight == other.weight and self.italic == other.italic
-
-    def __str__(self):
-        return "FontName: " + self.fontName + " Weight: " + str(self.weight) + " Italic: " + str(self.italic)
 
 
 def isMkv(fileName:Path) -> bool:
@@ -71,6 +69,9 @@ def isMkv(fileName:Path) -> bool:
         # From https://en.wikipedia.org/wiki/List_of_file_signatures
         return f.read(4) == b'\x1a\x45\xdf\xa3'
 
+####
+## Parse Ass
+####
 
 def stripFontname(fontName:str) -> str:
     """
@@ -204,6 +205,13 @@ def getAssStyle(subtitle: ass.Document, fileName:str) -> Set[AssStyle]:
 
     return styleSet
 
+####
+## End Parse Ass
+####
+
+####
+## Font
+####
 
 def copyFont(fontCollection: Set[Font], outputDirectory: Path):
     """
@@ -215,7 +223,7 @@ def copyFont(fontCollection: Set[Font], outputDirectory: Path):
         shutil.copy(font.fontPath, outputDirectory)
 
 
-def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFontName: bool = True) -> List[Font]:
+def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: bool = True) -> List[Font]:
     """
     Parameters:
         fontCollection (Set[Font]): Font collection
@@ -227,7 +235,9 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFontName: boo
     fontMatch = []
 
     for font in fontCollection:
-        if (searchByFontName and font.fontName == style.fontName) or (not searchByFontName and font.exactName == style.fontName):
+        if (searchByFamilyName and style.fontName in font.familyName) or (not searchByFamilyName and style.fontName in font.exactName):
+
+            #if (searchByFamilyName and font.familyName == style.fontName) or (not searchByFamilyName and font.exactName == style.fontName):
 
             font = font._replace(weightCompare=Int32(abs(style.weight - font.weight)))
 
@@ -277,13 +287,127 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
             fontsFound.add(fontMatch[0])
 
     if len(fontsMissing) > 0:
-        print(Fore.RED + "\nError: Some fonts were not found. Are they installed? :")
+        print(Fore.RED + "Error: Some fonts were not found. Are they installed? :")
         print("\n".join(fontsMissing))
         print(Fore.RESET, end = "")
     else:
         print(Fore.LIGHTGREEN_EX + "All fonts found" + Fore.RESET)
 
     return fontsFound
+
+
+
+def getPostscriptName(names: List[NameRecord]) -> str:
+    """
+    Parameters:
+        names (List[NameRecord]): Naming table
+    Returns:
+        The postscript name. It work exactly like FT_Get_Postscript_Name from Freetype
+    """
+    
+    # Libass use FT_Get_Postscript_Name to get the postscript name: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
+    # FT_Get_Postscript_Name called this method : https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1045-L1087
+    # Since libass does not support Opentype variation name, we don't need to reproduce this part of the method: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1054-L1062
+
+    def IS_WIN(name):
+        # From: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L485-L486
+        return name.platformID == 3 and (name.platEncID == 1 or name.platEncID == 0)
+
+    def IS_APPLE(name):
+        # From: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L488-L489
+        return name.platformID == 1 and name.platEncID == 0
+
+    win = apple = None
+
+    for name in names:
+        nameStr = ""
+        try:
+            nameStr = name.toUnicode().strip().lower()
+        except UnicodeDecodeError:
+            continue
+
+        if name.nameID == 6 and len(nameStr) > 0:
+            if IS_WIN(name) and (name.langID == 0x409 or not win):
+                win = nameStr
+            elif IS_APPLE(name) and (name.langID == 0 or not apple):
+                apple = nameStr
+
+    if win:
+        return win.strip().lower()
+    elif apple:
+        return apple.strip().lower()
+    else:
+        return None
+
+def getFontFamilyNameFullName(names: List[NameRecord]) -> Tuple[Set[str], Set[str]]:
+    """
+    Parameters:
+        names (List[NameRecord]): Naming table
+    Returns:
+        All families and fullnames that are from microsoft
+    """
+
+    # https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L258-L344
+    MAX = 100
+    families = fullnames = set()
+
+    for name in names:
+
+        if name.platformID == 3 and (name.nameID == 1 or name.nameID == 4):
+
+            try:
+                nameStr = name.toUnicode().strip().lower()
+            except UnicodeDecodeError:
+                continue
+
+            if name.nameID == 1 and len(families) < MAX:
+                families.add(nameStr)
+            elif name.nameID == 4 and len(fullnames) < MAX:
+                fullnames.add(nameStr)
+
+    return families, fullnames
+
+def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
+    """
+    Parameters:
+        names (List[NameRecord]): Naming table
+    Returns:
+        The family name that FontConfig would return in https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1492-1505
+    """
+
+    # From	https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1078
+    #		https://github.com/freetype/freetype/blob/b98dd169a1823485e35b3007ce707a6712dcd525/include/freetype/ttnameid.h#L86-L91
+    PLATFORM_ID_APPLE_UNICODE = 0
+    PLATFORM_ID_MACINTOSH = 1
+    PLATFORM_ID_ISO = 2
+    PLATFORM_ID_MICROSOFT = 3
+    PLATFORM_ID_ORDER = [
+        PLATFORM_ID_MICROSOFT,
+        PLATFORM_ID_APPLE_UNICODE,
+        PLATFORM_ID_MACINTOSH,
+        PLATFORM_ID_ISO,
+    ]
+
+    def isEnglish(name: NameRecord) -> bool:
+        # From https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1111-1125
+        return (name.platformID, name.langID) in ((1, 0), (3, 0x409))
+
+    def getDebugName(nameID: int, names: List[NameRecord]) -> str:
+        # Merge of  - sort logic: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1443
+        #           - Iteration logic: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1448-1604
+        names = sorted(names, key=lambda name: (PLATFORM_ID_ORDER.index(name.platformID), name.nameID, name.platEncID, -isEnglish(name), name.langID))
+
+        for name in names:
+            if name.nameID != nameID:
+                continue
+            try:
+                unistr = name.toUnicode()
+            except UnicodeDecodeError:
+                continue
+
+            return unistr 
+    
+    return getDebugName(1, names).strip().lower()
 
 
 def createFont(fontPath: str) -> List[Font]:
@@ -295,31 +419,40 @@ def createFont(fontPath: str) -> List[Font]:
     """
     fontsTtLib = []
     fonts = []
-    isOpenType = False
 
     with open(fontPath, 'rb') as fontFile:
         fontType = fontFile.read(4)
 
-    if fontType == (b'ttcf'):
-        fontsTtLib.extend(ttLib.ttCollection.TTCollection(fontPath).fonts)
+    if fontType ==  b'ttcf':
+        fontsTtLib.extend(ttLib.TTCollection(fontPath).fonts)
     else:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
-        if fontType ==b'OTTO':
-            isOpenType = True
-
+    # Read font attributes
     for fontTtLib in fontsTtLib:
-        # https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-encoding-and-language-ids
-        fontName = fontTtLib['name'].getDebugName(1).strip().lower()
+        isTrueType = False
+        # From https://github.com/fonttools/fonttools/discussions/2619
+        if "glyf" in fontTtLib:
+            isTrueType = True
+
+        families, fullnames = getFontFamilyNameFullName(fontTtLib['name'].names)
+        if len(families) == 0:
+            # This is something like that: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
+            # I arbitrarily decided to use logic from fontconfig, but it could also have been GDI, CoreText, Freetype, etc.
+            families.add(getFontFamilyNameLikeFontConfig(fontTtLib['name'].names))
+
+        exactNames = set()
 
         # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
         # If TrueType, take "full names" which has the id 4
         # If OpenType, take "PostScript" which has the id 6
-        if isOpenType:
-            exactNames = fontTtLib['name'].getDebugName(6).strip().lower()
+        if isTrueType:
+            exactNames = fullnames
         else:
-            # If not OpenType, it is TrueType
-            exactNames = fontTtLib['name'].getDebugName(4).strip().lower()
+            # If not TrueType, it is OpenType
+            postscriptName = getPostscriptName(fontTtLib['name'].names)
+            if postscriptName:
+                exactNames.add(postscriptName)
 
         try:
             # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
@@ -328,7 +461,7 @@ def createFont(fontPath: str) -> List[Font]:
             # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
             weight = fontTtLib['OS/2'].usWeightClass
         except struct_error:
-            print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an OS/2 table. This can lead to minor errors. The default style will be applied." + Fore.RESET)
+            print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an valid OS/2 table. This can lead to minor errors. The default style will be applied." + Fore.RESET)
             isItalic = False
             weight = 400
 
@@ -337,7 +470,8 @@ def createFont(fontPath: str) -> List[Font]:
             weight *= 100
 
         # The weightCompare is set to 0. It could be any value. It does not care
-        fonts.append(Font(fontPath, fontName, weight, isItalic, Int32(0), exactNames))
+        fonts.append(Font(fontPath, families, weight, isItalic, Int32(0), exactNames))
+
     return fonts
 
 
@@ -352,7 +486,7 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
     fontCollection = set()
 
     # TODO See if this line is required
-    # font_manager._load_fontmanager(try_read_cache=False)
+    font_manager._load_fontmanager(try_read_cache=False)
 
     # It will return all TrueType and OpenType file
     fontsPath = font_manager.findSystemFonts()
@@ -368,6 +502,13 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
 
     return fontCollection
 
+####
+## End Font
+####
+
+####
+## mkvpropedit task
+####
 
 def deleteFonts(mkvFile:Path, mkvpropedit:Path):
     """
@@ -419,6 +560,9 @@ def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
     subprocess.call(" ".join(mkvpropedit_args))
     print(Fore.LIGHTGREEN_EX + "Successfully merging fonts with mkv" + Fore.RESET)
 
+####
+## End mkvpropedit task
+####
 
 def main():
     parser = ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
