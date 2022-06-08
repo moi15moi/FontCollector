@@ -8,7 +8,6 @@ from argparse import ArgumentParser
 from fixedint import Int32
 from fontTools import ttLib
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
-from io import BufferedReader
 from matplotlib import font_manager
 from pathlib import Path
 from struct import error as struct_error
@@ -304,7 +303,7 @@ def getPostscriptName(names: List[NameRecord]) -> str:
     Returns:
         The postscript name. It work exactly like FT_Get_Postscript_Name from Freetype
     """
-    
+
     # Libass use FT_Get_Postscript_Name to get the postscript name: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
     # FT_Get_Postscript_Name called this method : https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1045-L1087
     # Since libass does not support Opentype variation name, we don't need to reproduce this part of the method: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1054-L1062
@@ -405,8 +404,8 @@ def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
             except UnicodeDecodeError:
                 continue
 
-            return unistr 
-    
+            return unistr
+
     return getDebugName(1, names).strip().lower()
 
 

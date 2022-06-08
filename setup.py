@@ -33,7 +33,6 @@ setuptools.setup(
     python_requires=">=3.7",
     py_modules=['fontCollector'],
     install_requires=[
-        'argparse',
         'ass',
         'colorama',
         'fixedint',
