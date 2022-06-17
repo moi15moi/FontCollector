@@ -44,7 +44,7 @@ setuptools.setup(
         "console_scripts": ["fontCollector=fontCollector:main"]
     },
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Other Audience",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
@@ -52,7 +52,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     license="GNU LGPL 3.0 or later",
 )
