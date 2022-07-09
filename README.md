@@ -5,11 +5,11 @@ This tool allows to recover and/or mux the fonts necessary in an mkv.
 ```
 pip install git+https://github.com/moi15moi/FontCollector.git
 ```
-## Dependencies:
+## Dependencies
 -  [Python 3.7 or more](https://www.python.org/downloads/)
 -  [MKVToolNix](https://www.fosshub.com/MKVToolNix.html)
-## Usage
 
+## Usage
 ```console
 $ fontCollector --help
 usage: fontCollector [-h] --input [.ass file] [[.ass file] ...] [-mkv [.mkv input file]] [--output [path]]
@@ -50,10 +50,10 @@ fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\M
 ```
 ## Color code
 |Color|What it means|
-|--|--|
-|![Light red - #E74856](https://via.placeholder.com/15/E74856/000000?text=+)|It is just a Warning. You have nothing to do.|
-|![Red - #AE0D1B](https://via.placeholder.com/15/AE0D1B/000000?text=+)|Error. You must to do something to get the task accomplished properly.|
-|![Light green - #14B30B](https://via.placeholder.com/15/14B30B/000000?text=+)|A task went well|
+|:--:|--|
+|![Light red - #e74856](https://via.placeholder.com/15/e74856/e74856.png)|It is just a Warning. You have nothing to do.|
+|![Red - #c50f1f](https://via.placeholder.com/15/c50f1f/c50f1f.png)|Error. You must to do something to get the task accomplished properly.|
+|![Light green - #16c60c](https://via.placeholder.com/15/16c60c/16c60c.png)|A task went well|
 
 ## Acknowledgments
  - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
