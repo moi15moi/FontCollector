@@ -37,6 +37,7 @@ setuptools.setup(
         'colorama',
         'fixedint',
         'fontTools',
+        'freetype-py',
         'matplotlib>=3.5',
         'regex'
     ],

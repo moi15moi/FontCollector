@@ -1,4 +1,5 @@
 import ass
+import freetype
 import os
 import regex
 import shutil
@@ -16,7 +17,7 @@ from typing import Dict, List, NamedTuple, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -295,49 +296,6 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
     return fontsFound
 
 
-
-def getPostscriptName(names: List[NameRecord]) -> str:
-    """
-    Parameters:
-        names (List[NameRecord]): Naming table
-    Returns:
-        The postscript name. It work exactly like FT_Get_Postscript_Name from Freetype
-    """
-
-    # Libass use FT_Get_Postscript_Name to get the postscript name: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
-    # FT_Get_Postscript_Name called this method : https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1045-L1087
-    # Since libass does not support Opentype variation name, we don't need to reproduce this part of the method: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L1054-L1062
-
-    def IS_WIN(name):
-        # From: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L485-L486
-        return name.platformID == 3 and (name.platEncID == 1 or name.platEncID == 0)
-
-    def IS_APPLE(name):
-        # From: https://github.com/freetype/freetype/blob/c26f0d0d7e1b24863193ab2808f67798456dfc9c/src/sfnt/sfdriver.c#L488-L489
-        return name.platformID == 1 and name.platEncID == 0
-
-    win = apple = None
-
-    for name in names:
-        nameStr = ""
-        try:
-            nameStr = name.toUnicode().strip().lower()
-        except UnicodeDecodeError:
-            continue
-
-        if name.nameID == 6 and len(nameStr) > 0:
-            if IS_WIN(name) and (name.langID == 0x409 or not win):
-                win = nameStr
-            elif IS_APPLE(name) and (name.langID == 0 or not apple):
-                apple = nameStr
-
-    if win:
-        return win.strip().lower()
-    elif apple:
-        return apple.strip().lower()
-    else:
-        return None
-
 def getFontFamilyNameFullName(names: List[NameRecord]) -> Tuple[Set[str], Set[str]]:
     """
     Parameters:
@@ -355,7 +313,10 @@ def getFontFamilyNameFullName(names: List[NameRecord]) -> Tuple[Set[str], Set[st
         if name.platformID == 3 and (name.nameID == 1 or name.nameID == 4):
 
             try:
-                nameStr = name.toUnicode().strip().lower()
+                # Since we use the windows platform, we can simply use utf_16_be to decode the string: https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-specific-encoding-and-language-ids-windows-platform-platform-id-3
+                # Even libass always use utf_16_be: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L283
+                # Warning if libass use a day name from other platform, we will need to use name.toUnicode()
+                nameStr = name.string.decode('utf_16_be').strip().lower()
             except UnicodeDecodeError:
                 continue
 
@@ -406,7 +367,10 @@ def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
 
             return unistr
 
-    return getDebugName(1, names).strip().lower()
+    debugName = getDebugName(1, names)
+    if not debugName:
+        return debugName.strip().lower()
+    return None
 
 
 def createFont(fontPath: str) -> List[Font]:
@@ -437,8 +401,14 @@ def createFont(fontPath: str) -> List[Font]:
         families, fullnames = getFontFamilyNameFullName(fontTtLib['name'].names)
         if len(families) == 0:
             # This is something like that: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
-            # I arbitrarily decided to use logic from fontconfig, but it could also have been GDI, CoreText, Freetype, etc.
-            families.add(getFontFamilyNameLikeFontConfig(fontTtLib['name'].names))
+            # I arbitrarily decided to use logic from fontconfig, but it could also have been GDI, CoreText, etc. It is impossible to know what libass will do.
+            familyName = getFontFamilyNameLikeFontConfig(fontTtLib['name'].names)
+
+            if familyName is not None and not familyName:
+                families.add(familyName)
+            else:
+                print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not contain a valid family name. The font will be ignored." + Fore.RESET)
+                return None
 
         exactNames = set()
 
@@ -449,9 +419,20 @@ def createFont(fontPath: str) -> List[Font]:
             exactNames = fullnames
         else:
             # If not TrueType, it is OpenType
-            postscriptName = getPostscriptName(fontTtLib['name'].names)
-            if postscriptName:
-                exactNames.add(postscriptName)
+            try:
+                # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
+                postscriptNameByte = freetype.Face(Path(fontPath).open("rb")).postscript_name
+            except OSError:
+                print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
+
+            if postscriptNameByte is not None:
+                try:
+                    postscriptName = postscriptNameByte.decode("ASCII")
+                except UnicodeDecodeError:
+                    print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the postscript has not been correctly decoded" + Fore.RESET)
+                else:
+                    if not postscriptName:
+                        exactNames.add(postscriptName)
 
         try:
             # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
@@ -497,7 +478,9 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
             fontsPath.append(str(fontPath))
 
     for fontPath in fontsPath:
-        fontCollection.update(createFont(fontPath))
+        font = createFont(fontPath)
+        if font is not None:
+            fontCollection.update(font)
 
     return fontCollection
 
@@ -565,14 +548,14 @@ def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
 
 def main():
     parser = ArgumentParser(description="FontCollector for Advanced SubStation Alpha file.")
-    parser.add_argument('--input', '-i', nargs='+', required=True, metavar="[.ass file]", help="""
-    Subtitles file. Must be an ASS file. You can specify more than one .ass file.
+    parser.add_argument('--input', '-i', nargs='*', required=True, metavar="[.ass file]", help="""
+    Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path. If no argument is specified, it will take all the font in the current path.
     """)
     parser.add_argument('-mkv', metavar="[.mkv input file]", help="""
     Video where the fonts will be merge. Must be a Matroska file.
     """)
     parser.add_argument('--output', '-o', nargs='?', const='', metavar="path", help="""
-    Destination path of the font. If not specified, it will be the current path.
+    Destination path of the font. If no argument is specified, it will be the current path.
     """)
     parser.add_argument('-mkvpropedit', metavar="[path]", help="""
     Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
@@ -590,17 +573,25 @@ def main():
     assFileList = []
     for input in args.input:
         if os.path.isfile(input):
-            input = Path(input)
-
-            split_tup = os.path.splitext(input)
-            file_extension = split_tup[1]
-
-            if ".ass" != file_extension:
-                return print(Fore.RED + "Error: The input file is not an .ass file." + Fore.RESET)
+            if input.endswith('.ass'):
+                assFileList.append(Path(input))
             else:
-                assFileList.append(input)
+                return print(Fore.RED + "Error: The input file is not an .ass file." + Fore.RESET)
+        elif os.path.isdir(input):
+            for file in os.listdir(input):
+                if file.endswith('.ass'):
+                    assFileList.append(Path(os.path.join(input, file)))
         else:
             return print(Fore.RED + "Error: The input file does not exist." + Fore.RESET)
+    # Current folder. Ex: fontCollector -i -o "C:\Users\Admin\Desktop\"
+    if args.input is not None and len(args.input) == 0:
+        for file in os.listdir(Path()):
+            if file.endswith('.ass'):
+                assFileList.append(Path(file))
+
+    for assFile in assFileList:
+        print(Fore.LIGHTGREEN_EX + f"Loaded successfully {assFile.name}" + Fore.RESET)
+
 
     outputDirectory = ""
     if args.output is not None:
