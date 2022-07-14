@@ -393,7 +393,6 @@ def createFont(fontPath: str) -> List[Font]:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
         if fontType == b'OTTO':
-            print(fontType)
             isOpenType = True
 
     # Read font attributes
