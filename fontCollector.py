@@ -380,7 +380,6 @@ def createFont(fontPath: str) -> List[Font]:
     """
     fontsTtLib = []
     fonts = []
-    isOpenType = False
 
     with open(fontPath, 'rb') as fontFile:
         fontType = fontFile.read(4)
@@ -390,11 +389,12 @@ def createFont(fontPath: str) -> List[Font]:
     else:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
-        if fontType == b'OTTO':
-            isOpenType = True
-
     # Read font attributes
     for fontNumber, fontTtLib in enumerate(fontsTtLib):
+        isTrueType = False
+        # From https://github.com/fonttools/fonttools/discussions/2619
+        if "glyf" in fontTtLib:
+            isTrueType = True
 
         families, fullnames = getFontFamilyNameFullName(fontTtLib['name'].names)
         if len(families) == 0:
@@ -413,8 +413,9 @@ def createFont(fontPath: str) -> List[Font]:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
         # If TrueType, take "full names" which has the id 4
         # If OpenType, take "PostScript" which has the id 6
-        # PS: The best would be to use FT_Get_PS_Font_Info like libass, but the method is not available in freetype-py: https://github.com/libass/libass/blob/7bc0c45dd58de6afa1800f8e8a94285e7535d68d/libass/ass_fontselect.c#L121
-        if isOpenType:
+        if isTrueType:
+            exactNames = fullnames
+        else:
             # If not TrueType, it is OpenType
             try:
                 # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
@@ -431,9 +432,6 @@ def createFont(fontPath: str) -> List[Font]:
 
                 if postscriptName:
                     exactNames.add(postscriptName.strip().lower())
-        else:
-            exactNames = fullnames
-
 
         try:
             # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
