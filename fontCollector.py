@@ -17,7 +17,7 @@ from typing import Dict, List, NamedTuple, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -382,6 +382,7 @@ def createFont(fontPath: str) -> List[Font]:
     """
     fontsTtLib = []
     fonts = []
+    isOpenType = False
 
     with open(fontPath, 'rb') as fontFile:
         fontType = fontFile.read(4)
@@ -391,12 +392,12 @@ def createFont(fontPath: str) -> List[Font]:
     else:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
+        if fontType == b'OTTO':
+            print(fontType)
+            isOpenType = True
+
     # Read font attributes
-    for fontTtLib in fontsTtLib:
-        isTrueType = False
-        # From https://github.com/fonttools/fonttools/discussions/2619
-        if "glyf" in fontTtLib:
-            isTrueType = True
+    for fontNumber, fontTtLib in enumerate(fontsTtLib):
 
         families, fullnames = getFontFamilyNameFullName(fontTtLib['name'].names)
         if len(families) == 0:
@@ -415,13 +416,12 @@ def createFont(fontPath: str) -> List[Font]:
         # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
         # If TrueType, take "full names" which has the id 4
         # If OpenType, take "PostScript" which has the id 6
-        if isTrueType:
-            exactNames = fullnames
-        else:
+        # PS: The best would be to use FT_Get_PS_Font_Info like libass, but the method is not available in freetype-py: https://github.com/libass/libass/blob/7bc0c45dd58de6afa1800f8e8a94285e7535d68d/libass/ass_fontselect.c#L121
+        if isOpenType:
             # If not TrueType, it is OpenType
             try:
                 # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
-                postscriptNameByte = freetype.Face(Path(fontPath).open("rb")).postscript_name
+                postscriptNameByte = freetype.Face(Path(fontPath).open("rb"), fontNumber).postscript_name
             except OSError:
                 print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
 
@@ -432,7 +432,10 @@ def createFont(fontPath: str) -> List[Font]:
                     print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the postscript has not been correctly decoded" + Fore.RESET)
                 else:
                     if not postscriptName:
-                        exactNames.add(postscriptName)
+                        exactNames.add(postscriptName.strip().lower())
+        else:
+            exactNames = fullnames
+
 
         try:
             # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
