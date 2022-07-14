@@ -237,8 +237,6 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: b
     for font in fontCollection:
         if (searchByFamilyName and style.fontName in font.familyName) or (not searchByFamilyName and style.fontName in font.exactName):
 
-            #if (searchByFamilyName and font.familyName == style.fontName) or (not searchByFamilyName and font.exactName == style.fontName):
-
             font = font._replace(weightCompare=Int32(abs(style.weight - font.weight)))
 
             if (style.weight - font.weight) > 150:
@@ -368,7 +366,7 @@ def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
             return unistr
 
     debugName = getDebugName(1, names)
-    if not debugName:
+    if debugName is not None:
         return debugName.strip().lower()
     return None
 
@@ -404,7 +402,7 @@ def createFont(fontPath: str) -> List[Font]:
             # I arbitrarily decided to use logic from fontconfig, but it could also have been GDI, CoreText, etc. It is impossible to know what libass will do.
             familyName = getFontFamilyNameLikeFontConfig(fontTtLib['name'].names)
 
-            if familyName is not None and not familyName:
+            if familyName is not None and familyName:
                 families.add(familyName)
             else:
                 print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not contain a valid family name. The font will be ignored." + Fore.RESET)
@@ -425,13 +423,14 @@ def createFont(fontPath: str) -> List[Font]:
                 print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
 
             if postscriptNameByte is not None:
+
                 try:
-                    postscriptName = postscriptNameByte.decode("ASCII")
+                    postscriptName = postscriptNameByte.decode("ASCII").strip().lower()
                 except UnicodeDecodeError:
                     print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the postscript has not been correctly decoded" + Fore.RESET)
-                else:
-                    if not postscriptName:
-                        exactNames.add(postscriptName.strip().lower())
+
+                if postscriptName:
+                    exactNames.add(postscriptName.strip().lower())
         else:
             exactNames = fullnames
 
