@@ -17,7 +17,7 @@ from typing import Dict, List, NamedTuple, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -371,6 +371,22 @@ def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
     return None
 
 
+def getFontAttributesWithFreetype(fontPath: str, fontIndex: int) -> Tuple[bool, int]:
+    """
+    Parameters:
+        fontPath (str): Font path.
+    Returns:
+        isItalic, weight
+    """
+    font = freetype.Face(Path(fontPath).open("rb"), fontIndex)
+    # From: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L318
+    isItalic = bool(font.style_flags & freetype.ft_enums.ft_style_flags.FT_STYLE_FLAG_ITALIC)
+    # From: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_font.c#L523
+    weight = 700 if bool(font.style_flags & freetype.ft_enums.ft_style_flags.FT_STYLE_FLAG_BOLD) else 400
+
+    return isItalic, weight
+
+
 def createFont(fontPath: str) -> List[Font]:
     """
     Parameters:
@@ -390,7 +406,7 @@ def createFont(fontPath: str) -> List[Font]:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
     # Read font attributes
-    for fontNumber, fontTtLib in enumerate(fontsTtLib):
+    for fontIndex, fontTtLib in enumerate(fontsTtLib):
         isTrueType = False
         # From https://github.com/fonttools/fonttools/discussions/2619
         if "glyf" in fontTtLib:
@@ -419,7 +435,7 @@ def createFont(fontPath: str) -> List[Font]:
             # If not TrueType, it is OpenType
             try:
                 # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
-                postscriptNameByte = freetype.Face(Path(fontPath).open("rb"), fontNumber).postscript_name
+                postscriptNameByte = freetype.Face(Path(fontPath).open("rb"), fontIndex).postscript_name
             except OSError:
                 print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
 
@@ -433,16 +449,17 @@ def createFont(fontPath: str) -> List[Font]:
                 if postscriptName:
                     exactNames.add(postscriptName.strip().lower())
 
-        try:
-            # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
-            isItalic = bool(fontTtLib["OS/2"].fsSelection & 1)
+        if "OS/2" in fontTtLib:
+            try:
+                # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fss
+                isItalic = bool(fontTtLib["OS/2"].fsSelection & 1)
 
-            # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
-            weight = fontTtLib['OS/2'].usWeightClass
-        except struct_error:
-            print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not have an valid OS/2 table. This can lead to minor errors. The default style will be applied." + Fore.RESET)
-            isItalic = False
-            weight = 400
+                # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+                weight = fontTtLib['OS/2'].usWeightClass
+            except struct_error:
+                isItalic, weight = getFontAttributesWithFreetype(fontPath, fontIndex)
+        else:
+            isItalic, weight = getFontAttributesWithFreetype(fontPath, fontIndex)
 
         # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
         if weight <= 9:
