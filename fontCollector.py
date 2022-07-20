@@ -8,7 +8,9 @@ import sys
 from argparse import ArgumentParser
 from fixedint import Int32
 from fontTools import ttLib
+from fontTools.ttLib.tables._f_v_a_r import NamedInstance
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
+from fontTools.varLib import instancer
 from matplotlib import font_manager
 from pathlib import Path
 from struct import error as struct_error
@@ -17,7 +19,7 @@ from typing import Dict, List, NamedTuple, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -36,6 +38,7 @@ class Font(NamedTuple):
     italic: bool
     weightCompare: Int32
     exactName: Set[str] # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
+    instance: NamedInstance # if the font not is a variation font, it will be none
 
     def __eq__(self, other):
         return self.familyName == other.familyName and self.italic == other.italic and self.weight == other.weight and self.exactName == other.exactName
@@ -220,7 +223,9 @@ def copyFont(fontCollection: Set[Font], outputDirectory: Path):
         outputDirectory (Path): The directory where the font are going to be save
     """
     for font in fontCollection:
-        shutil.copy(font.fontPath, outputDirectory)
+        # Don't overwrite fonts
+        if not os.path.exists(os.path.join(outputDirectory, Path(font.fontPath).name)):
+            shutil.copy(font.fontPath, outputDirectory)
 
 
 def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: bool = True) -> List[Font]:
@@ -249,14 +254,14 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: b
 
     # The last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
     if style.italic:
-        fontMatch.sort(key=lambda font: (font.weightCompare, -font.italic, font.weight))
+        fontMatch.sort(key=lambda font: (font.weightCompare, -font.italic, font.weight, 0 if font.instance is None else 1))
     else:
-        fontMatch.sort(key=lambda font: (font.weightCompare, font.italic, font.weight))
+        fontMatch.sort(key=lambda font: (font.weightCompare, font.italic, font.weight, 0 if font.instance is None else 1))
 
     return fontMatch
 
 
-def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> Set[Font]:
+def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outputDirectory: Path = None) -> Set[Font]:
     """
     Parameters:
         fontCollection (Set[Font]): Font collection
@@ -282,7 +287,31 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle]) -> S
             fontsMissing.add(style.fontName)
         else:
             # That was the second possibility.
-            fontsFound.add(fontMatch[0])
+            fontMatch = fontMatch[0]
+
+            if fontMatch.instance is not None:
+                newFont = instancer.instantiateVariableFont(ttLib.TTFont(fontMatch.fontPath), fontMatch.instance.coordinates)
+                newFont['name'].setName(fontMatch.familyName, 1, 3, 1, 0x409)
+                newFont['name'].setName(fontMatch.familyName, 4, 3, 1, 0x409)
+                newFont['name'].setName(fontMatch.familyName, 6, 3, 1, 0x409)
+
+                savePath = fontMatch.familyName + ".ttf"
+                if outputDirectory is not None:
+                    savePath = Path(os.path.join(outputDirectory, savePath))
+                else:
+                    savePath = Path(savePath)
+                
+                newFont.save(savePath)
+
+                print(Fore.RED + f"The font \"{fontMatch.familyName}\" is a Variable Font. Libass doesn't support these font.\n" +
+                    f"\tFontCollector created a valid font at \"{savePath}\".\n" + 
+                    "\tIf you specified -mkv, the font will be muxed into the mkv and save in your current path.\n" +
+                    "\tIf you specified -o, it will be saved in that path." + Fore.RESET)
+                
+                fontMatch = fontMatch._replace(fontPath=str(savePath))
+            
+            fontsFound.add(fontMatch)
+
 
     if len(fontsMissing) > 0:
         print(Fore.RED + "Error: Some fonts were not found. Are they installed? :")
@@ -325,7 +354,7 @@ def getFontFamilyNameFullName(names: List[NameRecord]) -> Tuple[Set[str], Set[st
 
     return families, fullnames
 
-def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
+def getNameLikeFontConfig(nameID: int, names: List[NameRecord]) -> str:
     """
     Parameters:
         names (List[NameRecord]): Naming table
@@ -365,7 +394,7 @@ def getFontFamilyNameLikeFontConfig(names: List[NameRecord]) -> str:
 
             return unistr
 
-    debugName = getDebugName(1, names)
+    debugName = getDebugName(nameID, names)
     if debugName is not None:
         return debugName.strip().lower()
     return None
@@ -405,6 +434,17 @@ def createFont(fontPath: str) -> List[Font]:
     else:
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
+        if "fvar" in fontsTtLib[0]:
+            fonts = []
+            familyName = getNameLikeFontConfig(1, fontsTtLib[0]['name'].names)
+
+            for instance in fontsTtLib[0]["fvar"].instances:
+                style = fontsTtLib[0]["name"].getDebugName(instance.subfamilyNameID)
+                fontName = (familyName + " " + style).strip().lower()
+                
+                fonts.append(Font(fontPath, fontName, 400, False, Int32(0), "", instance))
+            return fonts
+
     # Read font attributes
     for fontIndex, fontTtLib in enumerate(fontsTtLib):
         isTrueType = False
@@ -416,7 +456,7 @@ def createFont(fontPath: str) -> List[Font]:
         if len(families) == 0:
             # This is something like that: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
             # I arbitrarily decided to use logic from fontconfig, but it could also have been GDI, CoreText, etc. It is impossible to know what libass will do.
-            familyName = getFontFamilyNameLikeFontConfig(fontTtLib['name'].names)
+            familyName = getNameLikeFontConfig(1, fontTtLib['name'].names)
 
             if familyName is not None and familyName:
                 families.add(familyName)
@@ -466,7 +506,7 @@ def createFont(fontPath: str) -> List[Font]:
             weight *= 100
 
         # The weightCompare is set to 0. It could be any value. It does not care
-        fonts.append(Font(fontPath, families, weight, isItalic, Int32(0), exactNames))
+        fonts.append(Font(fontPath, families, weight, isItalic, Int32(0), exactNames, None))
 
     return fonts
 
@@ -653,7 +693,7 @@ def main():
 
         styleCollection.update(getAssStyle(subtitles, os.path.basename(assInput)))
 
-    fontsUsed = findUsedFont(fontCollection, styleCollection)
+    fontsUsed = findUsedFont(fontCollection, styleCollection, outputDirectory)
 
     if outputDirectory:
         copyFont(fontsUsed, outputDirectory)
