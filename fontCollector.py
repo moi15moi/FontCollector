@@ -19,7 +19,7 @@ from typing import Dict, List, NamedTuple, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -257,7 +257,6 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: b
         fontMatch.sort(key=lambda font: (font.weightCompare, -font.italic, font.weight, 0 if font.instance is None else 1))
     else:
         fontMatch.sort(key=lambda font: (font.weightCompare, font.italic, font.weight, 0 if font.instance is None else 1))
-
     return fontMatch
 
 
@@ -290,12 +289,13 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
             fontMatch = fontMatch[0]
 
             if fontMatch.instance is not None:
+                familyName = list(fontMatch.familyName)[0]
                 newFont = instancer.instantiateVariableFont(ttLib.TTFont(fontMatch.fontPath), fontMatch.instance.coordinates)
-                newFont['name'].setName(fontMatch.familyName, 1, 3, 1, 0x409)
-                newFont['name'].setName(fontMatch.familyName, 4, 3, 1, 0x409)
-                newFont['name'].setName(fontMatch.familyName, 6, 3, 1, 0x409)
+                newFont['name'].setName(familyName, 1, 3, 1, 0x409)
+                newFont['name'].setName(familyName, 4, 3, 1, 0x409)
+                newFont['name'].setName(familyName, 6, 3, 1, 0x409)
 
-                savePath = fontMatch.familyName + ".ttf"
+                savePath = familyName + ".ttf"
                 if outputDirectory is not None:
                     savePath = Path(os.path.join(outputDirectory, savePath))
                 else:
@@ -303,7 +303,7 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
                 
                 newFont.save(savePath)
 
-                print(Fore.RED + f"The font \"{fontMatch.familyName}\" is a Variable Font. Libass doesn't support these font.\n" +
+                print(Fore.RED + f"The font \"{familyName}\" is a Variable Font. Libass doesn't support these font.\n" +
                     f"\tFontCollector created a valid font at \"{savePath}\".\n" + 
                     "\tIf you specified -mkv, the font will be muxed into the mkv and save in your current path.\n" +
                     "\tIf you specified -o, it will be saved in that path." + Fore.RESET)
@@ -440,9 +440,11 @@ def createFont(fontPath: str) -> List[Font]:
 
             for instance in fontsTtLib[0]["fvar"].instances:
                 style = fontsTtLib[0]["name"].getDebugName(instance.subfamilyNameID)
-                fontName = (familyName + " " + style).strip().lower()
+
+                fontName = set()
+                fontName.add((familyName + " " + style).strip().lower())
                 
-                fonts.append(Font(fontPath, fontName, 400, False, Int32(0), "", instance))
+                fonts.append(Font(fontPath, fontName, 400, False, Int32(0), set(), instance))
             return fonts
 
     # Read font attributes
