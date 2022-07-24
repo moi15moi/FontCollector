@@ -20,7 +20,7 @@ from typing import Dict, List, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.3.3"
+__version__ = "1.3.4"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -413,7 +413,7 @@ def variableFontToCollection(font: Font, outputDirectory: str) -> List[Font]:
 
         fontCollection.fonts.append(generatedFont)
 
-        if instance.coordinates["wght"] and instance.coordinates["wght"] in [400, 700]:
+        if style in ["regular", "bold"]:
             generatedFont = instancer.instantiateVariableFont(font.font, instance.coordinates)
 
             generatedFont['name'].setName(prefix, 1, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
