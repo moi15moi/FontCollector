@@ -18,7 +18,7 @@ FontCollector for Advanced SubStation Alpha file.
 
 options:
   -h, --help
-						show this help message and exit
+                        show this help message and exit
   --input [[.ass file and/or path] ...], -i [[.ass file and/or path] ...]
                         Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path. If no argument is specified, it will take all the font in the current path.
   -mkv [.mkv input file]
@@ -26,9 +26,9 @@ options:
   --output [path], -o [path]
                         Destination path of the font. If no argument is specified, it will be the current path.
   -mkvpropedit [path]
-						Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
+                        Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
   --delete-fonts, -d
-						If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
+                        If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
   --additional-fonts [path ...]
                         May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
 ```
@@ -57,7 +57,7 @@ fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\M
 |![Red - #c50f1f](https://via.placeholder.com/15/c50f1f/c50f1f.png)|Error. You must to do something to get the task accomplished properly.|
 |![Light green - #16c60c](https://via.placeholder.com/15/16c60c/16c60c.png)|A task went well|
 ## Variable Font
-Since [Libass](https://github.com/libass/libass) does not support [variable font](https://docs.microsoft.com/en-us/typography/opentype/spec/otvaroverview), FontCollector will automatically split the font to get an [TrueType](https://docs.microsoft.com/en-us/typography/truetype) font that libass can use.
+Since [Libass](https://github.com/libass/libass/issues/386) does not support [variable font](https://docs.microsoft.com/en-us/typography/opentype/spec/otvaroverview), this tool will automatically generate a [OpenType Font Collection](https://docs.microsoft.com/en-us/typography/opentype/spec/otff#font-collections). The generated collection is designed to simulate how VSFilter handles variable font.
 ## Acknowledgments
  - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
  - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts) Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
