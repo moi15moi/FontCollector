@@ -357,7 +357,7 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
                 print(Fore.LIGHTRED_EX + f"The font \"{style.fontName}\" is a Variable Font. Libass doesn't support these kinds of fonts.\n" +
                     "\tVerify that the generated font is exactly what you need.\n" +
                     Fore.LIGHTGREEN_EX + f"\tFontCollector created a valid font at \"{fontsMatch[0].fontPath}\".\n" +
-                    "\tIf you specified -mkv, the font will be muxed into the mkv and save in your current path.\n" + Fore.RESET)
+                    "\tIf you specified -mkv, the font will be muxed into the mkv.\n" + Fore.RESET)
 
                 fontCollection.update(fontsMatch)
                 for fontMatch in fontsMatch:
