@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 from argparse import ArgumentParser
+from datetime import date
 from fixedint import Int32
 from fontTools import ttLib
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
@@ -19,7 +20,7 @@ from typing import Dict, List, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -115,7 +116,7 @@ class AssStyle:
 
     def __hash__(self):
         return hash((self.fontName, self.weight, self.italic))
-    
+
     def __repr__(self):
         return "fontName: %s, weight: %s, italic %s\n" % (self.fontName, self.weight, self.italic)
 
@@ -180,7 +181,6 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
 
     if cleanTag:
         bold = TAG_BOLD_PATTERN.findall(cleanTag)
-
 
         if bold and bold[0]:
             boldNumber = int(bold[0])
@@ -315,10 +315,11 @@ def searchFont(fontCollection: Set[Font], style: AssStyle, searchByFamilyName: b
             fontsMatch.append(font)
 
     # The last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
+    # We also priorize Truetype/Opentype font over variable fonts
     if style.italic:
-        fontsMatch.sort(key=lambda font: (font.weightCompare, -font.italic, font.weight, 1 if "fvar" in font.font else 0))
+        fontsMatch.sort(key=lambda font: (1 if "fvar" in font.font else 0, font.weightCompare, -font.italic, font.weight))
     else:
-        fontsMatch.sort(key=lambda font: (font.weightCompare, font.italic, font.weight, 1 if "fvar" in font.font else 0))
+        fontsMatch.sort(key=lambda font: (1 if "fvar" in font.font else 0, font.weightCompare, font.italic, font.weight))
     return fontsMatch
 
 
@@ -332,8 +333,6 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
     """
     fontsMissing = set()
     fontsFound = set()
-
-    print(styleCollection)
 
     for style in styleCollection:
         fontsMatch = searchFont(fontCollection, style)
@@ -353,9 +352,20 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
             firstFontMatch = fontsMatch[0]
 
             if "fvar" in firstFontMatch.font:
-                firstFontMatch.fontPath = generateFontFromVariableFont(firstFontMatch.font, style.fontName, outputDirectory)
+                fontsMatch = variableFontToCollection(firstFontMatch, outputDirectory)
 
-            fontsFound.add(firstFontMatch)
+                print(Fore.LIGHTRED_EX + f"The font \"{style.fontName}\" is a Variable Font. Libass doesn't support these kinds of fonts.\n" +
+                    "\tVerify that the generated font is exactly what you need.\n" +
+                    Fore.LIGHTGREEN_EX + f"\tFontCollector created a valid font at \"{fontsMatch[0].fontPath}\".\n" +
+                    "\tIf you specified -mkv, the font will be muxed into the mkv and save in your current path.\n" + Fore.RESET)
+
+                fontCollection.update(fontsMatch)
+                for fontMatch in fontsMatch:
+                    if not any(font.fontPath == fontMatch.fontPath for font in fontsFound):
+                        fontsFound.add(fontMatch)
+            else:
+                if not any(font.fontPath == firstFontMatch.fontPath for font in fontsFound):
+                    fontsFound.add(firstFontMatch)
 
 
     if len(fontsMissing) > 0:
@@ -368,56 +378,59 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
     return fontsFound
 
 
-def generateFontFromVariableFont(font: ttLib.ttFont.TTFont, fontName: str, outputDirectory: str) -> str:
+def variableFontToCollection(font: Font, outputDirectory: str) -> List[Font]:
     """
-    See https://github.com/fonttools/fonttools/discussions/2707 for more detail
+    See https://github.com/fonttools/fonttools/discussions/2707 && https://github.com/libass/libass/issues/386 for more detail
     Parameters:
-        font (ttLib.ttFont.TTFont): The variable font to be "split"
-        fontName (str): The new fontname for the nameIDs [1, 2, 3, 4, 16]
+        font (Font): The variable font that need to be converted
         outputDirectory (str): Path where to save the generated font
     Returns:
-        Path where the generated font has been saved
+        List of generated fonts
     """
-    defaultCoordinates = {}
-    for axis in font["fvar"].axes:
-        defaultCoordinates[axis.axisTag] = axis.defaultValue
+    fontCollection = ttLib.TTCollection()
+    prefix = list(font.exactName)[0]
 
-    for instance in font["fvar"].instances:
-        if defaultCoordinates == instance.coordinates:
-            fontStyle = font["name"].getDebugName(instance.subfamilyNameID)
-
-    # GDI will always return the variable font with the default coordinates
-    newFont = instancer.instantiateVariableFont(font, defaultCoordinates)
-
-    for name in sortNamingTable(font["name"].names):
+    # To have the right platformID, platEncID and langID, we take the default family name
+    for name in sortNamingTable(font.font["name"].names):
         if name.nameID == 1:
             familyNameRecord = name
             break
 
-    for name in newFont['name'].names:
-        # List of nameID to be remove
-        if name.nameID in [1, 2, 3, 4, 6, 16, 17, 21, 22, 25]:
-            newFont['name'].removeNames(name.nameID, name.platformID, name.platEncID, name.langID)
+    for nameID in [1, 2, 3, 4, 6, 16, 17, 21, 22, 25]:
+            font.font['name'].removeNames(nameID)
 
-    newFont['name'].setName(fontName, 1, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
-    newFont['name'].setName(fontStyle, 2, 3, 1, 0x409)
-    newFont['name'].setName(fontName + " " + fontStyle, 3, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
-    newFont['name'].setName(fontName, 4, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
-    newFont['name'].setName(fontName, 16, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+    for instance in font.font["fvar"].instances:
+        style = font.font["name"].getDebugName(instance.subfamilyNameID).strip().lower()
+        generatedFont = instancer.instantiateVariableFont(font.font, instance.coordinates)
 
-    savePath = fontName + ".ttf"
+        generatedFont['name'].setName(prefix + " " + style, 1, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+        generatedFont['name'].setName(style, 2, 3, 1, 0x409)
+        generatedFont['name'].setName("FontCollector v" + __version__ + ":" + prefix + " " + style + ":" + str(date.today().year), 3, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+        generatedFont['name'].setName(prefix + " " + style, 4, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+        generatedFont['name'].setName(prefix + " " + style, 16, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+        # I don't know why, but if I don't remove the subfamilyNameID, libass will not show the font with GDI
+        generatedFont['name'].removeNames(instance.subfamilyNameID)
+
+        fontCollection.fonts.append(generatedFont)
+
+        if instance.coordinates["wght"] and instance.coordinates["wght"] in [400, 700]:
+            generatedFont = instancer.instantiateVariableFont(font.font, instance.coordinates)
+
+            generatedFont['name'].setName(prefix, 1, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+            generatedFont['name'].setName(style, 2, 3, 1, 0x409)
+            generatedFont['name'].setName("FontCollector v" + __version__ + ":" + prefix + ":" + str(date.today().year), 3, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+            generatedFont['name'].setName(prefix, 4, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+            generatedFont['name'].setName(prefix, 16, familyNameRecord.platformID, familyNameRecord.platEncID, familyNameRecord.langID)
+            generatedFont['name'].removeNames(instance.subfamilyNameID)
+
+            fontCollection.fonts.append(generatedFont)
+
+    savePath = prefix + ".ttc"
     if outputDirectory is not None:
         savePath = os.path.join(outputDirectory, savePath)
 
-    newFont.save(savePath)
-
-    print(Fore.LIGHTRED_EX + f"The font \"{fontName}\" is a Variable Font. Libass doesn't support these kinds of fonts.\n" +
-        Fore.LIGHTGREEN_EX + f"\tFontCollector created a valid font at \"{savePath}\".\n" +
-        "\tIf you specified -mkv, the font will be muxed into the mkv and save in your current path.\n" +
-        "\tIf you specified -o, it will be saved in that path." + Fore.RESET)
-
-    return savePath
-
+    fontCollection.save(savePath)
+    return createFont(savePath)
 
 def getFontFamilyNameFullName(names: List[NameRecord]) -> Tuple[Set[str], Set[str]]:
     """
@@ -556,28 +569,47 @@ def createFont(fontPath: str) -> List[Font]:
 
         exactNames = set()
 
-        # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
-        # If TrueType, take "full names" which has the id 4
-        # If OpenType, take "PostScript" which has the id 6
-        if isTrueType:
-            exactNames = fullnames
+        if "fvar" in fontTtLib:
+            variableName = []
+
+            # Inpired from: https://github.com/fonttools/fonttools/discussions/2639#discussioncomment-2889678
+            # I have also confirmed it by testing it
+            namePrefix = getNameLikeFontConfig(16, fontTtLib['name'].names)
+
+            if namePrefix is None:
+                namePrefix = getNameLikeFontConfig(1, fontTtLib['name'].names)
+
+            for instance in fontTtLib["fvar"].instances:
+                style = fontTtLib["name"].getDebugName(instance.subfamilyNameID)
+                variableName.append(namePrefix + " " + style)
+
+            # families contain all the named variant Ex: "Akshar SemiBold"
+            families.update(variableName)
+            # exactNames contain the prefix. Ex: "Akshar"
+            exactNames.add(namePrefix)
         else:
-            # If not TrueType, it is OpenType
-            try:
-                # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
-                postscriptNameByte = freetype.Face(Path(fontPath).open("rb"), fontIndex).postscript_name
-            except OSError:
-                print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
-
-            if postscriptNameByte is not None:
-
+            # https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids
+            # If TrueType, take "full names" which has the id 4
+            # If OpenType, take "PostScript" which has the id 6
+            if isTrueType:
+                exactNames = fullnames
+            else:
+                # If not TrueType, it is OpenType
                 try:
-                    postscriptName = postscriptNameByte.decode("ASCII")
-                except UnicodeDecodeError:
-                    print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the postscript has not been correctly decoded" + Fore.RESET)
+                    # We use freetype like libass: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
+                    postscriptNameByte = freetype.Face(Path(fontPath).open("rb"), fontIndex).postscript_name
+                except OSError:
+                    print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the program fail to open the font" + Fore.RESET)
 
-                if postscriptName:
-                    exactNames.add(postscriptName)
+                if postscriptNameByte is not None:
+
+                    try:
+                        postscriptName = postscriptNameByte.decode("ASCII")
+                    except UnicodeDecodeError:
+                        print(Fore.RED + f"Error: Please report this error on github. Attach this font \"{fontPath}\" in your issue and say that the postscript has not been correctly decoded" + Fore.RESET)
+
+                    if postscriptName:
+                        exactNames.add(postscriptName)
 
         if "OS/2" in fontTtLib:
             try:
@@ -594,24 +626,6 @@ def createFont(fontPath: str) -> List[Font]:
         # Some font designers appear to be under the impression that weights are 1-9 (From: https://github.com/Ristellise/AegisubDC/blob/master/src/font_file_lister_coretext.mm#L70)
         if weight <= 9:
             weight *= 100
-
-        if "fvar" in fontTtLib:
-            variableName = []
-
-            # Inpired from: https://github.com/fonttools/fonttools/discussions/2639#discussioncomment-2889678
-            # I have also confirmed it by testing it
-            namePrefix = getNameLikeFontConfig(16, fontTtLib['name'].names)
-
-            if namePrefix is None:
-                namePrefix = getNameLikeFontConfig(1, fontTtLib['name'].names)
-
-            for instance in fontTtLib["fvar"].instances:
-                style = fontTtLib["name"].getDebugName(instance.subfamilyNameID)
-                variableName.append(namePrefix + " " + style)
-
-            families.update(variableName)
-            families.add(namePrefix)
-
 
         # The weightCompare is set to 0. It could be any value. It does not care
         fonts.append(Font(fontPath, families, weight, isItalic, Int32(0), exactNames, fontTtLib))
@@ -632,7 +646,6 @@ def initializeFontCollection(additionalFontsPath: List[Path]) -> Set[Font]:
     # TODO See if this line is required
     font_manager._load_fontmanager(try_read_cache=False)
 
-    # It will return all TrueType and OpenType file
     fontsPath = font_manager.findSystemFonts()
 
     for fontPath in additionalFontsPath:
@@ -683,7 +696,7 @@ def deleteFonts(mkvFile:Path, mkvpropedit:Path):
     mkvpropedit_args.append("--delete-attachment mime-type:font/ttf")
 
     subprocess.call(" ".join(mkvpropedit_args))
-    print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts with mkv" + Fore.RESET)
+    print(Fore.LIGHTGREEN_EX + "Successfully deleted fonts in mkv" + Fore.RESET)
 
 
 def mergeFont(fontCollection: Set[Font], mkvFile: Path, mkvpropedit: Path):
