@@ -53,8 +53,8 @@ fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\M
 ## Color code
 |Color|What it means|
 |:--:|--|
-|![Light red - #e74856](https://via.placeholder.com/15/e74856/e74856.png)|It is just a Warning. You have nothing to do.|
-|![Red - #c50f1f](https://via.placeholder.com/15/c50f1f/c50f1f.png)|Error. You must to do something to get the task accomplished properly.|
+|![Light yellow - #f9f1a5](https://via.placeholder.com/15/f9f1a5/f9f1a5.png)|It is just a Warning. You have nothing to do.|
+|![Red - #c50f1f](https://via.placeholder.com/15/c50f1f/c50f1f.png)|Error. You must do something to get the task accomplished properly.|
 |![Light green - #16c60c](https://via.placeholder.com/15/16c60c/16c60c.png)|A task went well|
 ## Variable Font
 Since [Libass](https://github.com/libass/libass/issues/386) does not support [variable font](https://docs.microsoft.com/en-us/typography/opentype/spec/otvaroverview), this tool will automatically generate a [OpenType Font Collection](https://docs.microsoft.com/en-us/typography/opentype/spec/otff#font-collections). The generated collection is designed to simulate how VSFilter handles variable font.

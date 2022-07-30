@@ -20,7 +20,7 @@ from typing import Dict, List, Set, Tuple
 from colorama import Fore, init
 init(convert=True)
 
-__version__ = "1.3.4"
+__version__ = "1.3.5"
 
 # GLOBAL VARIABLES
 LINE_PATTERN = regex.compile(r"(?:\{(?P<tags>[^}]*)\}?)?(?P<text>[^{]*)")
@@ -79,7 +79,7 @@ class Font:
         return self.familyName == other.familyName and self.italic == other.italic and self.weight == other.weight and self.exactName == other.exactName
 
     def __hash__(self):
-        return hash((tuple(self.familyName), self.italic, self.weight))
+        return hash((tuple(self.familyName), self.italic, self.weight, tuple(self.exactName)))
 
     def __repr__(self):
         return "path: %s, familyName: %s, exactName %s\n" % (self.fontPath, self.familyName, self.exactName)
@@ -87,7 +87,7 @@ class Font:
 class AssStyle:
     """
     AssStyle is an instance that does not only represent "[V4+ Styles]" section of an .ass script.
-    It can also represent the style at X line.
+    It also consider the tags \r, \i, \b and \fn
     """
     __fontName: str
     weight: int # a.k.a bold
@@ -172,9 +172,9 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
             if styleName.rstrip() in styles:
                 style = styles[styleName.rstrip()]
             else:
-                print(Fore.LIGHTRED_EX + f"Warning: The style \"{styleName}\" will be ignored, because it is not in the [V4+ Styles] section." + Fore.RESET)
+                print(Fore.LIGHTYELLOW_EX + f"Warning: The style \"{styleName}\" will be ignored, because it is not in the [V4+ Styles] section." + Fore.RESET)
         else:
-            print(Fore.LIGHTRED_EX + f"Warning: Style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
+            print(Fore.LIGHTYELLOW_EX + f"Warning: Style can not contains \"(\" or \")\" and/or whitespace at the beginning. The style \"{styleName}\" will be ignored." + Fore.RESET)
 
     tagsList = TAG_R_PATTERN.split(tags)
     cleanTag = tagsList[-1]
@@ -210,7 +210,7 @@ def parseTags(tags: str, styles: Dict[str, AssStyle], style: AssStyle) -> AssSty
             if("(" not in font and ")" not in font):
                 style.fontName = font
             else:
-                print(Fore.LIGHTRED_EX + "Warning: FontName can not contains \"(\" or \")\"." + Fore.RESET)
+                print(Fore.LIGHTYELLOW_EX + "Warning: FontName can not contains \"(\" or \")\"." + Fore.RESET)
 
     return style
 
@@ -328,6 +328,7 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
     Parameters:
         fontCollection (Set[Font]): Font collection
         styleCollection (Set[AssStyle]): Style collection
+        outputDirectory (Path): The directory where the generated TTC font will be generated if a style is using a Variable Font
     Returns:
         A set containing all the font that match the styleCollection
     """
@@ -354,7 +355,7 @@ def findUsedFont(fontCollection: Set[Font], styleCollection: Set[AssStyle], outp
             if "fvar" in firstFontMatch.font:
                 fontsMatch = variableFontToCollection(firstFontMatch, outputDirectory)
 
-                print(Fore.LIGHTRED_EX + f"The font \"{style.fontName}\" is a Variable Font. Libass doesn't support these kinds of fonts.\n" +
+                print(Fore.LIGHTYELLOW_EX + f"The font \"{style.fontName}\" is a Variable Font. Libass doesn't support these kinds of fonts.\n" +
                     "\tVerify that the generated font is exactly what you need.\n" +
                     Fore.LIGHTGREEN_EX + f"\tFontCollector created a valid font at \"{fontsMatch[0].fontPath}\".\n" +
                     "\tIf you specified -mkv, the font will be muxed into the mkv.\n" + Fore.RESET)
@@ -541,11 +542,11 @@ def createFont(fontPath: str) -> List[Font]:
     fonts = []
 
     with open(fontPath, 'rb') as fontFile:
-        fontType = fontFile.read(4)
+        fontType = fontFile.read(5)
 
-    if fontType ==  b'ttcf':
+    if fontType.startswith(b'ttcf'):
         fontsTtLib.extend(ttLib.TTCollection(fontPath).fonts)
-    else:
+    elif fontType.startswith(b'\x00\x01\x00\x00\x00') or fontType.startswith(b'OTTO'):
         fontsTtLib.append(ttLib.TTFont(fontPath))
 
     # Read font attributes
@@ -564,7 +565,7 @@ def createFont(fontPath: str) -> List[Font]:
             if familyName is not None and familyName:
                 families.add(familyName)
             else:
-                print(Fore.LIGHTRED_EX + f"Warning: The file \"{fontPath}\" does not contain a valid family name. The font will be ignored." + Fore.RESET)
+                print(Fore.LIGHTYELLOW_EX + f"Warning: The file \"{fontPath}\" does not contain a valid family name. The font will be ignored." + Fore.RESET)
                 return None
 
         exactNames = set()
