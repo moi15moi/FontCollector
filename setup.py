@@ -1,8 +1,39 @@
 import os
 import re
 import setuptools
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+
+class PostDevelopCommand(develop):
+    """
+    Post-installation for development mode.
+    From https://stackoverflow.com/a/36902139/15835974
+    """
+
+    def run(self):
+        develop.run(self)
+        from font_collector import FontLoader
+
+        FontLoader.discard_generated_font_cache()
+        FontLoader.discard_system_font_cache()
+
+
+class PostInstallCommand(install):
+    """
+    Post-installation for installation mode.
+    From https://stackoverflow.com/a/36902139/15835974
+    """
+
+    def run(self):
+        install.run(self)
+        from font_collector import FontLoader
+
+        FontLoader.discard_generated_font_cache()
+        FontLoader.discard_system_font_cache()
 
 
 def read(*parts):
@@ -19,7 +50,7 @@ def find_version(*file_paths):
 
 
 setuptools.setup(
-    name="fontCollector",
+    name="FontCollector",
     url="https://github.com/moi15moi/FontCollector/",
     project_urls={
         "Source": "https://github.com/moi15moi/FontCollector/",
@@ -29,31 +60,30 @@ setuptools.setup(
     author_email="moi15moismokerlolilol@gmail.com",
     description="FontCollector for Advanced SubStation Alpha file.",
     long_description_content_type="text/markdown",
-    version=find_version("fontCollector.py"),
-    python_requires=">=3.7",
-    py_modules=['fontCollector'],
+    version=find_version("font_collector", "_version.py"),
+    packages=["font_collector"],
+    python_requires=">=3.8",
     install_requires=[
-        'ass',
-        'colorama',
-        'fixedint',
-        'fontTools',
-        'freetype-py',
-        'matplotlib>=3.5',
-        'regex'
+        "ass",
+        "ass-tag-analyzer",
+        "fontTools",
+        "freetype-py",
+        "matplotlib>=3.6",
     ],
-    entry_points={
-        "console_scripts": ["fontCollector=fontCollector:main"]
-    },
+    entry_points={"console_scripts": ["fontcollector=font_collector.__main__:main"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Other Audience",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     license="GNU LGPL 3.0 or later",
+    cmdclass={
+        "develop": PostDevelopCommand,
+        "install": PostInstallCommand,
+    },
 )
