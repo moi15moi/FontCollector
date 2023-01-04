@@ -1,9 +1,12 @@
+import logging
 import shutil
 import subprocess
 from .font import Font
 from os import path
 from pathlib import Path
 from typing import Sequence
+
+_logger = logging.getLogger(__name__)
 
 
 class Mkvpropedit:
@@ -75,6 +78,8 @@ class Mkvpropedit:
             raise OSError(
                 f"mkvpropedit reported an error when deleting the font in the mkv: {output.stderr}"
             )
+        else:
+            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
 
     @staticmethod
     def merge_fonts_into_mkv(font_collection: Sequence[Font], mkv_filename: Path):
@@ -107,3 +112,5 @@ class Mkvpropedit:
             raise OSError(
                 f"mkvpropedit reported an error when merging font into an mkv: {output.stderr}"
             )
+        else:
+            _logger.info(f'Successfully merging fonts into mkv "{mkv_filename}')

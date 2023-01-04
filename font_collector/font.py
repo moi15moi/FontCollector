@@ -1,7 +1,10 @@
+import logging
 from .parse_font import ParseFont
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
 from typing import List, Sequence, Set
+
+_logger = logging.getLogger(__name__)
 
 
 class Font:
@@ -97,6 +100,9 @@ class Font:
                         families.add(familyName)
                     else:
                         # Skip the font since it is invalid
+                        _logger.info(
+                            f'Warning: The index {font_index} of the font "{font_path}" does not contain an valid family name. The font index will be ignored.'
+                        )
                         continue
 
                 if isTrueType:
