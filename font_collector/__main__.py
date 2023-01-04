@@ -1,13 +1,13 @@
 import logging
 import sys
-from typing import List
-from .parse_arguments import parse_arguments
-
 from .ass_document import AssDocument
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .helpers import Helpers
 from .mkvpropedit import Mkvpropedit
+from .parse_arguments import parse_arguments
+from typing import List
+
 
 _logger = logging.getLogger(__name__)
 
