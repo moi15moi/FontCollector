@@ -8,6 +8,12 @@ from typing import List, Set
 
 
 class FontLoader:
+    """
+    system_fonts: Font installed on the system
+    additional_fonts: Font added by the user
+    generated_fonts: Contain all the generated font by Helpers.variable_font_to_collection.
+    """
+
     system_fonts: Set[Font]
     additional_fonts: Set[Font]
 
@@ -32,6 +38,12 @@ class FontLoader:
         )
 
     def add_additional_font(self, font_path: Path):
+        """
+        Parameters:
+            font_path (str): Font path. The font can be a .ttf, .otf or .ttc
+                If you need to use woff font, you will need to decompress them.
+                See fontTools documentation to know how to do it: https://fonttools.readthedocs.io/en/latest/ttLib/woff2.html#fontTools.ttLib.woff2.decompress
+        """
         self.additional_fonts.update(FontLoader.load_additional_fonts([font_path]))
 
     def add_generated_font(self, font: Font):

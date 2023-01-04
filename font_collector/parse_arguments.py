@@ -1,12 +1,10 @@
-import logging
 import os
+from .font import Font
+from .font_loader import FontLoader
+from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Set, Tuple, Union
-
-from . import Font
-from . import FontLoader
-from . import Mkvpropedit
 
 
 def _parse_input_file(ass_input: List[Path]) -> List[Path]:
@@ -113,7 +111,6 @@ def parse_arguments() -> Tuple[
     output_directory = args.output
 
     mkv_path = args.mkv
-
     if mkv_path:
         if args.mkvpropedit is not None:
             Mkvpropedit.path = args.mkvpropedit

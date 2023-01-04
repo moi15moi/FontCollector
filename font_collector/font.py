@@ -1,4 +1,3 @@
-import logging
 from .parse_font import ParseFont
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
@@ -86,7 +85,7 @@ class Font:
                 if "glyf" in ttFont:
                     isTrueType = True
 
-                families, fullnames = ParseFont.get_font_family_fullName_property(
+                families, fullnames = ParseFont.get_font_family_fullname_property(
                     ttFont["name"].names
                 )
 

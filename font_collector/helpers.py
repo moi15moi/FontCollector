@@ -24,7 +24,7 @@ class Helpers:
     ) -> Union[FontResult, None]:
         """
         Parameters:
-            fontCollection (Set[Font]): Font collection
+            font_collection (Set[Font]): Font collection
             style (AssStyle): An AssStyle
             search_by_family_name (bool):
                 If true, it will search the font by it's family name.
@@ -89,8 +89,14 @@ class Helpers:
         Parameters:
             font_collection (Set[Font]): Font collection
             output_directory (Path): The directory where the font are going to be save
-            create_directory_if_doesnt_exist (bool): If true and the output_directory doesn't exist, it will be created
-                                                     If false and the output_directory doesn't exist, an exception will be raised
+            create_directory_if_doesnt_exist (bool):
+                If true and the output_directory doesn't exist, it will be created
+                If false and the output_directory doesn't exist, an exception will be raised
+            convert_variable_font_into_truetype_collection (bool):
+                If true, it will convert the variable font into an truetype collection font
+                    It is usefull, because libass doesn't support variation font: https://github.com/libass/libass/issues/386
+                    It convert it in a format that libass support
+                If false, it won't do anything special. The variable font will be copied like any other font.
         """
 
         if not os.path.exists(output_directory) and create_directory_if_doesnt_exist:
@@ -112,17 +118,17 @@ class Helpers:
 
     @staticmethod
     def variable_font_to_collection(
-        fontpath: str, outputDirectory: str, cache_generated_font: bool = True
+        fontpath: str, output_directory: str, cache_generated_font: bool = True
     ) -> List[Font]:
         """
         Parameters:
-            font (Font): The variable font that need to be converted
-            outputDirectory (str): Path where to save the generated font
+            fontpath (str): The path to the variable font that need to be converted
+            output_directory (str): Path where to save the generated font
             cache_generated_font (bool):  Converting an variable font into an collection font is a slow process. Caching the result boost the performance.
                 If true, then the generated font will be cached.
                 If false, then the generated font won't be cached.
         Returns:
-            List of generated fonts that represent the truetype collection font generated
+            List of Font that represent the truetype collection font generated
         """
         font_collection = TTCollection()
         ttFont = TTFont(fontpath)
@@ -154,7 +160,7 @@ class Helpers:
 
             font_collection.fonts.append(generated_font)
 
-        savepath = os.path.join(outputDirectory, f"{family_prefix}.ttc")
+        savepath = os.path.join(output_directory, f"{family_prefix}.ttc")
         font_collection.save(savepath)
 
         if cache_generated_font:

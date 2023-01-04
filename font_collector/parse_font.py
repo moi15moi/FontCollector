@@ -22,6 +22,11 @@ class ParseFont:
     def get_var_font_family_prefix(font: TTFont) -> str:
         """
         From: https://github.com/fonttools/fonttools/blob/3c4cc71504774d1ae4f1e59e3ef3b97e194c1c91/Lib/fontTools/varLib/instancer/names.py#L267-L269
+
+        Parameters:
+            font (TTFont): An fontTools object
+        Returns:
+            The family name prefix.
         """
         family_prefix = ParseFont.get_name_by_id(
             NameID.TYPOGRAPHIC_FAMILY_NAME, font["name"].names
@@ -37,6 +42,12 @@ class ParseFont:
         From:
             - https://github.com/fonttools/fonttools/blob/3c4cc71504774d1ae4f1e59e3ef3b97e194c1c91/Lib/fontTools/varLib/instancer/names.py#L195-L232
             - https://github.com/fonttools/fonttools/blob/3c4cc71504774d1ae4f1e59e3ef3b97e194c1c91/Lib/fontTools/varLib/instancer/names.py#L267-L305
+
+        Parameters:
+            font (TTFont): An fontTools object
+            axis_value_tables: List of axis value
+        Returns:
+            The family name and the fullname for an axis_value_tables.
         """
         if "STAT" not in font:
             raise ValueError(
@@ -122,9 +133,9 @@ class ParseFont:
         stat = font["STAT"].table
 
         axisLimits = AxisLimits(coordinates).populateDefaults(font)
-        axisValueTables = axisValuesFromAxisLimits(stat, axisLimits)
+        axis_value_tables = axisValuesFromAxisLimits(stat, axisLimits)
 
-        return _sortAxisValues(axisValueTables)
+        return _sortAxisValues(axis_value_tables)
 
     @staticmethod
     def sort_naming_table(names: List[NameRecord]) -> List[NameRecord]:
@@ -167,6 +178,7 @@ class ParseFont:
     def get_name_by_id(nameID: int, names: List[NameRecord]) -> str:
         """
         Parameters:
+            nameID (int): ID of the name you search
             names (List[NameRecord]): Naming table
         Returns:
             The family name that FontConfig would return in https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1492-1505
@@ -189,6 +201,13 @@ class ParseFont:
     def get_font_postscript_property(
         font_path: str, font_index: int
     ) -> Union[str, None]:
+        """
+        Parameters:
+            font_path (str): Font path.
+            font_index (int): Font index.
+        Returns:
+            is_italic, weight
+        """
         try:
             # Like libass, we use freetype: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L326
             postscriptNameByte = freetype.Face(
@@ -225,7 +244,7 @@ class ParseFont:
             is_italic, weight
         """
 
-        def getFontAttributesWithFreetype(
+        def get_font_italic_bold_property_with_freetype(
             font_path: str, font_index: int
         ) -> Tuple[bool, int]:
             font = freetype.Face(Path(font_path).open("rb"), font_index)
@@ -253,21 +272,25 @@ class ParseFont:
                 # https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
                 weight = font["OS/2"].usWeightClass
             except struct_error:
-                is_italic, weight = getFontAttributesWithFreetype(font_path, font_index)
+                is_italic, weight = get_font_italic_bold_property_with_freetype(
+                    font_path, font_index
+                )
         else:
-            is_italic, weight = getFontAttributesWithFreetype(font_path, font_index)
+            is_italic, weight = get_font_italic_bold_property_with_freetype(
+                font_path, font_index
+            )
 
         return is_italic, weight
 
     @staticmethod
-    def get_font_family_fullName_property(
+    def get_font_family_fullname_property(
         names: List[NameRecord],
     ) -> Tuple[Set[str], Set[str]]:
         """
         Parameters:
             names (List[NameRecord]): Naming table
         Returns:
-            All families and fullnames that are from microsoft
+            All decoded families and fullnames that are from microsoft platform
         """
 
         # https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L258-L344

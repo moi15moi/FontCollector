@@ -22,13 +22,14 @@ def main():
         use_system_font,
     ) = parse_arguments()
     font_results: List[FontResult] = []
+    font_collection = FontLoader(additional_fonts, use_system_font).fonts
 
     for ass_path in ass_files_path:
         subtitle = AssDocument.from_file(ass_path)
         _logger.info(f"Loaded successfully {ass_path}")
         styles = subtitle.get_used_style()
 
-        font_collection = FontLoader(additional_fonts, use_system_font).fonts
+        nbr_font_not_found = 0
 
         for style, usage_data in styles.items():
 
@@ -36,6 +37,7 @@ def main():
 
             # Did not found the font
             if font_result is None:
+                nbr_font_not_found += 1
                 _logger.error(
                     f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}"
                 )
@@ -65,6 +67,11 @@ def main():
                     _logger.warning(
                         f"'{style.fontname}' is missing the following glyphs used: {missing_glyphs}"
                     )
+
+        if nbr_font_not_found == 0:
+            _logger.info(f"All fonts found")
+        else:
+            _logger.info(f"{nbr_font_not_found} fonts could not be found.")
 
     # Remove duplicate font
     font_found = list({font.font.filename: font.font for font in font_results}.values())

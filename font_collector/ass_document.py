@@ -58,7 +58,7 @@ class AssDocument:
         line_style: AssStyle,
         current_style: AssStyle,
         current_wrap_style: WrapStyle,
-    ) -> Dict[AssStyle, UsageData]:
+    ) -> None:
         """
         Parameters:
             used_styles (Dict[AssStyle, UsageData]): This variable will be modified
@@ -69,8 +69,6 @@ class AssDocument:
             line_style (AssStyle): Style of the line. In general, it will be equal to original_line_style except it there is an \rXXX
             current_style (AssStyle): Real style of the text. It exist since \fn, \b, \i can override the line_style.
             current_wrap_style (WrapStyle): Since \q can override the subtitle WrapStyle, we need it.
-        Returns:
-            isItalic, weight
         """
 
         for tag in tags:
@@ -183,7 +181,7 @@ class AssDocument:
                     original_line_style = sub_styles[line.style]
                 except KeyError:
                     raise ValueError(
-                        f'Error: Unknown style "{line.style}" on line {i+1}. You need to correct the .ass file named "{self.filename}".'
+                        f'Error: Unknown style "{line.style}" on line {i+1}. You need to correct the .ass file.'
                     )
 
                 tags = parse_line(line.text)

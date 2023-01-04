@@ -80,9 +80,8 @@ class Mkvpropedit:
     def merge_fonts_into_mkv(font_collection: Sequence[Font], mkv_filename: Path):
         """
         Parameters:
-            fontCollection (Path): All font needed to be merge in the mkv
-            mkvFile (Path): Mkv file path
-            mkvpropedit (Path): Mkvpropedit file path
+            font_collection (Sequence[Font]): All font needed to be merge in the mkv
+            mkv_filename (Path): Mkv file path
         """
         if not Mkvpropedit.is_mkvpropedit_path_valid():
             raise FileNotFoundError(
