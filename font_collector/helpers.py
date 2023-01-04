@@ -51,8 +51,10 @@ class Helpers:
 
                 fonts_match.append((weight_compare, font))
 
-        # The last sort parameter (font.weight) is totally optional. In VSFilter, when the weightCompare is the same, it will take the first one, so the order is totally random, so VSFilter will not always display the same font.
-        # We also priorize Truetype/Opentype font over variable fonts
+        # The last sort parameter (font.weight) is totally optional.
+        # In VSFilter, when the weight_compare is the same between 2 fonts, it will take the first one, so the order is random.
+        # Because of that, VSFilter can not always display the same font.
+        # We also priorize Truetype/Opentype font over variable fonts (parameter is_var)
         fonts_match.sort(
             key=lambda font: (
                 font[0],

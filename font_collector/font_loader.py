@@ -48,6 +48,11 @@ class FontLoader:
 
     @staticmethod
     def add_generated_font(font: Font):
+        """
+        Parameters:
+            font (Font): Generated font by Helpers.variable_font_to_collection
+        """
+
         generated_fonts = FontLoader.load_generated_fonts()
         generated_fonts.add(font)
         FontLoader.save_generated_fonts(generated_fonts)

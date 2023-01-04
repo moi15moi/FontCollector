@@ -160,7 +160,7 @@ class AssDocument:
     def get_used_style(self) -> Dict[AssStyle, UsageData]:
         """
         Returns:
-            An dictionnary where the key is an AssStyle and the value is an UsageData
+            An dictionnary which contain all the used AssStyle and it's UsageData.
         """
         used_styles: Dict[AssStyle, UsageData] = {}
 

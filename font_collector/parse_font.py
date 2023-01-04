@@ -181,11 +181,9 @@ class ParseFont:
             nameID (int): ID of the name you search
             names (List[NameRecord]): Naming table
         Returns:
-            The family name that FontConfig would return in https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1492-1505
+            The decoded name
         """
 
-        # Merge of  - sort logic: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1443
-        #           - Iteration logic: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/blob/d863f6778915f7dd224c98c814247ec292904e30/src/fcfreetype.c#L1448-1604
         names = list(filter(lambda name: name.nameID == nameID, names))
         names = ParseFont.sort_naming_table(names)
 
