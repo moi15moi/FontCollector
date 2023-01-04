@@ -3,13 +3,12 @@ from font_collector.parse_font import ParseFont
 from fontTools.ttLib.ttFont import TTFont
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-# variable_font = TTFont(os.path.join(dir_path, "fonts", "Asap-VariableFont_wdth,wght.ttf"))
 variable_font = TTFont(os.path.join(dir_path, "fonts", "bahnschrift (original).ttf"))
 
 
 def test_get_var_font_family_prefix():
 
-    assert "Asap" == ParseFont.get_var_font_family_prefix(variable_font)
+    assert "Bahnschrift" == ParseFont.get_var_font_family_prefix(variable_font)
 
 
 def test_get_var_font_family_fullname():
@@ -27,9 +26,6 @@ def test_get_var_font_family_fullname():
 
         families.append(family_name)
         fullname.append(full_font_name)
-
-    print(families)
-    print(fullname)
 
     expected_families = [
         "Bahnschrift Light",
@@ -68,6 +64,3 @@ def test_get_var_font_family_fullname():
 
     assert set(families) == set(expected_families)
     assert set(fullname) == set(expected_fullname)
-
-
-test_get_var_font_family_fullname()
