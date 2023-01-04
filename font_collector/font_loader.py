@@ -46,7 +46,8 @@ class FontLoader:
         """
         self.additional_fonts.update(FontLoader.load_additional_fonts([font_path]))
 
-    def add_generated_font(self, font: Font):
+    @staticmethod
+    def add_generated_font(font: Font):
         generated_fonts = FontLoader.load_generated_fonts()
         generated_fonts.add(font)
         FontLoader.save_generated_fonts(generated_fonts)

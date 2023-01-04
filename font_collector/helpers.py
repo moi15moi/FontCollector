@@ -163,8 +163,9 @@ class Helpers:
         savepath = os.path.join(output_directory, f"{family_prefix}.ttc")
         font_collection.save(savepath)
 
+        generated_font = Font.from_font_path(savepath)
         if cache_generated_font:
-            for font in font_collection:
+            for font in generated_font:
                 FontLoader.add_generated_font(font)
 
-        return Font.from_font_path(savepath)
+        return generated_font
