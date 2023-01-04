@@ -69,7 +69,7 @@ def parse_arguments() -> Tuple[
         type=Path,
         default=os.getcwd(),
         help="""
-    Destination path of the font. If no argument is specified, it will be the current path.
+    Destination path of the font. If -o and -mkv aren't specified, it will be the current path.
     """,
     )
     parser.add_argument(
@@ -96,10 +96,10 @@ def parse_arguments() -> Tuple[
     """,
     )
     parser.add_argument(
-        "--use-system-fonts",
+        "--exclude-system-fonts",
         action="store_false",
         help="""
-    If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
+    If specified, FontCollector won't use the system font to find the font used by an .ass file.
     """,
     )
 
@@ -122,7 +122,7 @@ def parse_arguments() -> Tuple[
     else:
         additional_fonts = set()
 
-    use_system_fonts = args.use_system_fonts
+    use_system_fonts = args.exclude_system_fonts
 
     return (
         ass_files_path,
