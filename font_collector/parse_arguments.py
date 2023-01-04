@@ -26,13 +26,21 @@ def _parse_input_file(ass_input: List[Path]) -> List[Path]:
                 if file.endswith(".ass"):
                     ass_files_path.append(Path(os.path.join(input, file)))
         else:
-            raise FileNotFoundError(f'Error: The input file/folder {input.name} does not exist.')
-    
+            raise FileNotFoundError(
+                f"Error: The input file/folder {input.name} does not exist."
+            )
+
     return ass_files_path
 
 
-
-def parse_arguments() -> Tuple[List[Path], Path, Union[Path, None], bool, Set[Font], bool, ]:
+def parse_arguments() -> Tuple[
+    List[Path],
+    Path,
+    Union[Path, None],
+    bool,
+    Set[Font],
+    bool,
+]:
     """
     Returns:
         ass_files_path, output_directory, mkv_path, delete_fonts, additional_fonts, use_system_fonts
@@ -119,5 +127,11 @@ def parse_arguments() -> Tuple[List[Path], Path, Union[Path, None], bool, Set[Fo
 
     use_system_fonts = args.use_system_fonts
 
-
-    return ass_files_path, output_directory, mkv_path, delete_fonts, additional_fonts, use_system_fonts
+    return (
+        ass_files_path,
+        output_directory,
+        mkv_path,
+        delete_fonts,
+        additional_fonts,
+        use_system_fonts,
+    )

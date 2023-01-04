@@ -102,7 +102,14 @@ class FontLoader:
             if os.path.isfile(font_path):
                 additional_fonts.update(Font.from_font_path(font_path))
             elif os.path.isdir(font_path):
-                additional_fonts.update([Font.from_font_path(path) for path in font_manager.findSystemFonts(fontpaths=str(font_path))])
+                additional_fonts.update(
+                    [
+                        Font.from_font_path(path)
+                        for path in font_manager.findSystemFonts(
+                            fontpaths=str(font_path)
+                        )
+                    ]
+                )
             else:
                 raise FileNotFoundError(f"The file {font_path} is not reachable")
         return additional_fonts

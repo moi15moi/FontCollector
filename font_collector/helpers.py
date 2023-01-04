@@ -16,6 +16,7 @@ from typing import List, Set, Tuple, Union
 
 _logger = logging.getLogger(__name__)
 
+
 class Helpers:
     @staticmethod
     def get_used_font_by_style(
@@ -65,7 +66,7 @@ class Helpers:
             match = fonts_match[0][1]
             mismatch_italic = not (match.italic == style.italic)
             mismatch_bold = not (-150 < match.weight - style.weight < 150)
-            
+
             font_result = FontResult(match, mismatch_bold, mismatch_italic)
             _logger.info(f"Found '{style.fontname}' at '{font_result.font.filename}'")
             return font_result
@@ -102,9 +103,11 @@ class Helpers:
                 font = Helpers.variable_font_to_collection(font.filename, os.getcwd())[
                     0
                 ]
-            
+
             # Don't overwrite fonts
-            if not os.path.isfile(os.path.join(output_directory, Path(font.filename).name)):
+            if not os.path.isfile(
+                os.path.join(output_directory, Path(font.filename).name)
+            ):
                 shutil.copy(font.filename, output_directory)
 
     @staticmethod

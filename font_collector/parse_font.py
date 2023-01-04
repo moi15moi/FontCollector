@@ -16,6 +16,7 @@ from struct import error as struct_error
 
 _logger = logging.getLogger(__name__)
 
+
 class ParseFont:
     @staticmethod
     def get_var_font_family_prefix(font: TTFont) -> str:
@@ -194,13 +195,17 @@ class ParseFont:
                 Path(font_path).open("rb"), font_index
             ).postscript_name
         except OSError:
-            _logger.warning(f"Error: Please report this error on github. Attach this font \"{font_path}\" in your issue and say that the postscript has not been correctly decoded")
+            _logger.warning(
+                f'Error: Please report this error on github. Attach this font "{font_path}" in your issue and say that the postscript has not been correctly decoded'
+            )
 
         if postscriptNameByte is not None:
             try:
                 postscriptName = postscriptNameByte.decode("ASCII")
             except UnicodeDecodeError:
-                _logger.warning(f"Error: Please report this error on github. Attach this font \"{font_path}\" in your issue and say that the postscript has not been correctly decoded")
+                _logger.warning(
+                    f'Error: Please report this error on github. Attach this font "{font_path}" in your issue and say that the postscript has not been correctly decoded'
+                )
 
             if postscriptName is not None:
                 return postscriptName
