@@ -3,43 +3,48 @@ FontCollector for Advanced SubStation Alpha file.
 This tool allows to recover and/or mux the fonts necessary in an mkv.
 ## Installation and Update
 ```
-pip install git+https://github.com/moi15moi/FontCollector.git
+pip install FontCollector
 ```
 ## Dependencies
--  [Python 3.7 or more](https://www.python.org/downloads/)
 -  [MKVToolNix](https://www.fosshub.com/MKVToolNix.html)
 
 ## Usage
 ```console
-$ fontCollector --help
-usage: fontCollector [-h] --input [[.ass file and/or path] ...] [-mkv [.mkv input file]] [--output [path]] [-mkvpropedit [path]] [--delete-fonts] [--additional-fonts [path ...]]
+$ fontcollector --help
+usage: fontcollector [-h] --input [INPUT ...] [-mkv MKV] [--output OUTPUT] [-mkvpropedit MKVPROPEDIT] [--delete-fonts]
+                     [--additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]] [--exclude-system-fonts]
 
 FontCollector for Advanced SubStation Alpha file.
 
 options:
-  -h, --help
-                        show this help message and exit
-  --input [[.ass file and/or path] ...], -i [[.ass file and/or path] ...]
-                        Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path. If no argument is specified, it will take all the font in the current path.
-  -mkv [.mkv input file]
+  -h, --help            show this help message and exit
+  --input [INPUT ...], -i [INPUT ...]
+                        Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
+                        If no argument is specified, it will take all the font in the current path.
+  -mkv MKV              
                         Video where the fonts will be merge. Must be a Matroska file.
-  --output [path], -o [path]
-                        Destination path of the font. If no argument is specified, it will be the current path.
-  -mkvpropedit [path]
-                        Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
-  --delete-fonts, -d
-                        If -d is specified, it will delete the font attached to the mkv before merging the new needed font. If -mkv is not specified, it will do nothing.
-  --additional-fonts [path ...]
-                        May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
+  --output OUTPUT, -o OUTPUT
+                        Destination path of the font. If -o and -mkv aren't specified, it will be the current path.
+  -mkvpropedit MKVPROPEDIT
+                        Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do
+                        nothing.
+  --delete-fonts, -d    
+                        If -d is specified, it will delete the font attached to the mkv before merging the new needed
+                        font. If -mkv is not specified, it will do nothing.
+  --additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]
+                        May be a directory containing font files or a single font file. You can specify more than one
+                        additional-fonts.
+  --exclude-system-fonts
+                        If specified, FontCollector won't use the system font to find the font used by an .ass file.
 ```
 ## Examples
 Recover fonts from 2 .ass files and save them in the current folder
 ```
-fontCollector -i "file1.ass" "file2.ass" -o
+fontCollector -i "file1.ass" "file2.ass"
 ```
 Take all the .ass files from the current folder and save the font in the current folder
 ```
-fontCollector -i  -o
+fontCollector -i
 ```
 Mux font from .ass file into an mkv
 ```
