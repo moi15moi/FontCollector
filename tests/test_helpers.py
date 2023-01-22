@@ -25,5 +25,3 @@ def test_get_used_font_by_style():
     # If it would have prefer to match the italic, the weight would be 700 and italic would be true.
     assert font_result.font.weight == 900
     assert font_result.font.italic == False
-
-test_get_used_font_by_style()
