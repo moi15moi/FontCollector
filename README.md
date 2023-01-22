@@ -1,7 +1,7 @@
 # FontCollector
 FontCollector for Advanced SubStation Alpha file.
 This tool allows to recover and/or mux the fonts necessary in an mkv.
-## Installation and Update
+## Installation
 ```
 pip install FontCollector
 ```
