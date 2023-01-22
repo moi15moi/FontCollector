@@ -66,7 +66,7 @@ setuptools.setup(
     install_requires=[
         "ass",
         "ass-tag-analyzer",
-        "fontTools",
+        "fontTools>=4.38.0",
         "freetype-py",
         "matplotlib>=3.6",
     ],

@@ -4,7 +4,6 @@ from font_collector import AssDocument, AssStyle, UsageData
 # Get ass path used for tests
 dir_path = os.path.dirname(os.path.realpath(__file__))
 path_ass = os.path.join(dir_path, "ass", "Untitled.ass")
-path_font_directory = os.path.join(dir_path, "fonts")
 
 subtitle = AssDocument.from_file(path_ass)
 
