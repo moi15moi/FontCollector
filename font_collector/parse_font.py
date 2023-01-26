@@ -293,7 +293,8 @@ class ParseFont:
 
         # https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L258-L344
         MAX = 100
-        families = fullnames = set()
+        families = set()
+        fullnames = set()
 
         for name in names:
 
