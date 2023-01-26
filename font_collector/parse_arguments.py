@@ -36,7 +36,7 @@ def parse_arguments() -> Tuple[
     Path,
     Union[Path, None],
     bool,
-    Set[Font],
+    Set[Path],
     bool,
 ]:
     """
@@ -118,7 +118,7 @@ def parse_arguments() -> Tuple[
     delete_fonts = args.delete_fonts
 
     if args.additional_fonts is not None:
-        additional_fonts = FontLoader.load_additional_fonts(args.additional_fonts)
+        additional_fonts = args.additional_fonts
     else:
         additional_fonts = set()
 

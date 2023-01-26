@@ -278,6 +278,26 @@ class ParseFont:
                 font_path, font_index
             )
 
+        # See https://github.com/libass/libass/pull/676
+        if weight == 1:
+            weight = 100
+        elif weight == 2:
+            weight = 200
+        elif weight == 3:
+            weight = 300
+        elif weight == 4:
+            weight = 350
+        elif weight == 5:
+            weight = 400
+        elif weight == 6:
+            weight = 600
+        elif weight == 7:
+            weight = 700
+        elif weight == 8:
+            weight = 800
+        elif weight == 9:
+            weight = 900
+
         return is_italic, weight
 
     @staticmethod
@@ -293,7 +313,8 @@ class ParseFont:
 
         # https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L258-L344
         MAX = 100
-        families = fullnames = set()
+        families = set()
+        fullnames = set()
 
         for name in names:
 

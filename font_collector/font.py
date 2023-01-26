@@ -66,7 +66,7 @@ class Font:
             exact_names = set()
 
             # If is Variable Font, else "normal" font
-            if is_var := "fvar" in ttFont:
+            if is_var := ("fvar" in ttFont and "STAT" in ttFont):
 
                 for instance in ttFont["fvar"].instances:
                     axis_value_tables = ParseFont.get_axis_value_from_coordinates(
@@ -84,9 +84,7 @@ class Font:
 
             else:
                 # From https://github.com/fonttools/fonttools/discussions/2619
-                isTrueType = False
-                if "glyf" in ttFont:
-                    isTrueType = True
+                is_truetype = "glyf" in ttFont
 
                 families, fullnames = ParseFont.get_font_family_fullname_property(
                     ttFont["name"].names
@@ -105,7 +103,7 @@ class Font:
                         )
                         continue
 
-                if isTrueType:
+                if is_truetype:
                     exact_names = fullnames
                 else:
                     # If not TrueType, it is OpenType

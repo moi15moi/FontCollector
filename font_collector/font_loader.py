@@ -79,7 +79,11 @@ class FontLoader:
             # Add font that have been installed since last execution
             added = fonts_paths.difference(cached_paths)
             for font_path in added:
-                system_fonts.update(Font.from_font_path(font_path))
+                try:
+                    system_fonts.update(Font.from_font_path(font_path))
+                except FileExistsError:
+                    # matplotlib can sometimes returns file that aren't font: "C:\WINDOWS\Fonts\desktop.ini"
+                    continue
 
             # If there is a change, update the cache file
             if len(added) > 0 or len(removed) > 0:
@@ -89,7 +93,11 @@ class FontLoader:
         else:
             # Since there is no cache file, load the font
             for font_path in fonts_paths:
-                system_fonts.update(Font.from_font_path(font_path))
+                try:
+                    system_fonts.update(Font.from_font_path(font_path))
+                except FileExistsError:
+                    # matplotlib can sometimes returns file that aren't font: "C:\WINDOWS\Fonts\desktop.ini"
+                    continue
 
             # Save the font into the cache file
             with open(system_font_cache_file, "wb") as file:
