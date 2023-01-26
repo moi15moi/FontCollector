@@ -1,6 +1,5 @@
 import os
 from font_collector import Font
-from fontTools.ttLib.ttFont import TTFont
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 font_without_os2_table = os.path.join(dir_path, "fonts", "BRUSHSTP.TTF")
