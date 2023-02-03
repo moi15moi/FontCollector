@@ -1,4 +1,5 @@
 import logging
+import os
 from .parse_font import ParseFont
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
@@ -59,76 +60,80 @@ class Font:
                     f'The file "{font_path}" is not a valid font file'
                 )
 
-        # Read font attributes
-        for font_index, ttFont in enumerate(ttFonts):
+        try:
 
-            families = set()
-            exact_names = set()
+            # Read font attributes
+            for font_index, ttFont in enumerate(ttFonts):
 
-            # If is Variable Font, else "normal" font
-            if is_var := ("fvar" in ttFont and "STAT" in ttFont):
+                families = set()
+                exact_names = set()
 
-                for instance in ttFont["fvar"].instances:
-                    axis_value_tables = ParseFont.get_axis_value_from_coordinates(
-                        ttFont, instance.coordinates
-                    )
-                    (
-                        family_name,
-                        full_font_name,
-                    ) = ParseFont.get_var_font_family_fullname(
-                        ttFont, axis_value_tables
-                    )
+                # If is Variable Font, else "normal" font
+                if is_var := ("fvar" in ttFont and "STAT" in ttFont):
 
-                    families.add(family_name)
-                    families.add(full_font_name)
-
-            else:
-                # From https://github.com/fonttools/fonttools/discussions/2619
-                is_truetype = "glyf" in ttFont
-
-                families, fullnames = ParseFont.get_font_family_fullname_property(
-                    ttFont["name"].names
-                )
-
-                # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
-                if len(families) == 0:
-                    familyName = ParseFont.get_name_by_id(1, ttFont["name"].names)
-
-                    if familyName:
-                        families.add(familyName)
-                    else:
-                        # Skip the font since it is invalid
-                        _logger.info(
-                            f'Warning: The index {font_index} of the font "{font_path}" does not contain an valid family name. The font index will be ignored.'
+                    for instance in ttFont["fvar"].instances:
+                        axis_value_tables = ParseFont.get_axis_value_from_coordinates(
+                            ttFont, instance.coordinates
                         )
-                        continue
+                        (
+                            family_name,
+                            full_font_name,
+                        ) = ParseFont.get_var_font_family_fullname(
+                            ttFont, axis_value_tables
+                        )
 
-                if is_truetype:
-                    exact_names = fullnames
+                        families.add(family_name)
+                        families.add(full_font_name)
+
                 else:
-                    # If not TrueType, it is OpenType
+                    # From https://github.com/fonttools/fonttools/discussions/2619
+                    is_truetype = "glyf" in ttFont
 
-                    postscript_name = ParseFont.get_font_postscript_property(
-                        font_path, font_index
+                    families, fullnames = ParseFont.get_font_family_fullname_property(
+                        ttFont["name"].names
                     )
-                    if postscript_name is not None:
-                        exact_names.add(postscript_name)
 
-            is_italic, weight = ParseFont.get_font_italic_bold_property(
-                ttFont, font_path, font_index
-            )
-            fonts.append(
-                Font(
-                    font_path,
-                    font_index,
-                    families,
-                    weight,
-                    is_italic,
-                    exact_names,
-                    is_var,
+                    # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
+                    if len(families) == 0:
+                        familyName = ParseFont.get_name_by_id(1, ttFont["name"].names)
+
+                        if familyName:
+                            families.add(familyName)
+                        else:
+                            # Skip the font since it is invalid
+                            _logger.info(
+                                f'Warning: The index {font_index} of the font "{font_path}" does not contain an valid family name. The font index will be ignored.'
+                            )
+                            continue
+
+                    if is_truetype:
+                        exact_names = fullnames
+                    else:
+                        # If not TrueType, it is OpenType
+
+                        postscript_name = ParseFont.get_font_postscript_property(
+                            font_path, font_index
+                        )
+                        if postscript_name is not None:
+                            exact_names.add(postscript_name)
+
+                is_italic, weight = ParseFont.get_font_italic_bold_property(
+                    ttFont, font_path, font_index
                 )
-            )
-
+                fonts.append(
+                    Font(
+                        font_path,
+                        font_index,
+                        families,
+                        weight,
+                        is_italic,
+                        exact_names,
+                        is_var,
+                    )
+                )
+        except Exception:
+            _logger.error(f'An unknown error occurred while reading the font "{font_path}"{os.linesep}Please open an issue on github, share the font and the following error message:')
+            raise
         return fonts
 
     @property
