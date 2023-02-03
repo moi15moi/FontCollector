@@ -132,7 +132,9 @@ class Font:
                     )
                 )
         except Exception:
-            _logger.error(f'An unknown error occurred while reading the font "{font_path}"{os.linesep}Please open an issue on github, share the font and the following error message:')
+            _logger.error(
+                f'An unknown error occurred while reading the font "{font_path}"{os.linesep}Please open an issue on github, share the font and the following error message:'
+            )
             raise
         return fonts
 
