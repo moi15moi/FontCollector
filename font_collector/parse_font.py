@@ -132,6 +132,10 @@ class ParseFont:
             raise ValueError("Cannot get axis_value since there is no STAT table.")
         stat = font["STAT"].table
 
+        # If there isn't any axis, return an empty list
+        if stat.AxisValueArray is None:
+            return []
+
         axisLimits = AxisLimits(coordinates).populateDefaults(font)
         axis_value_tables = axisValuesFromAxisLimits(stat, axisLimits)
 
