@@ -221,6 +221,7 @@ class Font:
 
                 if codepoint in cmap_table.cmap:
                     char_found = True
+                    break
 
             if not char_found:
                 char_not_found.add(char)
