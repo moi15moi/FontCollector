@@ -1,5 +1,5 @@
 import os
-from font_collector.parse_font import ParseFont
+from font_collector.font_parser import FontParser
 from fontTools.ttLib.ttFont import TTFont
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -8,7 +8,7 @@ variable_font = TTFont(os.path.join(dir_path, "fonts", "bahnschrift (original).t
 
 def test_get_var_font_family_prefix():
 
-    assert "Bahnschrift" == ParseFont.get_var_font_family_prefix(variable_font)
+    assert "Bahnschrift" == FontParser.get_var_font_family_prefix(variable_font)
 
 
 def test_get_var_font_family_fullname():
@@ -16,11 +16,11 @@ def test_get_var_font_family_fullname():
     fullname = []
 
     for instance in variable_font["fvar"].instances:
-        axis_value_tables = ParseFont.get_axis_value_from_coordinates(
+        axis_value_tables = FontParser.get_axis_value_from_coordinates(
             variable_font, instance.coordinates
         )
 
-        family_name, full_font_name = ParseFont.get_var_font_family_fullname(
+        family_name, full_font_name = FontParser.get_var_font_family_fullname(
             variable_font, axis_value_tables
         )
 

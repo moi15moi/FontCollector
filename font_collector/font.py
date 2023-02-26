@@ -1,6 +1,6 @@
 import logging
 import os
-from .parse_font import ParseFont
+from .font_parser import FontParser
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
 from typing import List, Sequence, Set
@@ -49,9 +49,9 @@ class Font:
         fonts: List[Font] = []
 
         with open(font_path, "rb") as font_file:
-            if ParseFont.is_file_truetype_collection(font_file):
+            if FontParser.is_file_truetype_collection(font_file):
                 ttFonts.extend(TTCollection(font_path).fonts)
-            elif ParseFont.is_file_truetype(font_file) or ParseFont.is_file_opentype(
+            elif FontParser.is_file_truetype(font_file) or FontParser.is_file_opentype(
                 font_file
             ):
                 ttFonts.append(TTFont(font_path))
@@ -72,13 +72,13 @@ class Font:
                 if is_var := ("fvar" in ttFont and "STAT" in ttFont):
 
                     for instance in ttFont["fvar"].instances:
-                        axis_value_tables = ParseFont.get_axis_value_from_coordinates(
+                        axis_value_tables = FontParser.get_axis_value_from_coordinates(
                             ttFont, instance.coordinates
                         )
                         (
                             family_name,
                             full_font_name,
-                        ) = ParseFont.get_var_font_family_fullname(
+                        ) = FontParser.get_var_font_family_fullname(
                             ttFont, axis_value_tables
                         )
 
@@ -89,13 +89,13 @@ class Font:
                     # From https://github.com/fonttools/fonttools/discussions/2619
                     is_truetype = "glyf" in ttFont
 
-                    families, fullnames = ParseFont.get_font_family_fullname_property(
+                    families, fullnames = FontParser.get_font_family_fullname_property(
                         ttFont["name"].names
                     )
 
                     # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
                     if len(families) == 0:
-                        familyName = ParseFont.get_name_by_id(1, ttFont["name"].names)
+                        familyName = FontParser.get_name_by_id(1, ttFont["name"].names)
 
                         if familyName:
                             families.add(familyName)
@@ -111,13 +111,13 @@ class Font:
                     else:
                         # If not TrueType, it is OpenType
 
-                        postscript_name = ParseFont.get_font_postscript_property(
+                        postscript_name = FontParser.get_font_postscript_property(
                             font_path, font_index
                         )
                         if postscript_name is not None:
                             exact_names.add(postscript_name)
 
-                is_italic, weight = ParseFont.get_font_italic_bold_property(
+                is_italic, weight = FontParser.get_font_italic_bold_property(
                     ttFont, font_path, font_index
                 )
                 fonts.append(

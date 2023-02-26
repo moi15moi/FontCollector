@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 from .ass_style import AssStyle
-from .parse_font import ParseFont
+from .font_parser import FontParser
 from .font import Font
 from .font_loader import FontLoader
 from .font_result import FontResult
@@ -135,17 +135,17 @@ class Helpers:
         font_collection = TTCollection()
         ttFont = TTFont(fontpath)
 
-        family_prefix = ParseFont.get_var_font_family_prefix(ttFont)
+        family_prefix = FontParser.get_var_font_family_prefix(ttFont)
 
         for instance in ttFont["fvar"].instances:
             generated_font = instancer.instantiateVariableFont(
                 ttFont, instance.coordinates
             )
 
-            axis_value_tables = ParseFont.get_axis_value_from_coordinates(
+            axis_value_tables = FontParser.get_axis_value_from_coordinates(
                 ttFont, instance.coordinates
             )
-            family_name, full_font_name = ParseFont.get_var_font_family_fullname(
+            family_name, full_font_name = FontParser.get_var_font_family_fullname(
                 ttFont, axis_value_tables
             )
 
