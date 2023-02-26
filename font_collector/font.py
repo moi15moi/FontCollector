@@ -1,6 +1,7 @@
 import logging
 import os
 from .font_parser import FontParser
+from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
 from typing import List, Sequence, Set
@@ -175,18 +176,52 @@ class Font:
     def __repr__(self):
         return f'Filename: "{self.filename}" Family_names: "{self.family_names}", Weight: "{self.weight}", Italic: "{self.italic}, Exact_names: "{self.exact_names}"'
 
-    def get_missing_glyphs(self, text: Sequence[str]):
+    def get_missing_glyphs(self, text: Sequence[str]) -> Set[str]:
+        """
+        Parameters:
+            text (Sequence[str]): Text
+        Returns:
+            A set of all the character that the font cannot display.
+        """
 
         ttFont = TTFont(self.filename, fontNumber=self.font_index)
-
         char_not_found: Set[str] = set()
+
+        cmap_tables: List[CmapSubtable] = list(
+            filter(lambda table: table.platformID == 3, ttFont["cmap"].tables)
+        )
+
+        # GDI seems to take apple cmap if there isn't any microsoft cmap: https://github.com/libass/libass/issues/679
+        if len(cmap_tables) == 0:
+            cmap_tables = list(
+                filter(
+                    lambda table: table.platformID == 1 and table.platEncID == 0,
+                    ttFont["cmap"].tables,
+                )
+            )
 
         for char in text:
             char_found = False
-            for table in ttFont["cmap"].tables:
-                if ord(char) in table.cmap:
+
+            for cmap_table in cmap_tables:
+                cmap_encoding = FontParser.get_cmap_encoding(cmap_table)
+
+                # Cmap isn't supported
+                if cmap_encoding is None:
+                    continue
+
+                try:
+                    codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
+                except UnicodeEncodeError:
+                    continue
+
+                # GDI/Libass modify the codepoint for microsoft symbol cmap: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
+                if cmap_table.platformID == 3 and cmap_table.platEncID == 0:
+                    codepoint = 0xF000 | codepoint
+
+                if codepoint in cmap_table.cmap:
                     char_found = True
-                    break
+
             if not char_found:
                 char_not_found.add(char)
 
