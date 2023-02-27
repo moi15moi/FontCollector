@@ -101,16 +101,18 @@ class Mkvpropedit:
             f'"{mkv_filename}"',
         ]
 
-        for font in font_collection:
-            mkvpropedit_args.append(f'--add-attachment "{font.filename}"')
+        font_paths = set(
+            f'--add-attachment "{font.filename}"' for font in font_collection
+        )
+        mkvpropedit_args.extend(font_paths)
 
         output = subprocess.run(
             " ".join(mkvpropedit_args), capture_output=True, text=True
         )
 
-        if len(output.stderr) != 0:
+        if len(output.stderr) == 0:
+            _logger.info(f'Successfully merging fonts into mkv "{mkv_filename}')
+        else:
             raise OSError(
                 f"mkvpropedit reported an error when merging font into an mkv: {output.stderr}"
             )
-        else:
-            _logger.info(f'Successfully merging fonts into mkv "{mkv_filename}')
