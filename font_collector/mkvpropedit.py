@@ -74,12 +74,12 @@ class Mkvpropedit:
             " ".join(mkvpropedit_args), capture_output=True, text=True
         )
 
-        if len(output.stderr) != 0:
+        if len(output.stderr) == 0:
+            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
+        else:
             raise OSError(
                 f"mkvpropedit reported an error when deleting the font in the mkv: {output.stderr}"
             )
-        else:
-            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
 
     @staticmethod
     def merge_fonts_into_mkv(font_collection: Sequence[Font], mkv_filename: Path):
