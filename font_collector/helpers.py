@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 from .ass_style import AssStyle
-from .parse_font import ParseFont
+from .font_parser import FontParser
 from .font import Font
 from .font_loader import FontLoader
 from .font_result import FontResult
@@ -12,7 +12,7 @@ from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
 from fontTools.varLib import instancer
 from pathlib import Path
-from typing import List, Set, Tuple, Union
+from typing import List, Sequence, Set, Tuple, Union
 
 _logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class Helpers:
 
     @staticmethod
     def copy_font_to_directory(
-        font_collection: Set[Font],
+        font_collection: Sequence[Font],
         output_directory: Path,
         create_directory_if_doesnt_exist: bool = True,
         convert_variable_font_into_truetype_collection: bool = True,
@@ -108,9 +108,9 @@ class Helpers:
 
             if font.is_var and convert_variable_font_into_truetype_collection:
                 # We take the first result, but it doesn't matter
-                font = Helpers.variable_font_to_collection(font.filename, os.getcwd())[
-                    0
-                ]
+                font = Helpers.variable_font_to_collection(
+                    font.filename, output_directory
+                )[0]
 
             # Don't overwrite fonts
             if not os.path.isfile(
@@ -135,17 +135,17 @@ class Helpers:
         font_collection = TTCollection()
         ttFont = TTFont(fontpath)
 
-        family_prefix = ParseFont.get_var_font_family_prefix(ttFont)
+        family_prefix = FontParser.get_var_font_family_prefix(ttFont)
 
         for instance in ttFont["fvar"].instances:
             generated_font = instancer.instantiateVariableFont(
                 ttFont, instance.coordinates
             )
 
-            axis_value_tables = ParseFont.get_axis_value_from_coordinates(
+            axis_value_tables = FontParser.get_axis_value_from_coordinates(
                 ttFont, instance.coordinates
             )
-            family_name, full_font_name = ParseFont.get_var_font_family_fullname(
+            family_name, full_font_name = FontParser.get_var_font_family_fullname(
                 ttFont, axis_value_tables
             )
 

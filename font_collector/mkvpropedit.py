@@ -2,7 +2,8 @@ import logging
 import shutil
 import subprocess
 from .font import Font
-from os import path
+from .helpers import Helpers
+from os import getcwd, path
 from pathlib import Path
 from typing import Sequence
 
@@ -74,19 +75,28 @@ class Mkvpropedit:
             " ".join(mkvpropedit_args), capture_output=True, text=True
         )
 
-        if len(output.stderr) != 0:
+        if len(output.stderr) == 0:
+            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
+        else:
             raise OSError(
                 f"mkvpropedit reported an error when deleting the font in the mkv: {output.stderr}"
             )
-        else:
-            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
 
     @staticmethod
-    def merge_fonts_into_mkv(font_collection: Sequence[Font], mkv_filename: Path):
+    def merge_fonts_into_mkv(
+        font_collection: Sequence[Font],
+        mkv_filename: Path,
+        convert_variable_font_into_truetype_collection: bool = True,
+    ):
         """
         Parameters:
             font_collection (Sequence[Font]): All font needed to be merge in the mkv
             mkv_filename (Path): Mkv file path
+            convert_variable_font_into_truetype_collection (bool):
+                If true, it will convert the variable font into an truetype collection font
+                    It is usefull, because libass doesn't support variation font: https://github.com/libass/libass/issues/386
+                    It convert it in a format that libass support
+                If false, it won't do anything special. The variable font will be copied like any other font.
         """
         if not Mkvpropedit.is_mkvpropedit_path_valid():
             raise FileNotFoundError(
@@ -101,16 +111,22 @@ class Mkvpropedit:
             f'"{mkv_filename}"',
         ]
 
+        font_paths = set()
         for font in font_collection:
-            mkvpropedit_args.append(f'--add-attachment "{font.filename}"')
+            if font.is_var and convert_variable_font_into_truetype_collection:
+                # We take the first result, but it doesn't matter
+                font = Helpers.variable_font_to_collection(font.filename, getcwd())[0]
+
+            font_paths.add(f'--add-attachment "{font.filename}"')
+        mkvpropedit_args.extend(font_paths)
 
         output = subprocess.run(
             " ".join(mkvpropedit_args), capture_output=True, text=True
         )
 
-        if len(output.stderr) != 0:
+        if len(output.stderr) == 0:
+            _logger.info(f'Successfully merging fonts into mkv "{mkv_filename}')
+        else:
             raise OSError(
                 f"mkvpropedit reported an error when merging font into an mkv: {output.stderr}"
             )
-        else:
-            _logger.info(f'Successfully merging fonts into mkv "{mkv_filename}')

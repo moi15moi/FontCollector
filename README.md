@@ -62,3 +62,4 @@ Since [Libass](https://github.com/libass/libass/issues/386) does not support [va
  - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts) Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
  - [PyonFX](https://github.com/CoffeeStraw/PyonFX) I inspired myself from his setup.py to create mine.
  - [rcombs](https://github.com/rcombs) for her help with how VSFilter pick font when faux-bold need to be applied.
+ - [assfc](https://github.com/tp7/assfc) for all the idea behind the font_loader.

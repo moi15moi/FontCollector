@@ -2,8 +2,9 @@ import freetype
 import logging
 from io import BufferedReader
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 from fontTools.ttLib.ttFont import TTFont
+from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.varLib.instancer import AxisLimits, axisValuesFromAxisLimits
 from fontTools.varLib.instancer.names import (
@@ -17,7 +18,24 @@ from struct import error as struct_error
 _logger = logging.getLogger(__name__)
 
 
-class ParseFont:
+class FontParser:
+
+    CMAP_ENCODING_MAP = {
+        1: {  # Mac
+            0: "mac_roman",
+        },
+        3: {  # Microsoft
+            0: "utf_16_be",
+            1: "utf_16_be",
+            2: "cp932",
+            3: "cp936",
+            4: "cp950",
+            5: "cp949",
+            6: "cp1361",
+            10: "utf_16_be",
+        },
+    }
+
     @staticmethod
     def get_var_font_family_prefix(font: TTFont) -> str:
         """
@@ -28,9 +46,9 @@ class ParseFont:
         Returns:
             The family name prefix.
         """
-        family_prefix = ParseFont.get_name_by_id(
+        family_prefix = FontParser.get_name_by_id(
             NameID.TYPOGRAPHIC_FAMILY_NAME, font["name"].names
-        ) or ParseFont.get_name_by_id(NameID.FAMILY_NAME, font["name"].names)
+        ) or FontParser.get_name_by_id(NameID.FAMILY_NAME, font["name"].names)
 
         return family_prefix
 
@@ -67,11 +85,11 @@ class ParseFont:
         elidedNameIsRibbi = _isRibbi(font["name"], elidedNameID)
 
         subFamilyName = " ".join(
-            ParseFont.get_name_by_id(n, font["name"].names) for n in ribbiNameIDs
+            FontParser.get_name_by_id(n, font["name"].names) for n in ribbiNameIDs
         )
         if nonRibbiNameIDs:
             typoSubFamilyName = " ".join(
-                ParseFont.get_name_by_id(n, font["name"].names)
+                FontParser.get_name_by_id(n, font["name"].names)
                 for n in axisValueNameIDs
             )
         else:
@@ -81,19 +99,19 @@ class ParseFont:
         # we will use the STAT's elidedFallbackName
         if not typoSubFamilyName and not subFamilyName:
             if elidedNameIsRibbi:
-                subFamilyName = ParseFont.get_name_by_id(
+                subFamilyName = FontParser.get_name_by_id(
                     elidedNameID, font["name"].names
                 )
             else:
-                typoSubFamilyName = ParseFont.get_name_by_id(
+                typoSubFamilyName = FontParser.get_name_by_id(
                     elidedNameID, font["name"].names
                 )
 
         familyNameSuffix = " ".join(
-            ParseFont.get_name_by_id(n, font["name"].names) for n in nonRibbiNameIDs
+            FontParser.get_name_by_id(n, font["name"].names) for n in nonRibbiNameIDs
         )
 
-        currentFamilyName = ParseFont.get_var_font_family_prefix(font)
+        currentFamilyName = FontParser.get_var_font_family_prefix(font)
 
         nameIDs = {
             NameID.FAMILY_NAME: currentFamilyName,
@@ -189,15 +207,15 @@ class ParseFont:
         """
 
         names = list(filter(lambda name: name.nameID == nameID, names))
-        names = ParseFont.sort_naming_table(names)
+        names = FontParser.sort_naming_table(names)
 
         for name in names:
             try:
-                unistr = name.toUnicode()
+                name_str = name.string.decode(FontParser.get_name_encoding(name))
             except UnicodeDecodeError:
                 continue
 
-            return unistr
+            return name_str
 
     @staticmethod
     def get_font_postscript_property(
@@ -325,18 +343,60 @@ class ParseFont:
             if name.platformID == 3 and (name.nameID == 1 or name.nameID == 4):
 
                 try:
-                    # Since we use the windows platform, we can simply use utf_16_be to decode the string: https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-specific-encoding-and-language-ids-windows-platform-platform-id-3
-                    # Even libass always use utf_16_be: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L283
-                    nameStr = name.string.decode("utf_16_be")
+                    name_str = name.string.decode(FontParser.get_name_encoding(name))
                 except UnicodeDecodeError:
                     continue
 
                 if name.nameID == 1 and len(families) < MAX:
-                    families.add(nameStr)
+                    families.add(name_str)
                 elif name.nameID == 4 and len(fullnames) < MAX:
-                    fullnames.add(nameStr)
+                    fullnames.add(name_str)
 
         return families, fullnames
+
+    @staticmethod
+    def get_cmap_encoding(cmap_table: CmapSubtable) -> Optional[str]:
+        """
+        Parameters:
+            cmap_table (CmapSubtable): CMAP table
+        Returns:
+            The cmap codepoint encoding.
+            If GDI does not support the platform_id and/or platform_encoding_id, return None.
+        """
+        return FontParser.CMAP_ENCODING_MAP.get(cmap_table.platformID, {}).get(
+            cmap_table.platEncID, None
+        )
+
+    @staticmethod
+    def get_name_encoding(name: NameRecord) -> Optional[str]:
+        """
+        Parameters:
+            names (NameRecord): Name record from the naming record
+        Returns:
+            The cmap codepoint encoding.
+            If GDI does not support the name, return None.
+        """
+        # From: https://github.com/MicrosoftDocs/typography-issues/issues/956#issuecomment-1205678068
+        if name.platformID == 3:
+            if name.platEncID == 3:
+                return "cp936"
+            elif name.platEncID == 4:
+                if name.nameID == 2:
+                    return "utf_16_be"
+                else:
+                    return "cp950"
+            elif name.platEncID == 5:
+                if name.nameID == 2:
+                    return "utf_16_be"
+                else:
+                    return "cp949"
+            else:
+                return "utf_16_be"
+        elif name.platformID == 1 and name.platEncID == 0:
+            # From: https://github.com/libass/libass/issues/679#issuecomment-1442262479
+            return "iso-8859-1"
+
+        return None
 
     @staticmethod
     def is_file_truetype_collection(file: BufferedReader) -> bool:
@@ -357,7 +417,7 @@ class ParseFont:
     def is_file_font(filepath: str) -> bool:
         with open(filepath, "rb") as fontFile:
             return (
-                ParseFont.is_file_truetype(fontFile)
-                or ParseFont.is_file_opentype(fontFile)
-                or ParseFont.is_file_truetype_collection(fontFile)
+                FontParser.is_file_truetype(fontFile)
+                or FontParser.is_file_opentype(fontFile)
+                or FontParser.is_file_truetype_collection(fontFile)
             )

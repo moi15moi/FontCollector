@@ -173,7 +173,11 @@ class AssDocument:
             )
             for style in self.subtitle.styles
         }
-        sub_wrap_style = WrapStyle(self.subtitle.wrap_style)
+
+        try:
+            sub_wrap_style = WrapStyle(self.subtitle.wrap_style)
+        except KeyError:
+            sub_wrap_style = WrapStyle.SMART_TOP
 
         for i, line in enumerate(self.subtitle.events):
             if isinstance(line, Dialogue):

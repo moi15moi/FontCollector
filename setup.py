@@ -59,6 +59,7 @@ setuptools.setup(
     author="moi15moi",
     author_email="moi15moismokerlolilol@gmail.com",
     description="FontCollector for Advanced SubStation Alpha file.",
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     version=find_version("font_collector", "_version.py"),
     packages=["font_collector"],
