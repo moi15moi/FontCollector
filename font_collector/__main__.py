@@ -1,6 +1,7 @@
 import logging
 import sys
 from .ass_document import AssDocument
+from .font import Font
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .helpers import Helpers
@@ -73,15 +74,14 @@ def main():
         else:
             _logger.info(f"{nbr_font_not_found} fonts could not be found.")
 
-    # Remove duplicate font
-    font_found = list({font.font.filename: font.font for font in font_results}.values())
+    fonts_found: List[Font] = [font.font for font in font_results]
 
     if mkv_path is not None:
         if delete_fonts:
             Mkvpropedit.delete_fonts_of_mkv(mkv_path)
-        Mkvpropedit.merge_fonts_into_mkv(font_found, mkv_path)
+        Mkvpropedit.merge_fonts_into_mkv(fonts_found, mkv_path)
     else:
-        Helpers.copy_font_to_directory(font_found, output_directory)
+        Helpers.copy_font_to_directory(fonts_found, output_directory)
 
 
 if __name__ == "__main__":
