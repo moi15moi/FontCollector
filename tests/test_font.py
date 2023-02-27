@@ -48,14 +48,18 @@ def test_font_without_axis_value():
     assert font.exact_names == set([])
     assert font.is_var == True
 
+
 def test_font_get_missing_glyphs_cmap_encoding_2():
 
     font = Font.from_font_path(font_cmap_encoding_2)
     assert len(font) == 1
     font = font[0]
 
-    missing_glyphs = font.get_missing_glyphs(string.ascii_letters + string.digits + "éｦ&*")
+    missing_glyphs = font.get_missing_glyphs(
+        string.ascii_letters + string.digits + "éｦ&*"
+    )
     assert missing_glyphs == set(["é"])
+
 
 def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
 
@@ -63,5 +67,7 @@ def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
     assert len(font) == 1
     font = font[0]
 
-    missing_glyphs = font.get_missing_glyphs(string.ascii_letters + string.digits + "@é¸")
+    missing_glyphs = font.get_missing_glyphs(
+        string.ascii_letters + string.digits + "@é¸"
+    )
     assert missing_glyphs == set(["@", "¸"])
