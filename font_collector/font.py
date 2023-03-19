@@ -1,10 +1,11 @@
 import logging
 import os
-from .font_parser import FontParser
+from .exceptions import InvalidFontException
+from .font_parser import FontParser, NameID
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
-from typing import List, Sequence, Set
+from typing import Any, Dict, List, Sequence, Set, Tuple
 
 _logger = logging.getLogger(__name__)
 
@@ -18,17 +19,17 @@ class Font:
     __exact_names: Set[
         str
     ]  # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
-    is_var: bool
+    named_instance_coordinates: Dict[str, float] = {}
 
     def __init__(
         self,
         filename: str,
         font_index: int,
-        family_names: Set[str],
+        family_names: Sequence[str],
         weight: int,
         italic: bool,
-        exact_names: Set[str],
-        is_var: bool,
+        exact_names: Sequence[str],
+        named_instance_coordinates: Dict[str, float] = {},
     ):
         self.filename = filename
         self.font_index = font_index
@@ -36,7 +37,7 @@ class Font:
         self.weight = weight
         self.italic = italic
         self.exact_names = exact_names
-        self.is_var = is_var
+        self.named_instance_coordinates = named_instance_coordinates
 
     @classmethod
     def from_font_path(cls, font_path: str) -> List["Font"]:
@@ -66,77 +67,137 @@ class Font:
             # Read font attributes
             for font_index, ttFont in enumerate(ttFonts):
 
-                families = set()
-                exact_names = set()
-
                 # If is Variable Font, else "normal" font
-                if is_var := ("fvar" in ttFont and "STAT" in ttFont):
-
-                    for instance in ttFont["fvar"].instances:
-                        axis_value_tables = FontParser.get_axis_value_from_coordinates(
-                            ttFont, instance.coordinates
-                        )
-                        (
-                            family_name,
-                            full_font_name,
-                        ) = FontParser.get_var_font_family_fullname(
-                            ttFont, axis_value_tables
-                        )
-
-                        families.add(family_name)
-                        families.add(full_font_name)
-
+                if FontParser.is_valid_variable_font(ttFont):
+                    fonts.extend(
+                        Font._open_variable_font(ttFont, font_path, font_index)
+                    )
                 else:
-                    # From https://github.com/fonttools/fonttools/discussions/2619
-                    is_truetype = "glyf" in ttFont
+                    try:
+                        font = Font._open_normal_font(ttFont, font_path, font_index)
+                    except InvalidFontException as e:
+                        _logger.info(f"{e}. The font {font_path} will be ignored.")
+                        continue
 
-                    families, fullnames = FontParser.get_font_family_fullname_property(
-                        ttFont["name"].names
-                    )
+                    fonts.append(font)
 
-                    # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
-                    if len(families) == 0:
-                        familyName = FontParser.get_name_by_id(1, ttFont["name"].names)
-
-                        if familyName:
-                            families.add(familyName)
-                        else:
-                            # Skip the font since it is invalid
-                            _logger.info(
-                                f'Warning: The index {font_index} of the font "{font_path}" does not contain an valid family name. The font index will be ignored.'
-                            )
-                            continue
-
-                    if is_truetype:
-                        exact_names = fullnames
-                    else:
-                        # If not TrueType, it is OpenType
-
-                        postscript_name = FontParser.get_font_postscript_property(
-                            font_path, font_index
-                        )
-                        if postscript_name is not None:
-                            exact_names.add(postscript_name)
-
-                is_italic, weight = FontParser.get_font_italic_bold_property(
-                    ttFont, font_path, font_index
-                )
-                fonts.append(
-                    Font(
-                        font_path,
-                        font_index,
-                        families,
-                        weight,
-                        is_italic,
-                        exact_names,
-                        is_var,
-                    )
-                )
         except Exception:
             _logger.error(
                 f'An unknown error occurred while reading the font "{font_path}"{os.linesep}Please open an issue on github, share the font and the following error message:'
             )
             raise
+        return fonts
+
+    @classmethod
+    def _open_normal_font(
+        cls, ttFont: TTFont, font_path: str, font_index: int
+    ) -> "Font":
+        """
+        Parameters:
+            font (TTFont): An fontTools object
+            font_path (str): Font path.
+            font_index (int): Font index.
+        Returns:
+            An Font instance that represent the ttFont
+        """
+
+        is_truetype = FontParser.is_truetype(ttFont)
+
+        families, fullnames = FontParser.get_font_family_fullname_property(
+            ttFont["name"].names
+        )
+
+        # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
+        if len(families) == 0:
+            family_name = FontParser.get_name_by_id(
+                NameID.FAMILY_NAME, ttFont["name"].names
+            )
+
+            if family_name:
+                families.add(family_name)
+            else:
+                raise InvalidFontException(
+                    "The font does not contain an valid family name"
+                )
+
+        if is_truetype:
+            exact_names = fullnames
+        else:
+            exact_names = set()
+            postscript_name = FontParser.get_font_postscript_property(
+                font_path, font_index
+            )
+            if postscript_name is not None:
+                exact_names.add(postscript_name)
+
+        is_italic, weight = FontParser.get_font_italic_bold_property(
+            ttFont, font_path, font_index
+        )
+
+        return cls(
+            font_path,
+            font_index,
+            families,
+            weight,
+            is_italic,
+            exact_names,
+        )
+
+    @classmethod
+    def _open_variable_font(
+        cls, ttFont: TTFont, font_path: str, font_index: int
+    ) -> List["Font"]:
+        """
+        Parameters:
+            font (TTFont): An fontTools object
+            font_path (str): Font path.
+            font_index (int): Font index.
+        Returns:
+            An list of Font instance that represent the ttFont.
+        """
+        fonts: List[Font] = []
+
+        family_name_prefix = FontParser.get_var_font_family_prefix(ttFont)
+        axis_values_coordinates: List[Tuple[Any, Dict[str, float]]] = []
+
+        for instance in ttFont["fvar"].instances:
+            families = set()
+            fullnames = set()
+
+            axis_value_table = FontParser.get_axis_value_from_coordinates(
+                ttFont, instance.coordinates
+            )
+
+            instance_coordinates = instance.coordinates
+            for axis_value_coordinates in axis_values_coordinates:
+                if axis_value_coordinates[0] == axis_value_table:
+                    instance_coordinates = axis_value_coordinates[1]
+                    break
+            axis_values_coordinates.append((axis_value_table, instance.coordinates))
+
+            (
+                family_name,
+                full_name,
+                weight,
+                is_italic,
+            ) = FontParser.get_axis_value_table_property(
+                ttFont, axis_value_table, family_name_prefix
+            )
+
+            families.add(family_name)
+            fullnames.add(full_name)
+
+            font = cls(
+                font_path,
+                font_index,
+                families,
+                int(weight),
+                is_italic,
+                fullnames,
+                instance_coordinates,
+            )
+            fonts.append(font)
+
         return fonts
 
     @property
@@ -154,6 +215,10 @@ class Font:
     @exact_names.setter
     def exact_names(self, exact_names: List[str]):
         self.__exact_names = set([exact_name.lower() for exact_name in exact_names])
+
+    @property
+    def is_var(self):
+        return len(self.named_instance_coordinates) > 0
 
     def __eq__(self, other: "Font"):
         return (self.family_names, self.weight, self.italic, self.exact_names) == (
@@ -174,7 +239,7 @@ class Font:
         )
 
     def __repr__(self):
-        return f'Filename: "{self.filename}" Family_names: "{self.family_names}", Weight: "{self.weight}", Italic: "{self.italic}, Exact_names: "{self.exact_names}"'
+        return f'Filename: "{self.filename}" Family_names: "{self.family_names}", Weight: "{self.weight}", Italic: "{self.italic}, Exact_names: "{self.exact_names}", Named_instance_coordinates: "{self.named_instance_coordinates}"'
 
     def get_missing_glyphs(self, text: Sequence[str]) -> Set[str]:
         """
