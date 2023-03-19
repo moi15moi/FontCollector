@@ -56,7 +56,7 @@ Mux the font from the .ass file into an mkv and delete the currently attached fo
 fontCollector -i "file1.ass" -mkv "example.mkv" -mkvpropedit "C:\Program Files\MKVToolNix\mkvpropedit.exe" -d
 ```
 ## Variable Font
-Since [Libass](https://github.com/libass/libass/issues/386) does not support [variable font](https://docs.microsoft.com/en-us/typography/opentype/spec/otvaroverview), this tool will automatically generate a [OpenType Font Collection](https://docs.microsoft.com/en-us/typography/opentype/spec/otff#font-collections). The generated collection is designed to simulate how VSFilter handles variable font.
+Since [Libass](https://github.com/libass/libass/issues/386) does not support [variable font](https://docs.microsoft.com/en-us/typography/opentype/spec/otvaroverview), this tool will automatically generate a [OpenType Font Collection](https://docs.microsoft.com/en-us/typography/opentype/spec/otff#font-collections). The generated collection is designed to simulate how [VSFilter](https://en.wikipedia.org/wiki/DirectVobSub)/[GDI](https://en.wikipedia.org/wiki/Graphics_Device_Interface) handles variable font.
 ## Acknowledgments
  - [fontmerge](https://github.com/WheneverDev/fontmerge) for the idea to automatically merge the font into the mkv.
  - [Myaamori-Aegisub-Scripts](https://github.com/TypesettingTools/Myaamori-Aegisub-Scripts) Without this tool, I probably could never have created the fontCollector. I got a lot of inspiration from his work.
