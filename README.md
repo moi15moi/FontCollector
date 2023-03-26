@@ -63,3 +63,4 @@ Since [Libass](https://github.com/libass/libass/issues/386) does not support [va
  - [PyonFX](https://github.com/CoffeeStraw/PyonFX) I inspired myself from his setup.py to create mine.
  - [rcombs](https://github.com/rcombs) for her help with how VSFilter pick font when faux-bold need to be applied.
  - [assfc](https://github.com/tp7/assfc) for all the idea behind the font_loader.
+ - [Christopher Leung](https://www.linkedin.com/in/christopher-leung-755a291) for his help on how GDI handle variable font.
