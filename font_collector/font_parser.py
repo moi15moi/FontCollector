@@ -230,6 +230,7 @@ class FontParser:
 
         return axis_values_coordinate_matches
 
+    @staticmethod
     def get_axis_value_table_property(
         ttfont: TTFont, axis_values: List[Any], family_name_prefix: str
     ) -> Tuple[str, str, float, bool]:
