@@ -409,7 +409,7 @@ class FontParser:
         raise NameNotFoundException(
             f"The NamingTable doesn't contain the NameID {nameID}"
         )
-    
+
     @staticmethod
     def get_decoded_name(name: NameRecord) -> str:
         """
