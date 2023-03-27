@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 from .ass_style import AssStyle
-from .font_parser import FontParser
+from .font_parser import FontParser, NameID
 from .font import Font
 from .font_loader import FontLoader
 from .font_result import FontResult
@@ -134,40 +134,45 @@ class Helpers:
         """
         font_collection = TTCollection()
         ttFont = TTFont(fontpath)
+        fonts = Font.from_font_path(fontpath)
 
-        family_prefix = FontParser.get_var_font_family_prefix(ttFont)
-
-        for instance in ttFont["fvar"].instances:
-            generated_font = instancer.instantiateVariableFont(
-                ttFont, instance.coordinates
+        for font in fonts:
+            generated_fonts = instancer.instantiateVariableFont(
+                ttFont, font.named_instance_coordinates
             )
 
-            axis_value_tables = FontParser.get_axis_value_from_coordinates(
-                ttFont, instance.coordinates
-            )
-            family_name, full_font_name = FontParser.get_var_font_family_fullname(
-                ttFont, axis_value_tables
-            )
+            family_name = list(font.family_names)[0]
+            full_font_name = list(font.exact_names)[0]
 
-            generated_font["name"].setName(family_name, 1, 3, 1, 0x409)
-            generated_font["name"].setName(full_font_name, 2, 3, 1, 0x409)
-            generated_font["name"].setName(
+            generated_fonts["name"].setName(
+                family_name, NameID.FAMILY_NAME, 3, 1, 0x409
+            )
+            generated_fonts["name"].setName(
+                full_font_name, NameID.SUBFAMILY_NAME, 3, 1, 0x409
+            )
+            generated_fonts["name"].setName(
                 f"FontCollector v {__version__}:{full_font_name}:{date.today()}",
                 3,
                 3,
                 1,
                 0x409,
             )
-            generated_font["name"].setName(full_font_name, 4, 3, 1, 0x409)
+            generated_fonts["name"].setName(
+                full_font_name, NameID.FULL_NAME, 3, 1, 0x409
+            )
+            generated_fonts["name"].setName(
+                full_font_name, NameID.POSTSCRIPT_NAME, 3, 1, 0x409
+            )
 
-            font_collection.fonts.append(generated_font)
+            font_collection.fonts.append(generated_fonts)
 
+        family_prefix = FontParser.get_var_font_family_prefix(ttFont)
         savepath = os.path.join(output_directory, f"{family_prefix}.ttc")
         font_collection.save(savepath)
 
-        generated_font = Font.from_font_path(savepath)
+        generated_fonts = Font.from_font_path(savepath)
         if cache_generated_font:
-            for font in generated_font:
+            for font in generated_fonts:
                 FontLoader.add_generated_font(font)
 
-        return generated_font
+        return generated_fonts
