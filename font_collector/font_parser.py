@@ -400,7 +400,7 @@ class FontParser:
 
         for name in names:
             try:
-                name_str = name.string.decode(FontParser.get_name_encoding(name))
+                name_str = FontParser.get_decoded_name(name)
             except UnicodeDecodeError:
                 continue
 
@@ -409,6 +409,24 @@ class FontParser:
         raise NameNotFoundException(
             f"The NamingTable doesn't contain the NameID {nameID}"
         )
+    
+    @staticmethod
+    def get_decoded_name(name: NameRecord) -> str:
+        """
+        Parameters:
+            names (NameRecord): Name record from the naming record
+        Returns:
+            The decoded name
+        """
+
+        encoding = FontParser.get_name_encoding(name)
+
+        try:
+            return name.string.decode(encoding)
+        except UnicodeDecodeError:
+            utf_16_decoded = name.string.decode("utf_16_be")
+            to_decode = bytes(utf_16_decoded, encoding="raw_unicode_escape")
+            return to_decode.decode(encoding)
 
     @staticmethod
     def get_font_postscript_property(font_path: str, font_index: int) -> Optional[str]:
@@ -536,7 +554,7 @@ class FontParser:
             ):
 
                 try:
-                    name_str = name.string.decode(FontParser.get_name_encoding(name))
+                    name_str = FontParser.get_decoded_name(name)
                 except UnicodeDecodeError:
                     continue
 
