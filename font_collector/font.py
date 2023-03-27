@@ -231,6 +231,8 @@ class Font:
     def __hash__(self):
         return hash(
             (
+                self.filename,
+                self.font_index,
                 tuple(self.family_names),
                 self.italic,
                 self.weight,
