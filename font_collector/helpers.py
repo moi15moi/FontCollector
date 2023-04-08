@@ -35,9 +35,7 @@ class Helpers:
         fonts_match: List[Tuple[int, Font]] = []
 
         for font in font_collection:
-            if (search_by_family_name and style.fontname in font.family_names) or (
-                not search_by_family_name and style.fontname in font.exact_names
-            ):
+            if font.is_font_name_match(style.fontname, search_by_family_name):
 
                 weight_compare = abs(style.weight - font.weight)
 

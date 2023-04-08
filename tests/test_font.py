@@ -326,3 +326,29 @@ def test_variable_font_duplicate_font_face():
     ]
 
     assert fonts == expected_fonts
+
+
+def test_is_font_name_match():
+
+    font_name = "A" * 30 + "\U0001f60b"
+    family_name = font_name * 2
+    font = Font("any filename", 0, [family_name], 400, False, [family_name])
+
+    assert font.is_font_name_match(font_name, True)
+    assert font.is_font_name_match(font_name, False)
+
+    font_name = "A" * 30 + "\U0001f60c"
+    assert font.is_font_name_match(font_name, True)
+    assert font.is_font_name_match(font_name, False)
+
+    font_name = "A" * 30 + "\U0001f752"
+    assert font.is_font_name_match(font_name, True)
+    assert font.is_font_name_match(font_name, False)
+
+    font_name = "A" * 30 + "\U0001f852"
+    assert not font.is_font_name_match(font_name, True)
+    assert not font.is_font_name_match(font_name, False)
+
+    font.family_names = ["Test"]
+    assert font.is_font_name_match("test", True)
+    assert not font.is_font_name_match("test", False)
