@@ -16,7 +16,7 @@ def test_get_used_font_by_style():
 
     style = styles[0]
     font_collection = FontLoader(
-        [os.path.join(dir_path, "fonts", "Raleway")], False
+        [os.path.join(dir_path, "fonts", "Raleway", "generated_fonts")], False
     ).fonts
 
     font_result = Helpers.get_used_font_by_style(font_collection, style)

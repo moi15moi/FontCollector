@@ -1,7 +1,7 @@
 import os
 import pickle
 from .font import Font
-from matplotlib import font_manager
+from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
 from typing import List, Set
@@ -60,7 +60,7 @@ class FontLoader:
     @staticmethod
     def load_system_fonts() -> Set[Font]:
         system_fonts: Set[Font] = set()
-        fonts_paths: Set[str] = set(font_manager.findSystemFonts())
+        fonts_paths: Set[str] = get_system_fonts_filename()
         system_font_cache_file = FontLoader.get_system_font_cache_file_path()
 
         if os.path.exists(system_font_cache_file):
@@ -79,11 +79,7 @@ class FontLoader:
             # Add font that have been installed since last execution
             added = fonts_paths.difference(cached_paths)
             for font_path in added:
-                try:
-                    system_fonts.update(Font.from_font_path(font_path))
-                except FileExistsError:
-                    # matplotlib can sometimes returns file that aren't font: "C:\WINDOWS\Fonts\desktop.ini"
-                    continue
+                system_fonts.update(Font.from_font_path(font_path))
 
             # If there is a change, update the cache file
             if len(added) > 0 or len(removed) > 0:
@@ -93,11 +89,7 @@ class FontLoader:
         else:
             # Since there is no cache file, load the font
             for font_path in fonts_paths:
-                try:
-                    system_fonts.update(Font.from_font_path(font_path))
-                except FileExistsError:
-                    # matplotlib can sometimes returns file that aren't font: "C:\WINDOWS\Fonts\desktop.ini"
-                    continue
+                system_fonts.update(Font.from_font_path(font_path))
 
             # Save the font into the cache file
             with open(system_font_cache_file, "wb") as file:
@@ -128,8 +120,9 @@ class FontLoader:
             if os.path.isfile(font_path):
                 additional_fonts.update(Font.from_font_path(font_path))
             elif os.path.isdir(font_path):
-                for path in font_manager.findSystemFonts(fontpaths=str(font_path)):
-                    additional_fonts.update(Font.from_font_path(path))
+                for file in os.listdir(font_path):
+                    if Path(file).suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
+                        additional_fonts.update(Font.from_font_path(os.path.join(font_path, file)))
             else:
                 raise FileNotFoundError(f"The file {font_path} is not reachable")
         return additional_fonts
