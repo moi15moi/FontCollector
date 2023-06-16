@@ -69,7 +69,7 @@ setuptools.setup(
         "ass-tag-analyzer",
         "fontTools>=4.38.0",
         "freetype-py",
-        "matplotlib>=3.6",
+        "FindSystemFontsFilename>=0.1.1",
     ],
     entry_points={"console_scripts": ["fontcollector=font_collector.__main__:main"]},
     classifiers=[
