@@ -10,11 +10,6 @@ from .mkvpropedit import Mkvpropedit
 from .usage_data import UsageData
 from ._version import __version__
 
-# Set dependency log level to ERROR
-from matplotlib import set_loglevel
-
-set_loglevel("ERROR")
-
 from fontTools.misc.loggingTools import configLogger
 
 configLogger(level="ERROR")
