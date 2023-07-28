@@ -21,6 +21,7 @@ def main():
         delete_fonts,
         additional_fonts,
         use_system_font,
+        collect_draw_fonts
     ) = parse_arguments()
     font_results: List[FontResult] = []
     font_collection = FontLoader(additional_fonts, use_system_font).fonts
@@ -28,7 +29,7 @@ def main():
     for ass_path in ass_files_path:
         subtitle = AssDocument.from_file(ass_path)
         _logger.info(f"Loaded successfully {ass_path}")
-        styles = subtitle.get_used_style()
+        styles = subtitle.get_used_style(collect_draw_fonts)
 
         nbr_font_not_found = 0
 
