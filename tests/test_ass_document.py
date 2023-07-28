@@ -3,12 +3,12 @@ from font_collector import AssDocument, AssStyle, UsageData
 
 # Get ass path used for tests
 dir_path = os.path.dirname(os.path.realpath(__file__))
-path_ass = os.path.join(dir_path, "ass", "Untitled.ass")
-
-subtitle = AssDocument.from_file(path_ass)
 
 
 def test_get_style_used():
+    path_ass = os.path.join(dir_path, "ass", "Style test.ass")
+    subtitle = AssDocument.from_file(path_ass)
+
     styles = subtitle.get_used_style()
 
     expected_results = {
@@ -22,4 +22,21 @@ def test_get_style_used():
         AssStyle("Asap", 400, True): UsageData(set("\\r override"), {5}),
     }
 
+    assert styles == expected_results
+
+def test_get_style_used_with_and_without_collect_draw_fonts():
+    path_ass = os.path.join(dir_path, "ass", "Collect Draw Style test.ass")
+    subtitle = AssDocument.from_file(path_ass)
+
+    styles = subtitle.get_used_style()
+    expected_results = {
+        AssStyle("Jester", 700, False): UsageData(set("Test"), {1}),
+    }
+    assert styles == expected_results
+
+    styles = subtitle.get_used_style(True)
+    expected_results = {
+        AssStyle("Jester", 700, False): UsageData(set("Test"), {1}),
+        AssStyle("testgmail", 700, False): UsageData(set(), {2}),
+    }
     assert styles == expected_results
