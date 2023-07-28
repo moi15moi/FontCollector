@@ -3,6 +3,7 @@ from .ass_style import AssStyle
 from .usage_data import UsageData
 from ass import parse_file, parse_string, Dialogue, Document
 from ass_tag_analyzer import (
+    AssDraw,
     AssInvalidTagBold,
     AssInvalidTagFontName,
     AssInvalidTagItalic,
@@ -58,6 +59,7 @@ class AssDocument:
         line_style: AssStyle,
         current_style: AssStyle,
         current_wrap_style: WrapStyle,
+        collect_draw_fonts: bool
     ) -> None:
         """
         Parameters:
@@ -69,6 +71,7 @@ class AssDocument:
             line_style (AssStyle): Style of the line. In general, it will be equal to original_line_style except it there is an \rXXX
             current_style (AssStyle): Real style of the text. It exist since \fn, \b, \i can override the line_style.
             current_wrap_style (WrapStyle): Since \q can override the subtitle WrapStyle, we need it.
+            collect_draw_fonts (bool): If true, then it will also collect the draw style, if false, it will ignore it.
         """
 
         for tag in tags:
@@ -127,6 +130,7 @@ class AssDocument:
                     line_style,
                     current_style,
                     current_wrap_style,
+                    collect_draw_fonts
                 )
 
             elif isinstance(tag, AssText):
@@ -156,9 +160,24 @@ class AssDocument:
                 current_style = AssStyle(
                     current_style.fontname, current_style.weight, current_style.italic
                 )
+            elif collect_draw_fonts and isinstance(tag, AssDraw):
+                usage_data = used_styles.get(current_style, None)
+                if usage_data is None:
+                    usage_data = UsageData(set(), set([line_index]))
+                    used_styles[current_style] = usage_data
+                else:
+                    usage_data.lines.add(line_index)
 
-    def get_used_style(self) -> Dict[AssStyle, UsageData]:
+                # We need to make an copy of the style since current_style can be modified
+                current_style = AssStyle(
+                    current_style.fontname, current_style.weight, current_style.italic
+                )
+
+
+    def get_used_style(self, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
         """
+        Parameters:
+            collect_draw_fonts (bool): If true, then it will also collect the draw style, if false, it will ignore it.
         Returns:
             An dictionnary which contain all the used AssStyle and it's UsageData.
         """
@@ -211,6 +230,7 @@ class AssDocument:
                     line_style,
                     current_style,
                     sub_wrap_style,
+                    collect_draw_fonts
                 )
 
         return used_styles
