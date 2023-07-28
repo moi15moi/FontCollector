@@ -36,6 +36,9 @@ options:
                         additional-fonts.
   --exclude-system-fonts
                         If specified, FontCollector won't use the system font to find the font used by an .ass file.
+  --collect-draw-fonts
+                        If specified, FontCollector will collect the font used by the draw. For more detail when this
+                        is usefull, see: https://github.com/libass/libass/issues/617
 ```
 ## Examples
 Recover fonts from 2 .ass files and save them in the current folder
