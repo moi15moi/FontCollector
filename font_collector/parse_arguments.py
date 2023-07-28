@@ -38,6 +38,7 @@ def parse_arguments() -> Tuple[
     bool,
     Set[Path],
     bool,
+    bool
 ]:
     """
     Returns:
@@ -102,6 +103,13 @@ def parse_arguments() -> Tuple[
     If specified, FontCollector won't use the system font to find the font used by an .ass file.
     """,
     )
+    parser.add_argument(
+        "--collect-draw-fonts",
+        action="store_true",
+        help="""
+    If specified, FontCollector will collect the font used by the draw. For more detail when this is usefull, see: https://github.com/libass/libass/issues/617
+    """,
+    )
 
     args = parser.parse_args()
 
@@ -123,6 +131,7 @@ def parse_arguments() -> Tuple[
         additional_fonts = set()
 
     use_system_fonts = args.exclude_system_fonts
+    collect_draw_fonts = args.collect_draw_fonts
 
     return (
         ass_files_path,
@@ -131,4 +140,5 @@ def parse_arguments() -> Tuple[
         delete_fonts,
         additional_fonts,
         use_system_fonts,
+        collect_draw_fonts
     )
