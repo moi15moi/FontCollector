@@ -421,12 +421,13 @@ class FontParser:
 
         encoding = FontParser.get_name_encoding(name)
 
-        try:
-            return name.string.decode(encoding)
-        except UnicodeDecodeError:
-            utf_16_decoded = name.string.decode("utf_16_be")
-            to_decode = bytes(utf_16_decoded, encoding="raw_unicode_escape")
-            return to_decode.decode(encoding)
+        if name.platformID == 3 and encoding != "utf_16_be":
+            # I spoke with a Microsoft employee and he told me that GDI performed this processing:
+            name_to_decode = name.string.replace(b"\x00", b"")
+        else:
+            name_to_decode = name.string
+
+        return name_to_decode.decode(encoding)
 
     @staticmethod
     def get_font_postscript_property(font_path: str, font_index: int) -> Optional[str]:
