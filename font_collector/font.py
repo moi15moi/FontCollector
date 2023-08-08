@@ -243,6 +243,38 @@ class Font:
     def __repr__(self):
         return f'Filename: "{self.filename}" Family_names: "{self.family_names}", Weight: "{self.weight}", Italic: "{self.italic}, Exact_names: "{self.exact_names}", Named_instance_coordinates: "{self.named_instance_coordinates}"'
 
+    def is_font_name_match(self, font_name: str, is_family_name: bool) -> bool:
+        """
+        Parameters:
+            font_name (str): Text.
+            family_name (bool): If true, then it verify if it match the family name, if false, then it verify if it match the exact_name.
+        Returns:
+            If match true, else false.
+        """
+
+        def trunc_str(string: str) -> bytes:
+            utf16_bytes = string.encode("utf-16-be")
+
+            # Calculate maximum number of bytes for truncated string
+            # LF_FACESIZE = 32, but it include the null. So, in reality, there is only 31 WCHAR available: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfontw
+            # utf-16-be are 2 or 4 bytes. If 2 bytes, then it use 1 WCHAR, if 4 bytes, then it use 2 WCHAR. So, from what I understand, WCHAR contain 2 bytes.
+            # This means lfFaceName can contains 62 bytes.
+            max_bytes = min(len(utf16_bytes), 62)
+
+            trunc_utf16_bytes = utf16_bytes[:max_bytes]
+            return trunc_utf16_bytes
+
+        font_name = trunc_str(font_name.lower())
+
+        if is_family_name:
+            return any(
+                font_name == trunc_str(family_name) for family_name in self.family_names
+            )
+        else:
+            return any(
+                font_name == trunc_str(exact_name) for exact_name in self.exact_names
+            )
+
     def get_missing_glyphs(self, text: Sequence[str]) -> Set[str]:
         """
         Parameters:
