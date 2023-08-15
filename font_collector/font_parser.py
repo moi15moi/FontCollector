@@ -4,9 +4,8 @@ from .exceptions import NameNotFoundException
 from enum import IntEnum
 from io import BufferedReader
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 from fontTools.ttLib.ttFont import TTFont
-from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
 from struct import error as struct_error
@@ -567,17 +566,16 @@ class FontParser:
         return families, fullnames
 
     @staticmethod
-    def get_cmap_encoding(cmap_table: CmapSubtable) -> Optional[str]:
+    def get_cmap_encoding(platform_id: int, encoding_id: int) -> Optional[str]:
         """
         Parameters:
-            cmap_table (CmapSubtable): CMAP table
+            platform_id (int): CMAP platform id
+            encoding_id (int): CMAP encoding id
         Returns:
             The cmap codepoint encoding.
             If GDI does not support the platform_id and/or platform_encoding_id, return None.
         """
-        return FontParser.CMAP_ENCODING_MAP.get(cmap_table.platformID, {}).get(
-            cmap_table.platEncID, None
-        )
+        return FontParser.CMAP_ENCODING_MAP.get(platform_id, {}).get(encoding_id, None)
 
     @staticmethod
     def get_name_encoding(name: NameRecord) -> Optional[str]:
