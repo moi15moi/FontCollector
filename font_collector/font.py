@@ -2,9 +2,20 @@ import logging
 import os
 from .exceptions import InvalidFontException
 from .font_parser import FontParser, NameID
-from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
+from ctypes import byref
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
+from freetype import (
+    FT_Done_Face,
+    FT_Done_FreeType,
+    FT_Exception,
+    FT_Face,
+    FT_Get_Char_Index,
+    FT_Init_FreeType,
+    FT_Library,
+    FT_New_Memory_Face,
+    FT_Set_Charmap,
+)
 from typing import Any, Dict, List, Sequence, Set, Tuple
 
 _logger = logging.getLogger(__name__)
@@ -251,46 +262,58 @@ class Font:
             A set of all the character that the font cannot display.
         """
 
-        ttFont = TTFont(self.filename, fontNumber=self.font_index)
         char_not_found: Set[str] = set()
 
-        cmap_tables: List[CmapSubtable] = list(
-            filter(lambda table: table.platformID == 3, ttFont["cmap"].tables)
-        )
+        library = FT_Library()
+        face = FT_Face()
+
+        error = FT_Init_FreeType(byref(library))
+        if error: raise FT_Exception(error)
+
+        # We cannot use FT_New_Face due to this issue: https://github.com/rougier/freetype-py/issues/157
+        with open(self.filename, mode="rb") as f:
+            filebody = f.read()
+        error = FT_New_Memory_Face(library, filebody, len(filebody), self.font_index, byref(face))
+        if error: raise FT_Exception(error)
+
+        supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if face.contents.charmaps[i].contents.platform_id == 3]
 
         # GDI seems to take apple cmap if there isn't any microsoft cmap: https://github.com/libass/libass/issues/679
-        if len(cmap_tables) == 0:
-            cmap_tables = list(
-                filter(
-                    lambda table: table.platformID == 1 and table.platEncID == 0,
-                    ttFont["cmap"].tables,
-                )
-            )
+        if len(supported_charmaps) == 0:
+            supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if face.contents.charmaps[i].contents.platform_id == 1 and face.contents.charmaps[i].contents.encoding_id == 0]
 
         for char in text:
             char_found = False
 
-            for cmap_table in cmap_tables:
-                cmap_encoding = FontParser.get_cmap_encoding(cmap_table)
+            for charmap in supported_charmaps:
+                error = FT_Set_Charmap(face, charmap)
+                if error: raise FT_Exception(error)
 
-                # Cmap isn't supported
+                platform_id = charmap.contents.platform_id
+                encoding_id = charmap.contents.encoding_id
+
+                cmap_encoding = FontParser.get_cmap_encoding(platform_id, encoding_id)
+
+                # cmap not supported 
                 if cmap_encoding is None:
                     continue
 
-                try:
-                    codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
-                except UnicodeEncodeError:
-                    continue
+                codepoint = int.from_bytes(char.encode(cmap_encoding, "ignore"), "big")
 
                 # GDI/Libass modify the codepoint for microsoft symbol cmap: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
-                if cmap_table.platformID == 3 and cmap_table.platEncID == 0:
+                if platform_id == 3 and encoding_id == 0:
                     codepoint = 0xF000 | codepoint
 
-                if codepoint in cmap_table.cmap:
+                index = FT_Get_Char_Index(face, codepoint)
+
+                if index:
                     char_found = True
                     break
 
             if not char_found:
                 char_not_found.add(char)
+
+        FT_Done_Face(face)
+        FT_Done_FreeType(library)
 
         return char_not_found
