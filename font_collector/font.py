@@ -11,6 +11,7 @@ from freetype import (
     FT_Exception,
     FT_Face,
     FT_Get_Char_Index,
+    FT_Get_CMap_Format,
     FT_Init_FreeType,
     FT_Library,
     FT_New_Memory_Face,
@@ -276,11 +277,11 @@ class Font:
         error = FT_New_Memory_Face(library, filebody, len(filebody), self.font_index, byref(face))
         if error: raise FT_Exception(error)
 
-        supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if face.contents.charmaps[i].contents.platform_id == 3]
+        supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if FT_Get_CMap_Format(face.contents.charmaps[i]) != -1 and face.contents.charmaps[i].contents.platform_id == 3]
 
         # GDI seems to take apple cmap if there isn't any microsoft cmap: https://github.com/libass/libass/issues/679
         if len(supported_charmaps) == 0:
-            supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if face.contents.charmaps[i].contents.platform_id == 1 and face.contents.charmaps[i].contents.encoding_id == 0]
+            supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if FT_Get_CMap_Format(face.contents.charmaps[i]) != -1 and face.contents.charmaps[i].contents.platform_id == 1 and face.contents.charmaps[i].contents.encoding_id == 0]
 
         for char in text:
             char_found = False
