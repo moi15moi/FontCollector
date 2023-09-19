@@ -50,14 +50,14 @@ class FontParser:
             0: "mac_roman",
         },
         3: {  # Microsoft
-            0: "utf_16_be",
-            1: "utf_16_be",
+            0: "unicode",
+            1: "unicode",
             2: "cp932",
             3: "cp936",
             4: "cp950",
             5: "cp949",
             6: "cp1361",
-            10: "utf_16_be",
+            10: "unicode",
         },
     }
 
