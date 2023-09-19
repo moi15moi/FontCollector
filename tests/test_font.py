@@ -53,6 +53,18 @@ def test_font_without_axis_value():
     assert fonts == expected_fonts
 
 
+def test_font_get_missing_glyphs_cmap_encoding_1():
+
+    font_cmap_encoding_1 = os.path.join(dir_path, "fonts", "font_cmap_encoding_1.TTF")
+
+    font = Font.from_font_path(font_cmap_encoding_1)
+    assert len(font) == 1
+    font = font[0]
+
+    missing_glyphs = font.get_missing_glyphs(string.digits + "🇦🤍")
+    assert missing_glyphs == set()
+
+
 def test_font_get_missing_glyphs_cmap_encoding_2():
 
     font_cmap_encoding_2 = os.path.join(dir_path, "fonts", "font_cmap_encoding_2.TTF")
