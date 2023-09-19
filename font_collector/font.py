@@ -299,7 +299,10 @@ class Font:
                 if cmap_encoding is None:
                     continue
 
-                codepoint = int.from_bytes(char.encode(cmap_encoding, "ignore"), "big")
+                if cmap_encoding == "unicode":
+                    codepoint = ord(char)
+                else:
+                    codepoint = int.from_bytes(char.encode(cmap_encoding, "ignore"), "big")
 
                 # GDI/Libass modify the codepoint for microsoft symbol cmap: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
                 if platform_id == 3 and encoding_id == 0:
