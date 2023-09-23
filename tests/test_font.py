@@ -78,6 +78,8 @@ def test_font_get_missing_glyphs_cmap_encoding_2():
     )
     assert missing_glyphs == set(["é"])
 
+    missing_glyphs = font.get_missing_glyphs("ø")
+    assert missing_glyphs == set(["ø"])
 
 def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
 
