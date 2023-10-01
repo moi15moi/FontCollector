@@ -302,6 +302,16 @@ class Font:
                 if cmap_encoding == "unicode":
                     codepoint = ord(char)
                 else:
+                    if cmap_encoding == "unknown" and platform_id == 3 and encoding_id == 0:
+                        cmap_encoding = FontParser.get_symbol_cmap_encoding(face)
+
+                        if cmap_encoding is None:
+                            # Fallback if guess fails
+                            cmap_encoding = "cp1252"
+                    else:
+                        # cmap not supported 
+                        continue
+
                     try:
                         codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
                     except UnicodeEncodeError:

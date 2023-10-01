@@ -52,7 +52,7 @@ class FontParser:
             0: "mac_roman",
         },
         3: {  # Microsoft
-            0: "unicode",
+            0: "unknown",
             1: "unicode",
             2: "cp932",
             3: "cp936",
