@@ -1,6 +1,7 @@
 import freetype
 import logging
 from .exceptions import NameNotFoundException
+from ctypes import byref, c_uint, create_string_buffer
 from enum import IntEnum
 from io import BufferedReader
 from pathlib import Path
@@ -8,6 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
+from freetype import FT_Face, FT_Get_Glyph_Name
 from struct import error as struct_error
 
 _logger = logging.getLogger(__name__)
@@ -565,6 +567,44 @@ class FontParser:
 
         return families, fullnames
 
+
+    @staticmethod
+    def get_symbol_cmap_encoding(face: FT_Face) -> Optional[str]:
+        """
+        Parameters:
+            face (FT_Face): An Font face
+        Returns:
+            The cmap ansi code page encoding.
+            If it couldn't guess the encoding, it return None.
+                It can return none if the font is those case if the font doesn't use any unique character of an ansi code page.
+                    Note: Chinese (cp936 or cp950) and Korean (cp949) doesn't contain any unique character.
+                          So, we can't recognized them.
+            Libass currently has an issue about this problem: https://github.com/libass/libass/issues/319
+            When Libass will add the logic with the track language, this method will be deprecated.
+        """
+        font_glyph_names: Set[str] = set()
+        for i in range(face.contents.num_glyphs):
+            buffer_max = 64
+            buffer = create_string_buffer(buffer_max)
+            error = FT_Get_Glyph_Name(face, c_uint(i), byref(buffer), c_uint(buffer_max))
+
+            if error:
+                continue
+            font_glyph_names.add(buffer.value.decode("ascii").lower())
+
+        count_codepage: dict[str, int] = {}
+        for code_page, glyph_names in UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE.items():
+            count = sum(1 for font_glyph_name in font_glyph_names if font_glyph_name in glyph_names)
+            count_codepage[code_page] = count
+        # If there is a tie, prefer codepage different then cp1252
+        codepage_encoding = max(count_codepage, key=lambda codepage: (count_codepage[codepage], codepage != 'cp1252'))
+
+        if count_codepage[codepage_encoding]:
+            return codepage_encoding
+
+        return None
+
+
     @staticmethod
     def get_cmap_encoding(platform_id: int, encoding_id: int) -> Optional[str]:
         """
@@ -631,3 +671,34 @@ class FontParser:
                 or FontParser.is_file_opentype(fontFile)
                 or FontParser.is_file_truetype_collection(fontFile)
             )
+
+
+# The Chinese (cp936 or cp950) and Korean (cp949) aren't in this dict since they doesn't have any unique char.
+# The name of those glyph is from this list: https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/4036a9ca80a62f64f9de4f7321a9a045ad0ecfd6/glyphlist.txt
+UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE = {
+    "cp874": {'angkhankhuthai', 'lolingthai', 'thanthakhatthai', 'phosamphaothai', 'phophanthai', 'paiyannoithai', 'phinthuthai', 'threethai', 'kokaithai', 'topatakthai', 'lochulathai', 'nonuthai', 'thothungthai', 'lakkhangyaothai', 'ngonguthai', 'thothanthai', 'khokhaithai', 'khokhwaithai', 'oangthai', 'sixthai', 'saraueethai', 'saraaathai', 'wowaenthai', 'chochangthai', 'fourthai', 'maihanakatthai', 'nonenthai', 'maiekthai', 'sosalathai', 'sorusithai', 'saraamthai', 'saraethai', 'saraithai', 'fofanthai', 'fofathai', 'poplathai', 'thothongthai', 'roruathai', 'chochingthai', 'nikhahitthai', 'saraiithai', 'yamakkanthai', 'luthai', 'onethai', 'sosothai', 'maitaikhuthai', 'seventhai', 'khorakhangthai', 'yoyingthai', 'sarauthai', 'dochadathai', 'ruthai', 'maichattawathai', 
+    'bobaimaithai', 'sarauethai', 'saraaimaimuanthai', 'chochoethai', 'twothai', 'sarauuthai', 'phophungthai', 'saraothai', 'khomutthai', 'thophuthaothai', 'fongmanthai', 'fivethai', 'honokhukthai', 'zerothai', 'maiyamokthai', 'hohipthai', 'khokhonthai', 'ninethai', 'bahtthai', 'saraaethai', 'dodekthai', 'chochanthai', 'eightthai', 'yoyakthai', 'khokhuatthai', 'saraaimaimalaithai', 'maithothai', 'thothahanthai', 'sosuathai', 'saraathai', 'totaothai', 'maitrithai', 'momathai', 'thonangmonthothai'},
+
+    "cp932": {'nekatakanahalfwidth', 'okatakanahalfwidth', 'yukatakanahalfwidth', 'sekatakanahalfwidth', 'hakatakanahalfwidth', 'sakatakanahalfwidth', 'yokatakanahalfwidth', 'mekatakanahalfwidth', 'osmallkatakanahalfwidth', 'sokatakanahalfwidth', 'wakatakanahalfwidth', 'hokatakanahalfwidth', 'ismallkatakanahalfwidth', 'rakatakanahalfwidth', 'katahiraprolongmarkhalfwidth', 'ikatakanahalfwidth', 'nakatakanahalfwidth', 'mikatakanahalfwidth', 'kikatakanahalfwidth', 'tikatakanahalfwidth', 'tusmallkatakanahalfwidth', 'semivoicedmarkkanahalfwidth', 'sikatakanahalfwidth', 'middledotkatakanahalfwidth', 'mokatakanahalfwidth', 'ekatakanahalfwidth', 'hekatakanahalfwidth', 'tekatakanahalfwidth', 'wokatakanahalfwidth', 'makatakanahalfwidth', 'asmallkatakanahalfwidth', 'tokatakanahalfwidth', 'cornerbracketlefthalfwidth', 'mukatakanahalfwidth', 'kukatakanahalfwidth', 'yusmallkatakanahalfwidth', 'yosmallkatakanahalfwidth', 'nokatakanahalfwidth', 'kekatakanahalfwidth', 'takatakanahalfwidth', 'rikatakanahalfwidth', 'ukatakanahalfwidth', 'cornerbracketrighthalfwidth', 'braceleftmid', 'esmallkatakanahalfwidth', 'tukatakanahalfwidth', 'rukatakanahalfwidth', 'nukatakanahalfwidth', 'bracelefttp', 'voicedmarkkanahalfwidth', 'rokatakanahalfwidth', 'kokatakanahalfwidth', 'usmallkatakanahalfwidth', 'bracketleftbt', 'hukatakanahalfwidth', 'kakatakanahalfwidth', 'sukatakanahalfwidth', 'hikatakanahalfwidth', 'periodhalfwidth', 'braceleftbt', 'yasmallkatakanahalfwidth', 'nkatakanahalfwidth', 'rekatakanahalfwidth', 'yakatakanahalfwidth', 'ideographiccommaleft', 'akatakanahalfwidth', 'nikatakanahalfwidth'},
+
+    "cp1250": {'lacute', 'tcedilla', 'dcaron', 'breve', 'lcaron', 'uhungarumlaut', 'racute', 'tcommaaccent', 'ecaron', 'hungarumlaut', 'uring', 'tcaron', 'ncaron', 'rcaron', 'odblacute', 'udblacute', 'ohungarumlaut'},
+
+    "cp1251": {'acyrillic', 'efcyrillic', 'afii10055', 'afii10069', 'afii10097', 'afii10037', 'afii10085', 'afii10053', 'kjecyrillic', 'afii10096', 'afii10019', 'afii10086', 'afii10030', 'afii10034', 'iucyrillic', 'elcyrillic', 'ushortcyrillic', 'afii10052', 'afii10036', 'shchacyrillic', 'iishortcyrillic', 'afii10105', 'afii10061', 'afii10026', 'ercyrillic', 'tecyrillic', 'afii10060', 'afii10106', 'afii10028', 'afii10098', 'afii10042', 'yicyrillic', 'afii10193', 'emcyrillic', 'jecyrillic', 'afii10021', 'afii10054', 'afii10101', 'encyrillic', 'afii10022', 'becyrillic', 'njecyrillic', 'softsigncyrillic', 'afii10075', 'afii10100', 'afii10068', 'afii10089', 'afii10065', 'afii61352', 'iicyrillic', 'iecyrillic', 'afii10088', 'tshecyrillic', 'afii10059', 'vecyrillic', 'zhecyrillic', 'afii10102', 'afii10099', 'iocyrillic', 'pecyrillic', 'afii10050', 'afii10048', 'afii10080', 'gecyrillic', 'afii10035', 'djecyrillic', 'ucyrillic', 'afii10066', 'afii10027', 'afii10045', 'afii10082', 'afii10017', 'afii10076', 'afii10067', 'afii10087', 'iacyrillic', 'afii10024', 'dzhecyrillic', 'afii10058', 'afii10029', 'afii10110', 'afii10084', 'afii10095', 'afii10040', 'yericyrillic', 'afii10072', 'afii10109', 'gjecyrillic', 'ljecyrillic', 'afii10074', 'afii10081', 'dzecyrillic', 'afii10093', 'khacyrillic', 'afii10023', 'afii10079', 'afii10031', 'afii10047', 'escyrillic', 'decyrillic', 'afii10062', 'afii10070', 'afii10049', 'tsecyrillic', 'afii10094', 'afii10025', 'afii10041', 'afii10077', 'afii10073', 'afii10038', 'gheupturncyrillic', 'ereversedcyrillic', 'kacyrillic', 'afii10107', 'afii10108', 'ocyrillic', 'afii10145', 'afii10103', 'afii10032', 'shacyrillic', 'checyrillic', 'afii10090', 'numero', 'zecyrillic', 'afii10104', 'afii10092', 'afii10083', 'afii10056', 'afii10039', 'hardsigncyrillic', 'afii10044', 'afii10078', 'afii10018', 'icyrillic', 'afii10043', 'afii10091', 'afii10046', 'afii10057', 'afii10051', 'afii10071', 'ecyrillic', 'afii10020', 'afii10033'},
+
+    "cp1252": {'thorn', 'eth'},
+
+    "cp1253": {'sigmafinal', 'iotatonos', 'pi', 'kappa', 'dieresistonos', 'lambda', 'chi', 'sigma', 'delta', 'psi', 'rho', 'sigma1', 'epsilontonos', 'alphatonos', 'epsilon', 'beta', 'deltagreek', 'zeta', 'iotadieresis', 'upsilontonos', 'afii00208', 'omicrontonos', 'iota', 'alpha', 'omega', 'omicron', 'gamma', 'upsilon', 'omegagreek', 'tonos', 'omegatonos', 'upsilondieresistonos', 'theta', 'nu', 'dialytikatonos', 'phi', 'mu', 'etatonos', 'iotadieresistonos', 'tau', 'upsilondieresis', 'horizontalbar', 'xi', 'eta', 'mugreek'},
+
+    "cp1254": {'gbreve', 'dotlessi', 'idot', 'idotaccent'},
+
+    "cp1255": {'daletsegol', 'het', 'vav', 'reshhatafpatahhebrew', 'reshtserehebrew', 'zayinhebrew', 'tsere12', 'hatafsegolhebrew', 'reshholam', 'afii57678', 'tsere', 'qamatsqatanhebrew', 'daletpatah', 'qamatsqatanquarterhebrew', 'daletholamhebrew', 'finaltsadi', 'afii57668', 'pehebrew', 'mem', 'afii57803', 'qubutsquarterhebrew', 'rafe', 'qamats', 'hiriqhebrew', 'qoftsere', 'hatafsegol30', 'zayin', 'hiriqquarterhebrew', 'afii57670', 'afii57671', 'afii57801', 'afii57636', 'hatafqamats34', 'patahquarterhebrew', 'qamatswidehebrew', 'dalethiriq', 'qubuts31', 'afii57672', 'hehebrew', 'qofsegolhebrew', 'afii57680', 'holamquarterhebrew', 'reshqamats', 'afii57717', 'qofpatahhebrew', 'qofhiriq', 'tserehebrew', 'hiriq', 'qubutshebrew', 'kafhebrew', 'nun', 'afii57689', 'shindothebrew', 'afii57793', 'qubuts18', 'pe', 'memhebrew', 'yodhebrew', 'daletpatahhebrew', 'finalmemhebrew', 'finalpehebrew', 'hatafsegolquarterhebrew', 'qamatsqatannarrowhebrew', 'afii57645', 'shevaquarterhebrew', 'dalethebrew', 'patahwidehebrew', 'dalethatafsegol', 'lamedholamdageshhebrew', 'afii57664', 'shevahebrew', 'afii57842', 'finalkafsheva', 'tsere1e', 'hiriqnarrowhebrew', 'sheva22', 'tethebrew', 'hatafqamats28', 'hatafqamats', 'segolnarrowhebrew', 'afii57804', 'gershayimhebrew', 'tav', 'nunhebrew', 'holamhebrew', 'afii57716', 'patahnarrowhebrew', 'he', 'rafehebrew', 'qofsegol', 'afii57687', 'hatafqamatsnarrowhebrew', 'qofqamatshebrew', 'dalet', 'qubutswidehebrew', 'vavhebrew', 'qofshevahebrew', 'gimelhebrew', 'dalethiriqhebrew', 'patah', 'sheqelhebrew', 'qofholam', 'ayinhebrew', 'segol13', 'reshhebrew', 'finalnun', 'newsheqelsign', 'hatafsegol', 'hatafsegol24', 'sofpasuqhebrew', 'qamats1c', 'dalethatafpatah', 'reshshevahebrew', 'sheva2e', 'reshhatafsegolhebrew', 'afii57839', 'afii57681', 'hatafqamatsquarterhebrew', 'afii57667', 'lamedhebrew', 'qofpatah', 'tserewidehebrew', 'finalnunhebrew', 'sheva', 'daletqubutshebrew', 'finaltsadihebrew', 'qamatsde', 'tsadihebrew', 'finalkafshevahebrew', 'hatafqamatswidehebrew', 'reshhatafpatah', 'afii57794', 'reshqubuts', 'samekh', 'sheqel', 'finalpe', 'shevawidehebrew', 'segol', 'reshhiriq', 
+    'holamwidehebrew', 'qamatsquarterhebrew', 'lamedholamhebrew', 'afii57841', 'vavyodhebrew', 'hatafqamats1b', 'hatafsegolnarrowhebrew', 'afii57795', 'hatafpatahhebrew', 'qofhatafpatah', 'finalkafqamats', 'shinhebrew', 'afii57684', 'reshqamatshebrew', 'hatafqamatshebrew', 'afii57806', 'shevanarrowhebrew', 'sindothebrew', 'patah2a', 'segolhebrew', 'afii57798', 'qofhatafpatahhebrew', 'afii57800', 'qamatsqatanwidehebrew', 'hiriq14', 'qofqubuts', 'hatafpatah', 'hatafpatahnarrowhebrew', 'reshholamhebrew', 'afii57675', 'samekhhebrew', 'shin', 'tavhebrew', 'holam', 'finalkafhebrew', 'finalkafqamatshebrew', 'afii57679', 'tserequarterhebrew', 'holamnarrowhebrew', 'hatafsegolwidehebrew', 'qamatsnarrowhebrew', 'segolquarterhebrew', 'hatafpatahwidehebrew', 'tet', 'hiriq21', 'qamats27', 'afii57674', 'dalethatafpatahhebrew', 'bet', 'bethebrew', 'afii57685', 'yod', 'lamedholamdagesh', 'gereshhebrew', 'alef', 'daletqubuts', 'segol2c', 'qoftserehebrew', 'afii57677', 'finalkaf', 'daletqamatshebrew', 'ayin', 'hatafpatah16', 'paseqhebrew', 'qubuts25', 'tsere2b', 'afii57802', 'afii57669', 'dalethatafsegolhebrew', 'qofhatafsegolhebrew', 'daletqamats', 'qofholamhebrew', 'qamats10', 'afii57718', 'yodyodhebrew', 'afii57807', 'afii57799', 'qofhiriqhebrew', 'qofqubutshebrew', 'tsadi', 'qubutsnarrowhebrew', 'maqafhebrew', 'reshsegolhebrew', 'holam26', 'sheva15', 'lamedholam', 'vavvavhebrew', 'reshqubutshebrew', 'patah11', 'patah1d', 'kaf', 'daletshevahebrew', 'qamats1a', 'sheva115', 'dalettserehebrew', 'qofsheva', 'hethebrew', 'segol1f', 'hiriq2d', 
+    'afii57673', 'afii57797', 'dalettsere', 'qofhebrew', 'hiriqwidehebrew', 'reshhiriqhebrew', 'tserenarrowhebrew', 'patahhebrew', 'reshhatafsegol', 'daletholam', 'reshpatah', 'qubuts', 'afii57665', 'hatafpatah23', 'afii57658', 'gimel', 'daletsheva', 'hatafpatahquarterhebrew', 'alefhebrew', 'siluqlefthebrew', 'reshsegol', 'qofqamats', 'hatafsegol17', 'afii57676', 'afii57688', 'lamed', 'qof', 'reshpatahhebrew', 'afii57683', 'segolwidehebrew', 'finalmem', 'qofhatafsegol', 'dageshhebrew', 'afii57686', 'qamatshebrew', 'qamats33', 'qamats29', 'afii57682', 'daletsegolhebrew', 'reshtsere', 'holam32', 'afii57690', 'afii57666', 'dagesh', 'holam19', 'siluqhebrew', 'afii57796', 'resh', 'reshsheva', 'hatafpatah2f'},
+
+    "cp1256": {'afii57449', 'afii57440', 'afii57450', 'beharabic', 'afii57419', 'sadarabic', 'meemarabic', 'afii57508', 'afii57512', 'semicolonarabic', 'afii57423', 'dadarabic', 'taharabic', 'afii57442', 'afii57513', 'afii57448', 'gafarabic', 'ddalarabic', 'afii57446', 'afii57441', 'afii57430', 'lamarabic', 'afii57470', 'afii57421', 'dammalowarabic', 'alefmaksuraarabic', 'hamzadammaarabic', 
+    'afii57426', 'noonarabic', 'dammatanarabic', 'zerowidthnonjoiner', 'tehmarbutaarabic', 'qafarabic', 'hamzaarabic', 'afii57454', 'hamzafathatanarabic', 'dalarabic', 'jeemarabic', 'afii57506', 'afii57458', 'afii57445', 'rehyehaleflamarabic', 'hamzalowkasraarabic', 'afii57519', 'afii57412', 'noonghunnaarabic', 'hamzasukunarabic', 'shaddafathatanarabic', 'zainarabic', 'afii57444', 'alefhamzabelowarabic', 'feharabic', 'fathaarabic', 'afii61664', 'afii57415', 'afii57403', 'kashidaautoarabic', 'afii57422', 'wawarabic', 'afii57409', 'sukunarabic', 'kafarabic', 'tcheharabic', 'afii57453', 'afii57433', 'yeharabic', 'jeharabic', 'hehaltonearabic', 'afii57411', 'alefmaddaabovearabic', 'afii57432', 'alefhamzaabovearabic', 'afii57511', 'afii57414', 'hamzadammatanarabic', 'shaddaarabic', 'khaharabic', 'rreharabic', 'kashidaautonosidebearingarabic', 'kasratanarabic', 'teharabic', 'peharabic', 'afii57429', 'afii57452', 'hamzalowkasratanarabic', 'haaltonearabic', 'heharabic', 'fathatanarabic', 'questionarabic', 'kasraarabic', 'afii57420', 'afii57418', 'tatweelarabic', 'fathalowarabic', 'afii57451', 'afii57507', 'afii57455', 'wawhamzaabovearabic', 'afii57416', 'dammatanaltonearabic', 'afii57424', 'afii57410', 'afii57388', 'thalarabic', 'afii57443', 'haharabic', 'commaarabic', 'afii57413', 'sheenarabic', 'ainarabic', 'afii57417', 'hamzafathaarabic', 'yehhamzaabovearabic', 'afii57456', 'afii57428', 'afii57425', 'alefarabic', 'zaharabic', 'tteharabic', 'hamzalowarabic', 'ghainarabic', 'afii57514', 'reharabic', 'yehbarreearabic', 'afii57509', 'afii301', 'dammaarabic', 'afii57427', 'afii57457', 'afii57431', 'afii57407', 'seenarabic', 'afii57434', 'theharabic'},
+
+    "cp1257": {'ncommaaccent', 'rcedilla', 'lcedilla', 'emacron', 'ncedilla', 'iogonek', 'edotaccent', 'kcommaaccent', 'amacron', 'uogonek', 'gcommaaccent', 'kcedilla', 'rcommaaccent', 'umacron', 'gcedilla', 'omacron', 'edot', 'imacron', 'lcommaaccent'},
+
+    "cp1258": {'tildecmb', 'gravecomb', 'dong', 'acutecmb', 'gravecmb', 'dotbelowcmb', 'uhorn', 'acutecomb', 'hookcmb', 'ohorn', 'hookabovecomb', 'tildecomb', 'dotbelowcomb'}
+}
