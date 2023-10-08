@@ -255,10 +255,19 @@ class Font:
     def __repr__(self):
         return f'Filename: "{self.filename}" Family_names: "{self.family_names}", Weight: "{self.weight}", Italic: "{self.italic}, Exact_names: "{self.exact_names}", Named_instance_coordinates: "{self.named_instance_coordinates}"'
 
-    def get_missing_glyphs(self, text: Sequence[str]) -> Set[str]:
+    def get_missing_glyphs(
+        self,
+        text: Sequence[str],
+        support_only_ascii_char_for_symbol_font: bool = False
+    ) -> Set[str]:
         """
         Parameters:
             text (Sequence[str]): Text
+            support_only_ascii_char_for_symbol_font (bool):
+                Libass only support ascii character for symbol font, but VSFilter can support more character.
+                    If you wish to use libass, we recommand you to set this param to True.
+                    If you wish to use VSFilter, we recommand you to set this param to False.
+                For more detail, see the issue: https://github.com/libass/libass/issues/319
         Returns:
             A set of all the character that the font cannot display.
         """
@@ -302,15 +311,18 @@ class Font:
                 if cmap_encoding == "unicode":
                     codepoint = ord(char)
                 else:
-                    if cmap_encoding == "unknown" and platform_id == 3 and encoding_id == 0:
-                        cmap_encoding = FontParser.get_symbol_cmap_encoding(face)
+                    if cmap_encoding == "unknown":
+                        if platform_id == 3 and encoding_id == 0:
+                            if support_only_ascii_char_for_symbol_font and not char.isascii():
+                                continue
+                            cmap_encoding = FontParser.get_symbol_cmap_encoding(face)
 
-                        if cmap_encoding is None:
-                            # Fallback if guess fails
-                            cmap_encoding = "cp1252"
-                    else:
-                        # cmap not supported 
-                        continue
+                            if cmap_encoding is None:
+                                # Fallback if guess fails
+                                cmap_encoding = "cp1252"
+                        else:
+                            # cmap not supported 
+                            continue
 
                     try:
                         codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
