@@ -675,8 +675,9 @@ class FontParser:
 
 
 # The Chinese (cp936 or cp950) and Korean (cp949) aren't in this dict since they doesn't have any unique char.
+# This dict have been generated with "proof/[Symbol Font] Find unique char by ansi code page.py"
 # The name of those glyph is from this list: https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/4036a9ca80a62f64f9de4f7321a9a045ad0ecfd6/glyphlist.txt
-UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE = {
+UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE: dict[str, Set[str]] = {
     "cp874": {'angkhankhuthai', 'lolingthai', 'thanthakhatthai', 'phosamphaothai', 'phophanthai', 'paiyannoithai', 'phinthuthai', 'threethai', 'kokaithai', 'topatakthai', 'lochulathai', 'nonuthai', 'thothungthai', 'lakkhangyaothai', 'ngonguthai', 'thothanthai', 'khokhaithai', 'khokhwaithai', 'oangthai', 'sixthai', 'saraueethai', 'saraaathai', 'wowaenthai', 'chochangthai', 'fourthai', 'maihanakatthai', 'nonenthai', 'maiekthai', 'sosalathai', 'sorusithai', 'saraamthai', 'saraethai', 'saraithai', 'fofanthai', 'fofathai', 'poplathai', 'thothongthai', 'roruathai', 'chochingthai', 'nikhahitthai', 'saraiithai', 'yamakkanthai', 'luthai', 'onethai', 'sosothai', 'maitaikhuthai', 'seventhai', 'khorakhangthai', 'yoyingthai', 'sarauthai', 'dochadathai', 'ruthai', 'maichattawathai', 
     'bobaimaithai', 'sarauethai', 'saraaimaimuanthai', 'chochoethai', 'twothai', 'sarauuthai', 'phophungthai', 'saraothai', 'khomutthai', 'thophuthaothai', 'fongmanthai', 'fivethai', 'honokhukthai', 'zerothai', 'maiyamokthai', 'hohipthai', 'khokhonthai', 'ninethai', 'bahtthai', 'saraaethai', 'dodekthai', 'chochanthai', 'eightthai', 'yoyakthai', 'khokhuatthai', 'saraaimaimalaithai', 'maithothai', 'thothahanthai', 'sosuathai', 'saraathai', 'totaothai', 'maitrithai', 'momathai', 'thonangmonthothai'},
 
