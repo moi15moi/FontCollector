@@ -264,7 +264,7 @@ class Font:
         Parameters:
             text (Sequence[str]): Text
             support_only_ascii_char_for_symbol_font (bool):
-                Libass only support ascii character for symbol font, but VSFilter can support more character.
+                Libass only support ascii character for symbol cmap, but VSFilter can support more character.
                     If you wish to use libass, we recommand you to set this param to True.
                     If you wish to use VSFilter, we recommand you to set this param to False.
                 For more detail, see the issue: https://github.com/libass/libass/issues/319
