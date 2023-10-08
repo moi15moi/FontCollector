@@ -92,6 +92,7 @@ def test_font_get_missing_glyphs_cmap_encoding_2():
     assert len(font) == 1
     font = font[0]
 
+    # Try "é" since cp932 doesn't support this char
     missing_glyphs = font.get_missing_glyphs(
         string.ascii_letters + string.digits + "éｦ&*"
     )
