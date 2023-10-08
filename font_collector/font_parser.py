@@ -583,8 +583,9 @@ class FontParser:
             When Libass will add the logic with the track language, this method will be deprecated.
         """
         font_glyph_names: Set[str] = set()
+        # This is a limit set by adobe: http://adobe-type-tools.github.io/afdko/OpenTypeFeatureFileSpecification.html#2fi-glyph-name
+        buffer_max = 64
         for i in range(face.contents.num_glyphs):
-            buffer_max = 64
             buffer = create_string_buffer(buffer_max)
             error = FT_Get_Glyph_Name(face, c_uint(i), byref(buffer), c_uint(buffer_max))
 
