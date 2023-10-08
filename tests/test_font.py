@@ -106,9 +106,9 @@ def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
     font = font[0]
 
     missing_glyphs = font.get_missing_glyphs(
-        string.ascii_letters + string.digits + "@é¸"
+        string.ascii_letters + string.digits + "@é¸^Æ~"
     )
-    assert missing_glyphs == set(["@", "¸"])
+    assert missing_glyphs == set(["@", "¸", "~"])
 
 
 def test_variable_font_with_invalid_fvar_axes():
