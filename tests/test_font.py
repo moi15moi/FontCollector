@@ -53,6 +53,25 @@ def test_font_without_axis_value():
     assert fonts == expected_fonts
 
 
+def test_font_get_missing_glyphs_cmap_encoding_0():
+
+    font_cmap_encoding_0 = os.path.join(dir_path, "fonts", "font_cmap_encoding_0.ttf")
+
+    font = Font.from_font_path(font_cmap_encoding_0)
+    assert len(font) == 1
+    font = font[0]
+
+    # Verify is the optional param is the right value
+    missing_glyphs = font.get_missing_glyphs("Έκθεση για Απασχόληση Dream Top Co. Οι επιλογές À a")
+    assert missing_glyphs == set("À")
+
+    missing_glyphs = font.get_missing_glyphs("Έκθεση για Απασχόληση Dream Top Co. Οι επιλογές À a", False)
+    assert missing_glyphs == set("À")
+
+    missing_glyphs = font.get_missing_glyphs("Έκθεση για Απασχόληση Dream Top Co. Οι επιλογές À a", True)
+    assert missing_glyphs == set("ΈκθεσηγιαπασχόλησηΟιεπιλογέςÀΑ")
+
+
 def test_font_get_missing_glyphs_cmap_encoding_1():
 
     font_cmap_encoding_1 = os.path.join(dir_path, "fonts", "font_cmap_encoding_1.TTF")
