@@ -1,5 +1,6 @@
 import os
 import pickle
+from ._version import __version__
 from .font import Font
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
@@ -33,14 +34,12 @@ class FontLoader:
         """
         Get all the fonts
         """
-        return self.system_fonts.union(FontLoader.load_generated_fonts()).union(
-            self.additional_fonts
-        )
+        return self.system_fonts.union(FontLoader.load_generated_fonts()).union(self.additional_fonts)
 
     def add_additional_font(self, font_path: Path):
         """
         Parameters:
-            font_path (str): Font path. The font can be a .ttf, .otf or .ttc
+            font_path (Path): Font path. The font can be a .ttf, .otf, .ttc or .otc
                 If you need to use woff font, you will need to decompress them.
                 See fontTools documentation to know how to do it: https://fonttools.readthedocs.io/en/latest/ttLib/woff2.html#fontTools.ttLib.woff2.decompress
         """
@@ -58,16 +57,40 @@ class FontLoader:
         FontLoader.save_generated_fonts(generated_fonts)
 
     @staticmethod
+    def load_font_cache_file(cache_file: Path) -> Set[Font]:
+        if not os.path.isfile(cache_file):
+            raise FileNotFoundError(f'The file "{cache_file}" does not exist')
+        
+        with open(cache_file, "rb") as file:
+            file_content = pickle.load(file)
+
+        if isinstance(file_content, set):
+            # previous version to 2.1.3 (included) was saving a set of fonts
+            os.remove(cache_file)
+            return set()
+        elif isinstance(file_content, tuple) and len(file_content) == 2:
+            font_collector_cache_version, cached_fonts = file_content
+
+            if font_collector_cache_version != __version__:
+                os.remove(cache_file)
+                return set()
+            
+            return cached_fonts
+        raise FileExistsError(f'The file "{cache_file}" contain invalid data')
+
+    @staticmethod
+    def save_font_cache_file(cache_file: Path, cache_fonts: Set[Font]) -> None:
+        with open(cache_file, "wb") as file:
+            pickle.dump((__version__, cache_fonts), file)
+
+    @staticmethod
     def load_system_fonts() -> Set[Font]:
         system_fonts: Set[Font] = set()
         fonts_paths: Set[str] = get_system_fonts_filename()
         system_font_cache_file = FontLoader.get_system_font_cache_file_path()
 
-        if os.path.exists(system_font_cache_file):
-
-            with open(system_font_cache_file, "rb") as file:
-                cached_fonts: Set[Font] = pickle.load(file)
-
+        if os.path.isfile(system_font_cache_file):
+            cached_fonts: Set[Font] = FontLoader.load_font_cache_file(system_font_cache_file)
             cached_paths = set(map(lambda font: font.filename, cached_fonts))
 
             # Remove font that aren't anymore installed
@@ -83,8 +106,7 @@ class FontLoader:
 
             # If there is a change, update the cache file
             if len(added) > 0 or len(removed) > 0:
-                with open(system_font_cache_file, "wb") as file:
-                    pickle.dump(system_fonts, file)
+                FontLoader.save_font_cache_file(system_font_cache_file, system_fonts)
 
         else:
             # Since there is no cache file, load the font
@@ -92,8 +114,7 @@ class FontLoader:
                 system_fonts.update(Font.from_font_path(font_path))
 
             # Save the font into the cache file
-            with open(system_font_cache_file, "wb") as file:
-                pickle.dump(system_fonts, file)
+            FontLoader.save_font_cache_file(system_font_cache_file, system_fonts)
 
         return system_fonts
 
@@ -102,13 +123,9 @@ class FontLoader:
         generated_fonts: Set[Font] = set()
         generated_font_cache_file = FontLoader.get_generated_font_cache_file_path()
 
-        if os.path.exists(generated_font_cache_file):
-            with open(generated_font_cache_file, "rb") as file:
-                cached_fonts: Set[Font] = pickle.load(file)
-
-            generated_fonts = set(
-                filter(lambda font: os.path.exists(font.filename), cached_fonts)
-            )
+        if os.path.isfile(generated_font_cache_file):
+            cached_fonts: Set[Font] = FontLoader.load_font_cache_file(generated_font_cache_file)
+            generated_fonts = set(filter(lambda font: os.path.isfile(font.filename), cached_fonts))
 
         return generated_fonts
 
@@ -130,8 +147,7 @@ class FontLoader:
     @staticmethod
     def save_generated_fonts(generated_fonts: Set[Font]):
         generated_font_cache_file = FontLoader.get_generated_font_cache_file_path()
-        with open(generated_font_cache_file, "wb") as file:
-            pickle.dump(generated_fonts, file)
+        FontLoader.save_font_cache_file(generated_font_cache_file, generated_fonts)
 
     @staticmethod
     def discard_system_font_cache():
