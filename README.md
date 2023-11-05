@@ -34,6 +34,8 @@ options:
   --additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]
                         May be a directory containing font files or a single font file. You can specify more than one
                         additional-fonts.
+  --font-root FONT_ROOT [FONT_ROOT ...]
+                        Path to font directory, which will be recursively searched for fonts.
   --exclude-system-fonts
                         If specified, FontCollector won't use the system font to find the font used by an .ass file.
   --collect-draw-fonts

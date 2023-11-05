@@ -17,7 +17,7 @@ from freetype import (
     FT_New_Memory_Face,
     FT_Set_Charmap,
 )
-from typing import Any, Dict, List, Sequence, Set, Tuple
+from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 
 _logger = logging.getLogger(__name__)
 
@@ -52,10 +52,10 @@ class Font:
         self.named_instance_coordinates = named_instance_coordinates
 
     @classmethod
-    def from_font_path(cls, font_path: str) -> List["Font"]:
+    def from_font_path(cls, font_path: Union[str, os.PathLike[str]]) -> List["Font"]:
         """
         Parameters:
-            font_path (str): Font path. The font can be a .ttf, .otf or .ttc
+            font_path (str | PathLike[str]): Font path. The font can be a .ttf, .otf or .ttc
         Returns:
             An Font object that represent the file at the font_path
         """

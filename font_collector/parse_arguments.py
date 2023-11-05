@@ -37,6 +37,7 @@ def parse_arguments() -> Tuple[
     Union[Path, None],
     bool,
     Set[Path],
+    Set[Path],
     bool,
     bool
 ]:
@@ -97,6 +98,14 @@ def parse_arguments() -> Tuple[
     """,
     )
     parser.add_argument(
+        "--font-root",
+        nargs="+",
+        type=Path,
+        help="""
+    Path to font directory, which will be recursively searched for fonts.
+    """,
+    )
+    parser.add_argument(
         "--exclude-system-fonts",
         action="store_false",
         help="""
@@ -130,6 +139,11 @@ def parse_arguments() -> Tuple[
     else:
         additional_fonts = set()
 
+    if args.font_root is not None:
+        font_root = args.font_root
+    else:
+        font_root = set()
+
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
 
@@ -139,6 +153,7 @@ def parse_arguments() -> Tuple[
         mkv_path,
         delete_fonts,
         additional_fonts,
+        font_root,
         use_system_fonts,
         collect_draw_fonts
     )

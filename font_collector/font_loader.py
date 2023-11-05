@@ -5,7 +5,7 @@ from .font import Font
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List, Set
+from typing import List, Set, Iterable
 
 
 class FontLoader:
@@ -19,7 +19,9 @@ class FontLoader:
     additional_fonts: Set[Font]
 
     def __init__(
-        self, additional_fonts_path: List[Path] = [], use_system_font: bool = True
+        self, additional_fonts_path: Iterable[Path] = [],
+            use_system_font: bool = True,
+            font_root_path: Iterable[Path] = []
     ):
 
         if use_system_font:
@@ -27,7 +29,8 @@ class FontLoader:
         else:
             self.system_fonts = set()
 
-        self.additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
+        self.additional_fonts = FontLoader.load_additional_fonts(font_root_path, scan_subdirs=True)
+        self.additional_fonts.update(FontLoader.load_additional_fonts(additional_fonts_path, scan_subdirs=False))
 
     @property
     def fonts(self) -> Set[Font]:
@@ -130,16 +133,24 @@ class FontLoader:
         return generated_fonts
 
     @staticmethod
-    def load_additional_fonts(additional_fonts_path: List[Path]) -> Set[Font]:
+    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs=False) -> Set[Font]:
         additional_fonts: Set[Font] = set()
 
         for font_path in additional_fonts_path:
             if os.path.isfile(font_path):
                 additional_fonts.update(Font.from_font_path(font_path))
             elif os.path.isdir(font_path):
-                for file in os.listdir(font_path):
-                    if Path(file).suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
-                        additional_fonts.update(Font.from_font_path(os.path.join(font_path, file)))
+                if scan_subdirs:
+                    for root, dirs, files in os.walk(font_path):
+                        for name in files:
+                            file = Path(os.path.join(root, name))
+                            if file.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
+                                additional_fonts.update(Font.from_font_path(file))
+
+                else:
+                    for file in os.listdir(font_path):
+                        if Path(file).suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
+                            additional_fonts.update(Font.from_font_path(os.path.join(font_path, file)))
             else:
                 raise FileNotFoundError(f"The file {font_path} is not reachable")
         return additional_fonts
