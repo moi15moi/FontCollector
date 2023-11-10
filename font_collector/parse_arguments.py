@@ -91,10 +91,12 @@ def parse_arguments() -> Tuple[
     )
     parser.add_argument(
         "--additional-fonts",
+        "-add-fonts",
         nargs="+",
         type=Path,
         help="""
     May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
+    If it is a directory, it won't search recursively for fonts
     """,
     )
     parser.add_argument(
