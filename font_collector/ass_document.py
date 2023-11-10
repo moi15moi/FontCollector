@@ -174,6 +174,51 @@ class AssDocument:
                 )
 
 
+    def add_style(
+        self,
+        sub_styles: Dict[str, AssStyle],
+        style_name: str,
+        style: AssStyle
+    ) -> None:
+        """
+        Inspired by: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l2090
+
+        Parameters:
+            sub_styles (Dict[str, AssStyle]): This variable will be modified
+            style_name (str): The AssStyle name
+            style (AssStyle): An AssStyle
+        """
+        def is_ascii_digit(s):
+            return all(ord('0') <= ord(char) <= ord('9') for char in s)
+
+        if len(style_name) == 0:
+            style_name = "Default"
+
+        if style_name in sub_styles:
+            len_name = len(style_name)
+
+            i = len_name
+            while i > 0 and is_ascii_digit(style_name[i - 1]):
+                i -= 1
+
+            idx = 1
+            name2 = style_name
+
+            if i < len_name and is_ascii_digit(style_name[i:]):
+                idx = int(style_name[i:])
+                name2 = style_name[:i]
+
+            idx += 1
+            while True:
+                name3 = f"{name2}{idx}"
+                idx += 1
+                if name3 not in sub_styles:
+                    break
+
+            sub_styles[name3] = sub_styles.pop(style_name)
+        sub_styles[style_name] = style
+
+
     def get_used_style(self, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
         """
         Parameters:
@@ -183,15 +228,17 @@ class AssDocument:
         """
         used_styles: Dict[AssStyle, UsageData] = {}
 
-        # VSFilter trim:
-        #   - *: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1447
-        #   - tabulation and space : https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1172
-        sub_styles: Dict[str, AssStyle] = {
-            style.name.lstrip("\t ").lstrip("*"): AssStyle(
-                style.fontname.lstrip("\t "), 700 if style.bold else 400, style.italic
-            )
-            for style in self.subtitle.styles
-        }
+        sub_styles: Dict[str, AssStyle] = {}
+        for style in self.subtitle.styles:
+            # VSFilter trim:
+            #   - *: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1447
+            #   - tabulation and space : https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1172
+            style_name = style.name.lstrip("\t ").lstrip("*")
+            fontname = style.fontname.lstrip("\t ")
+            weight = 700 if style.bold else 400
+            is_italic = style.italic
+            ass_style = AssStyle(fontname, weight, is_italic)
+            self.add_style(sub_styles, style_name, ass_style)
 
         try:
             sub_wrap_style = WrapStyle(self.subtitle.wrap_style)
@@ -201,7 +248,13 @@ class AssDocument:
         for i, line in enumerate(self.subtitle.events):
             if isinstance(line, Dialogue):
                 try:
-                    original_line_style = sub_styles[line.style]
+                    # - * https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1490
+                    # - tabulation and space : https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1479
+                    #  VSFilter set style name to default if empty: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1892
+                    line_style_name = line.style.lstrip("\t ").lstrip("*")
+                    if len(line_style_name) == 0 or line_style_name.lower() == "default":
+                        line_style_name = "Default"
+                    original_line_style = sub_styles[line_style_name]
                 except KeyError:
                     raise ValueError(
                         f'Error: Unknown style "{line.style}" on line {i+1}. You need to correct the .ass file.'
