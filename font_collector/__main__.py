@@ -20,11 +20,12 @@ def main():
         mkv_path,
         delete_fonts,
         additional_fonts,
+        additional_fonts_recursive,
         use_system_font,
         collect_draw_fonts
     ) = parse_arguments()
     font_results: List[FontResult] = []
-    font_collection = FontLoader(additional_fonts, use_system_font).fonts
+    font_collection = FontLoader(additional_fonts, use_system_font, additional_fonts_recursive).fonts
 
     for ass_path in ass_files_path:
         subtitle = AssDocument.from_file(ass_path)

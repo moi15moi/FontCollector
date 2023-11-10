@@ -21,19 +21,22 @@ options:
   --input [INPUT ...], -i [INPUT ...]
                         Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
                         If no argument is specified, it will take all the font in the current path.
-  -mkv MKV              
+  -mkv MKV
                         Video where the fonts will be merge. Must be a Matroska file.
   --output OUTPUT, -o OUTPUT
                         Destination path of the font. If -o and -mkv aren't specified, it will be the current path.
   -mkvpropedit MKVPROPEDIT
                         Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do
                         nothing.
-  --delete-fonts, -d    
+  --delete-fonts, -d
                         If -d is specified, it will delete the font attached to the mkv before merging the new needed
                         font. If -mkv is not specified, it will do nothing.
-  --additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]
+  --additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...], -add-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]
                         May be a directory containing font files or a single font file. You can specify more than one
                         additional-fonts.
+                        If it is a directory, it won't search recursively for fonts
+  --additional-fonts-recursive ADDITIONAL_FONTS_RECURSIVE [ADDITIONAL_FONTS_RECURSIVE ...], -add-fonts-rec ADDITIONAL_FONTS_RECURSIVE [ADDITIONAL_FONTS_RECURSIVE ...]
+                        Path to font directory, which will be recursively searched for fonts.
   --exclude-system-fonts
                         If specified, FontCollector won't use the system font to find the font used by an .ass file.
   --collect-draw-fonts

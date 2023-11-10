@@ -37,6 +37,7 @@ def parse_arguments() -> Tuple[
     Union[Path, None],
     bool,
     Set[Path],
+    Set[Path],
     bool,
     bool
 ]:
@@ -90,10 +91,21 @@ def parse_arguments() -> Tuple[
     )
     parser.add_argument(
         "--additional-fonts",
+        "-add-fonts",
         nargs="+",
         type=Path,
         help="""
     May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
+    If it is a directory, it won't search recursively for fonts
+    """,
+    )
+    parser.add_argument(
+        "--additional-fonts-recursive",
+        "-add-fonts-rec",
+        nargs="+",
+        type=Path,
+        help="""
+    Path to font directory, which will be recursively searched for fonts.
     """,
     )
     parser.add_argument(
@@ -130,6 +142,11 @@ def parse_arguments() -> Tuple[
     else:
         additional_fonts = set()
 
+    if args.additional_fonts_recursive is not None:
+        additional_fonts_recursive = args.additional_fonts_recursive
+    else:
+        additional_fonts_recursive = set()
+
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
 
@@ -139,6 +156,7 @@ def parse_arguments() -> Tuple[
         mkv_path,
         delete_fonts,
         additional_fonts,
+        additional_fonts_recursive,
         use_system_fonts,
         collect_draw_fonts
     )

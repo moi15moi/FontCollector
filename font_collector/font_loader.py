@@ -5,7 +5,7 @@ from .font import Font
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List, Set
+from typing import List, Set, Iterable
 
 
 class FontLoader:
@@ -19,7 +19,10 @@ class FontLoader:
     additional_fonts: Set[Font]
 
     def __init__(
-        self, additional_fonts_path: List[Path] = [], use_system_font: bool = True
+        self,
+        additional_fonts_path: Iterable[Path] = [],
+        use_system_font: bool = True,
+        additional_fonts_path_recursive: Iterable[Path] = []
     ):
 
         if use_system_font:
@@ -27,7 +30,8 @@ class FontLoader:
         else:
             self.system_fonts = set()
 
-        self.additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
+        self.additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path_recursive, scan_subdirs=True)
+        self.additional_fonts.update(FontLoader.load_additional_fonts(additional_fonts_path, scan_subdirs=False))
 
     @property
     def fonts(self) -> Set[Font]:
@@ -60,7 +64,7 @@ class FontLoader:
     def load_font_cache_file(cache_file: Path) -> Set[Font]:
         if not os.path.isfile(cache_file):
             raise FileNotFoundError(f'The file "{cache_file}" does not exist')
-        
+
         with open(cache_file, "rb") as file:
             file_content = pickle.load(file)
 
@@ -74,7 +78,7 @@ class FontLoader:
             if font_collector_cache_version != __version__:
                 os.remove(cache_file)
                 return set()
-            
+
             return cached_fonts
         raise FileExistsError(f'The file "{cache_file}" contain invalid data')
 
@@ -130,16 +134,28 @@ class FontLoader:
         return generated_fonts
 
     @staticmethod
-    def load_additional_fonts(additional_fonts_path: List[Path]) -> Set[Font]:
+    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs=False) -> Set[Font]:
+        def is_file_font(file_name: Path):
+            return file_name.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]
+
         additional_fonts: Set[Font] = set()
 
         for font_path in additional_fonts_path:
             if os.path.isfile(font_path):
                 additional_fonts.update(Font.from_font_path(font_path))
             elif os.path.isdir(font_path):
-                for file in os.listdir(font_path):
-                    if Path(file).suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
-                        additional_fonts.update(Font.from_font_path(os.path.join(font_path, file)))
+                if scan_subdirs:
+                    for root, dirs, files in os.walk(font_path):
+                        for name in files:
+                            file_path = os.path.join(root, name)
+                            if is_file_font(Path(file_path)):
+                                additional_fonts.update(Font.from_font_path(file_path))
+
+                else:
+                    for file in os.listdir(font_path):
+                        file_path = os.path.join(font_path, file)
+                        if is_file_font(Path(file_path)):
+                            additional_fonts.update(Font.from_font_path(file_path))
             else:
                 raise FileNotFoundError(f"The file {font_path} is not reachable")
         return additional_fonts
