@@ -135,6 +135,9 @@ class FontLoader:
 
     @staticmethod
     def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs=False) -> Set[Font]:
+        def is_file_font(file_name: Path):
+            return file_name.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]
+
         additional_fonts: Set[Font] = set()
 
         for font_path in additional_fonts_path:
@@ -144,14 +147,15 @@ class FontLoader:
                 if scan_subdirs:
                     for root, dirs, files in os.walk(font_path):
                         for name in files:
-                            file = Path(os.path.join(root, name))
-                            if file.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
-                                additional_fonts.update(Font.from_font_path(file))
+                            file_path = os.path.join(root, name)
+                            if is_file_font(Path(file_path)):
+                                additional_fonts.update(Font.from_font_path(file_path))
 
                 else:
                     for file in os.listdir(font_path):
-                        if Path(file).suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]:
-                            additional_fonts.update(Font.from_font_path(os.path.join(font_path, file)))
+                        file_path = os.path.join(font_path, file)
+                        if is_file_font(Path(file_path)):
+                            additional_fonts.update(Font.from_font_path(file_path))
             else:
                 raise FileNotFoundError(f"The file {font_path} is not reachable")
         return additional_fonts
