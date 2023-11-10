@@ -19,9 +19,10 @@ class FontLoader:
     additional_fonts: Set[Font]
 
     def __init__(
-        self, additional_fonts_path: Iterable[Path] = [],
-            use_system_font: bool = True,
-            font_root_path: Iterable[Path] = []
+        self,
+        additional_fonts_path: Iterable[Path] = [],
+        use_system_font: bool = True,
+        additional_fonts_path_recursive: Iterable[Path] = []
     ):
 
         if use_system_font:
@@ -29,7 +30,7 @@ class FontLoader:
         else:
             self.system_fonts = set()
 
-        self.additional_fonts = FontLoader.load_additional_fonts(font_root_path, scan_subdirs=True)
+        self.additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path_recursive, scan_subdirs=True)
         self.additional_fonts.update(FontLoader.load_additional_fonts(additional_fonts_path, scan_subdirs=False))
 
     @property
@@ -63,7 +64,7 @@ class FontLoader:
     def load_font_cache_file(cache_file: Path) -> Set[Font]:
         if not os.path.isfile(cache_file):
             raise FileNotFoundError(f'The file "{cache_file}" does not exist')
-        
+
         with open(cache_file, "rb") as file:
             file_content = pickle.load(file)
 
@@ -77,7 +78,7 @@ class FontLoader:
             if font_collector_cache_version != __version__:
                 os.remove(cache_file)
                 return set()
-            
+
             return cached_fonts
         raise FileExistsError(f'The file "{cache_file}" contain invalid data')
 

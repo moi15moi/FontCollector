@@ -98,7 +98,8 @@ def parse_arguments() -> Tuple[
     """,
     )
     parser.add_argument(
-        "--font-root",
+        "--additional-fonts-recursive",
+        "-add-fonts-rec",
         nargs="+",
         type=Path,
         help="""
@@ -139,10 +140,10 @@ def parse_arguments() -> Tuple[
     else:
         additional_fonts = set()
 
-    if args.font_root is not None:
-        font_root = args.font_root
+    if args.additional_fonts_recursive is not None:
+        additional_fonts_recursive = args.additional_fonts_recursive
     else:
-        font_root = set()
+        additional_fonts_recursive = set()
 
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
@@ -153,7 +154,7 @@ def parse_arguments() -> Tuple[
         mkv_path,
         delete_fonts,
         additional_fonts,
-        font_root,
+        additional_fonts_recursive,
         use_system_fonts,
         collect_draw_fonts
     )
