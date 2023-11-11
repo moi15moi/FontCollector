@@ -27,6 +27,7 @@ from ass_tag_analyzer import (
 )
 from typing import Dict, List, Optional, Tuple
 
+# TODO Utiliser des deepcopy
 
 class ABCAssDocument(ABC):
     """
@@ -84,13 +85,17 @@ class ABCAssDocument(ABC):
         return self._get_style(i)
 
 
-    def get_sub_styles(self: ABCAssDocument) -> Dict[str, AssStyle]:
+    @staticmethod
+    def get_sub_styles() -> Dict[str, AssStyle]:
         """
         Returns:
-            An Dict:
+            An Dict that represent the section [V4+ Styles] of an .ass file:
                 Key: The style name.
                 Value: An AssStyle corresponding to the style name.
         """
+        def is_ascii_digit(s):
+            return all(ord('0') <= ord(char) <= ord('9') for char in s)
+
         sub_styles: Dict[str, AssStyle] = {}
 
         for i in range(self.get_nbr_style()):
@@ -102,8 +107,34 @@ class ABCAssDocument(ABC):
             style_name = style_name.lstrip("\t ").lstrip("*")
             font_name = font_name.lstrip("\t ")
             weight = 700 if is_bold else 400
-
             ass_style = AssStyle(font_name, weight, is_italic)
+
+            # Inspired by: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l2090
+            if len(style_name) == 0:
+                style_name = "Default"
+
+            if style_name in sub_styles:
+                len_name = len(style_name)
+
+                i = len_name
+                while i > 0 and is_ascii_digit(style_name[i - 1]):
+                    i -= 1
+
+                idx = 1
+                name2 = style_name
+
+                if i < len_name and is_ascii_digit(style_name[i:]):
+                    idx = int(style_name[i:])
+                    name2 = style_name[:i]
+
+                idx += 1
+                while True:
+                    name3 = f"{name2}{idx}"
+                    idx += 1
+                    if name3 not in sub_styles:
+                        break
+
+                sub_styles[name3] = sub_styles.pop(style_name)
             sub_styles[style_name] = ass_style
 
         return sub_styles
@@ -135,7 +166,14 @@ class ABCAssDocument(ABC):
             The style name of the line.
         """
         self.__verify_if_line_exist(i)
-        return self._get_line_style_name(i)
+        line_style_name = self._get_line_style_name(i)
+        # - * https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1490
+        # - tabulation and space : https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1479
+        #  VSFilter set style name to default if empty: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1892
+        line_style_name = line_style_name.lstrip("\t ").lstrip("*")
+        if len(line_style_name) == 0 or line_style_name.lower() == "default":
+            line_style_name = "Default"
+        return line_style_name
 
 
     @abstractmethod
@@ -229,7 +267,6 @@ class ABCAssDocument(ABC):
             elif isinstance(tag, AssTagFontName):
                 if isinstance(tag, AssValidTagFontName):
                     current_style.fontname = tag.name
-
                 elif isinstance(tag, AssInvalidTagFontName):
                     current_style.fontname = line_style.fontname
 
@@ -304,17 +341,15 @@ class ABCAssDocument(ABC):
             if self.is_line_dialogue(i):
                 
                 original_line_style = sub_styles.get(self.get_line_style_name(i), None)
+                tags = parse_line(self.get_line_text(i))
 
                 if original_line_style is None:
-                    tags = parse_line(self.get_line_text(i))
 
                     # If the line is empty, we won't raise an exception
                     for tag in tags:
                         if isinstance(tag, (AssDraw, AssText)) and len(tag.text) > 0:
                             raise ValueError(f'Error: Unknown style "{self.get_line_style_name(i)}" on line {i+1}. You need to correct the .ass file.')
                     continue
-
-                tags = parse_line(self.get_line_text(i))
 
                 # Copy the original_line_style
                 line_style = AssStyle(
@@ -327,7 +362,6 @@ class ABCAssDocument(ABC):
                     original_line_style.weight,
                     original_line_style.italic,
                 )
-
 
                 self.__set_used_styles(
                     used_styles,

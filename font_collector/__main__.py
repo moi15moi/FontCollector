@@ -1,7 +1,7 @@
 import logging
 import sys
 from .ass.ass_document import AssDocument
-from .font import ABCFont, FontCollection, FontResult, Helpers
+from .font import ABCFont, FontCollection, FontLoader, FontResult, Helpers
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from typing import List
@@ -17,10 +17,13 @@ def main():
         mkv_path,
         delete_fonts,
         additional_fonts,
+        additional_fonts_recursive,
         use_system_font,
         collect_draw_fonts
     ) = parse_arguments()
     font_results: List[FontResult] = []
+    additional_fonts = FontLoader.load_additional_fonts(additional_fonts)
+    additional_fonts.update(FontLoader.load_additional_fonts(additional_fonts_recursive, True))
     font_collection = FontCollection(use_system_font=use_system_font, additional_fonts=additional_fonts)
 
     for ass_path in ass_files_path:

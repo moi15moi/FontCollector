@@ -1,0 +1,44 @@
+[project]
+name = "FontCollector"
+description = "FontCollector for Advanced SubStation Alpha file."
+authors = [
+    { name = "moi15moi", email = "moi15moismokerlolilol@gmail.com" },
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "ass",
+    "ass-tag-analyzer",
+    "fontTools>=4.38.0",
+    "freetype-py",
+    "FindSystemFontsFilename>=0.1.2",
+]
+classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Other Audience",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "License :: OSI Approved :: MIT License",
+]
+dynamic = ["version"]
+
+[project.scripts]
+fontcollector = "font_collector.__main__:main"
+
+[project.urls]
+Source = "https://github.com/moi15moi/FontCollector/"
+Tracker = "https://github.com/moi15moi/FontCollector/issues/"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = { attr = "font_collector._version.__version__" }
+
+[tool.setuptools]
+packages = ["font_collector"]
