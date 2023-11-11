@@ -1,19 +1,14 @@
-from ..exceptions import OSNotSupported
 from ..font.name import Name, PlatformID
 from .system_lang import SystemLang
 from ctypes import windll, wintypes
-from find_system_fonts_filename.windows_fonts import WindowsVersionHelpers
-from sys import getwindowsversion
 
 
 class WindowsLang(SystemLang):
     __kernel32 = None
 
     def get_lang() -> str:
-        windows_version = getwindowsversion()
-
-        if not WindowsVersionHelpers.is_windows_version_or_greater(windows_version, 5, 0, 0):
-            raise OSNotSupported("get_lang() only works on Windows 2000 or more")
+        # GetUserDefaultLangID is available since Windows 2000.
+        # Python 3.8 and more doesn't support OS behind Windows XP, so we don't need to check the Windows version.
 
         if WindowsLang.__kernel32 is None:
             WindowsLang.__load_kernel32()

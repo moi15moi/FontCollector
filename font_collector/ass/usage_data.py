@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Set
+from typing import Any, Set
 
 
 class UsageData:
@@ -21,7 +21,11 @@ class UsageData:
         lines.sort()
         return lines
 
-    def __eq__(self: UsageData, other: "UsageData"):
+    @ordered_lines.setter
+    def ordered_lines(self: UsageData, value: Any):
+        raise AttributeError("You cannot set the ordered lines property. If you want to add an lines, set lines")
+
+    def __eq__(self: UsageData, other: UsageData):
         return (self.characters_used, self.lines) == (
             other.characters_used,
             other.lines,

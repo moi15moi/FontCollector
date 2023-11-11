@@ -31,7 +31,7 @@ def test_system_fonts_property():
     with pytest.raises(AttributeError) as exc_info:
         font_collection.system_fonts = "test"
     assert str(exc_info.value) == "You cannot set system_fonts, but you can set use_system_font"
-
+test_system_fonts_property()
 
 def test_generated_fonts_property():
     # It could be any font
@@ -70,6 +70,35 @@ def test_get_used_font_by_style():
     ass_style = AssStyle("Font name that isn't in the FontCollection", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
     assert font_result == None
+
+    
+def test_get_used_font_by_style_otf_vs_ttf():
+    alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")
+    alivia_otf_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia.otf")
+
+    with open(alivia_generated_font_path, 'rb') as file:
+        alivia_generated_content = file.read()
+
+    with open(alivia_otf_font_path, 'rb') as file:
+        alivia_otf_content = file.read()
+
+    os.remove(alivia_generated_font_path)
+    os.remove(alivia_otf_font_path)
+
+    # Important, we create the otf file before the ttf file
+    with open(alivia_otf_font_path, 'wb') as file:
+        file.write(alivia_otf_content)
+
+    with open(alivia_generated_font_path, 'wb') as file:
+        file.write(alivia_generated_content)
+
+    additional_fonts = FontLoader.load_additional_fonts([alivia_generated_font_path, alivia_otf_font_path])
+    font_collection = FontCollection(use_system_font=False, additional_fonts=additional_fonts)
+
+    ass_style = AssStyle("Alivia", 400, False)
+    font_result = font_collection.get_used_font_by_style(ass_style)
+
+    assert font_result.font.filename == alivia_generated_font_path
 
 
 def test__eq__():

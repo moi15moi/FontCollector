@@ -132,15 +132,16 @@ class Name:
         Returns:
             The IETF BCP-47 code of the NameRecord. If the lang code isn't found, it return "und".
         """
-        return Name.get_lang_code_from_platform_lang_id(name.platformID, name.langID)
+        return Name.get_lang_code_from_platform_lang_id(name.platformID, name.langID if hasattr(name, "langID") else -1)
 
 
     @staticmethod
-    def get_lang_code_from_platform_lang_id(platform_id: PlatformID, lang_id: int) -> str:
+    def get_lang_code_from_platform_lang_id(platform_id: PlatformID, lang_id: int = -1) -> str:
         """
         Parameters:
             platform_id (PlatformID): An platform id.
             lang_id (int): An language id of an platform. See: https://learn.microsoft.com/en-us/typography/opentype/spec/name
+                For the unicode platform, you don't need to give the lang_id
         Returns:
             The IETF BCP-47 code corresponding to the language id. If the lang code isn't found, it return "und".
         """

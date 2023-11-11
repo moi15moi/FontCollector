@@ -6,4 +6,7 @@ class LinuxLang(SystemLang):
 
     def get_lang() -> Optional[str]:
         lang, _ = getdefaultlocale()
+        if lang is None:
+            # Fallback to english if not found
+            lang = "en"
         return lang

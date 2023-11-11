@@ -10,18 +10,18 @@ class MacLang(SystemLang):
     kCFStringEncodingUTF8 = 0x08000100 # https://developer.apple.com/documentation/corefoundation/cfstringbuiltinencodings/kcfstringencodingutf8?language=objc
 
     def get_lang() -> Optional[str]:
-        if not MacVersionHelpers.is_mac_version_or_greater(10, 6):
+        if not MacVersionHelpers.is_mac_version_or_greater(10, 5):
             raise OSNotSupported("get_lang() only works on mac 10.6 or more")
 
         if MacLang.__core_foundation is None:
             MacLang.__load__core_foundation()
 
-
         languages = MacLang.__core_foundation.CFLocaleCopyPreferredLanguages()
         languages_count = MacLang.__core_foundation.CFArrayGetCount(languages)
 
         if languages_count == 0:
-            return None
+            # Fallback to english if not found
+            return "en"
 
         language = MacLang.__core_foundation.CFArrayGetValueAtIndex(languages, 0)
         language_str = MacLang.__cfstring_to_string(language)

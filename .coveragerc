@@ -1,0 +1,4 @@
+[report]
+include = font_collector/*
+exclude_lines =
+    @abstractmethod

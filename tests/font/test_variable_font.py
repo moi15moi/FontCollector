@@ -160,7 +160,7 @@ def test_font_type_property():
 
 def test_named_instance_coordinates_property():
     font = VariableFont("example", 0, {}, {}, {}, 400, False, FontType.TRUETYPE, {})
-    named_instance_coordinates = {FontType.OPENTYPE}
+    named_instance_coordinates = {"wght": 800}
     font.named_instance_coordinates = named_instance_coordinates
     assert font.named_instance_coordinates == named_instance_coordinates
 

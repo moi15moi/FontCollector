@@ -1,9 +1,9 @@
 from __future__ import annotations
 from ..ass.ass_style import AssStyle
-from .abc_font import ABCFont
-from .font import Font
+from .abc_font import ABCFont, FontType
 from .font_loader import FontLoader
 from .font_result import FontResult
+from os.path import getctime
 from typing import Any, Optional, Set
 
 
@@ -86,11 +86,13 @@ class FontCollection:
         Parameters:
             style (AssStyle): An AssStyle
         Returns:
-            Ordered list of the font that match the best to the AssStyle
+            The best font that match an AssStyle.
+            The algorithm is based on GDI.
+            If no font are found, then it return None.
         """
 
         score_min = float('inf')
-        selected_font = None
+        selected_font: Optional[ABCFont] = None
         for font in self.fonts:
             score = float('inf')
 
@@ -103,12 +105,13 @@ class FontCollection:
                 if exact_name_match:
                     score = font.get_similarity_score(style)
             
-            if score < score_min:
-                score_min = score
-                selected_font = font
-
-            if family_name_match and score == 0 and isinstance(selected_font, Font):
-                break
+            if family_name_match or exact_name_match:
+                if score < score_min:
+                    score_min = score
+                    selected_font = font
+                elif score == score_min:
+                    if selected_font is None or getctime(font.filename) < getctime(selected_font.filename):
+                        selected_font = font
 
         if selected_font is None:
             return None

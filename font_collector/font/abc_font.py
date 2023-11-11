@@ -170,7 +170,6 @@ class ABCFont(ABC):
                 2. Match the system language (ex: "fr")
                 3. Match the english language
                 4. Use the first name (sorted by windows language id https://learn.microsoft.com/en-us/typography/opentype/spec/name#windows-language-ids)
-
         """
         ignore_system_lang = False
         try:
@@ -192,7 +191,7 @@ class ABCFont(ABC):
         if results:
             return results
         
-        # Any value. It should never happen
+        # Any value. It can only happen if the font contains only unicode name (platformID=0)
         return next(iter(names))
 
     
@@ -256,6 +255,9 @@ class ABCFont(ABC):
             weight_compare += 120
 
         score += (73 * abs(weight_compare - style.weight)) // 256
+
+        if self.font_type != FontType.TRUETYPE:
+            score += 9000
 
         return score
 

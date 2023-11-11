@@ -239,7 +239,11 @@ class FontParser:
 
 
         for i, axis_value in enumerate(axis_values):
-            axis_values_names.append(FontParser.get_filtered_names(ttfont["name"].names, platformID=PlatformID.MICROSOFT, nameID=axis_value.ValueNameID))
+
+            axis_value_name = FontParser.get_filtered_names(ttfont["name"].names, platformID=PlatformID.MICROSOFT, nameID=axis_value.ValueNameID)
+            if not axis_value_name:
+                raise InvalidVariableFontException("An axis value has an invalid ValueNameID")
+            axis_values_names.append(axis_value_name)
 
             # If the Format 4 only contain only 1 AxisValueRecord, it will treat it as an single AxisValue like the Format 1, 2 or 3.
             if axis_value.Format == 4 and len(axis_value.AxisValueRecord) > 1:
@@ -295,6 +299,7 @@ class FontParser:
 
 
         if all(not element for element in fullname_axis_value_index):
+            # Fallback if all the element have the flag ELIDABLE_AXIS_VALUE_NAME
             if hasattr(ttfont['STAT'].table, "ElidedFallbackNameID"):
                 elided_fallback_name = FontParser.get_filtered_names(ttfont['name'].names, platformID=PlatformID.MICROSOFT, nameID=ttfont['STAT'].table.ElidedFallbackNameID)
             
@@ -308,12 +313,6 @@ class FontParser:
             else:
                 fullname = set([Name(f"Normal", Language.get("en"))])
 
-        else:
-            # An element in the fullname haven't be found
-            if not fullname:
-                weight = FontParser.DEFAULT_WEIGHT
-                italic = FontParser.DEFAULT_ITALIC
-                fullname = set([Name(f"Regular", Language.get("en"))])
 
         return family_name, fullname, weight, italic
 

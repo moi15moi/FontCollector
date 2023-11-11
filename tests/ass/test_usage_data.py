@@ -1,63 +1,67 @@
+import ast
 from typing import Hashable
+
+import pytest
 from font_collector import UsageData
 
-
+import re
 def test__init__():
-    fontname = "Test"
-    weight = 700
-    italic = False
-    ass_style = AssStyle(fontname, weight, italic)
+    characters_used = {'A'}
+    lines = {1, 2}
+    usage_data = UsageData(characters_used, lines)
 
-    assert ass_style.fontname == fontname
-    assert ass_style.weight == weight
-    assert ass_style.italic == italic
+    assert usage_data.characters_used == characters_used
+    assert usage_data.lines == lines
 
 
 def test_ordered_lines_property():
-    fontname = "Example"
-    weight = 700
-    italic = False
-    ass_style = AssStyle(fontname, weight, italic)
+    characters_used = {'A'}
+    lines = {2, 1}
+    usage_data = UsageData(characters_used, lines)
 
-    fontname = "@Test"
-    ass_style.fontname = fontname
-    assert ass_style.fontname == "Test"
+    assert usage_data.ordered_lines == [1, 2]
+
+    with pytest.raises(AttributeError) as exc_info:
+        usage_data.ordered_lines = "test"
+    assert str(exc_info.value) == "You cannot set the ordered lines property. If you want to add an lines, set lines"
 
 
 def test__eq__():
-    ass_style_1 = AssStyle(
-        "Test", 
-        700, 
-        False
+    usage_data_1 = UsageData(
+        {'A', 'B'}, 
+        {1, 2}
     )
 
-    ass_style_2 = AssStyle(
-        "test", # Different
-        700,
-        False
+    usage_data_2 = UsageData(
+        {'A', 'B'},
+        {1, 2}
     )
-    assert ass_style_1 == ass_style_2
+    assert usage_data_1 == usage_data_2
 
 
-    ass_style_3 = AssStyle(
-        "Test", 
-        800, # Different
-        False
+    usage_data_3 = UsageData(
+        {'A'}, # Different
+        {1, 2}
     )
-    assert ass_style_1 != ass_style_3
+    assert usage_data_1 != usage_data_3
 
-    ass_style_4 = AssStyle(
-        "Test", 
-        700, 
-        True # Different
+    usage_data_4 = UsageData(
+        {'A', 'B'},
+        {1} # Different
     )
 
-    assert ass_style_1 != ass_style_4
+    assert usage_data_1 != usage_data_4
 
 
 def test__repr__():
     characters_used = {"a", "b"}
-    lines = {1, 2}
-    ass_style = UsageData(characters_used, lines)
+    lines = {2, 1}
+    usage_data = UsageData(characters_used, lines)
 
-    assert repr(ass_style) == 'UsageData(Font name="Example", Weight="700", Italic="False")'
+    usage_data_repr = repr(usage_data)
+
+    characters_used_str = re.findall('{.*}', usage_data_repr)[0]
+    assert ast.literal_eval(characters_used_str) == characters_used
+
+    result = re.sub('{.*}', '', usage_data_repr)
+    assert result == 'UsageData(Characters used="", Lines="[1, 2]")'

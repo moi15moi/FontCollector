@@ -649,3 +649,43 @@ def test_variable_font_without_DesignAxisRecord():
     with pytest.raises(InvalidVariableFontException) as exc_info:
         FactoryABCFont.from_font_path(font_path)
     assert str(exc_info.value) == "The font has a stat table, but it doesn't have any DesignAxisRecord"
+
+
+def test_variable_font_without_invalid_name_id():
+    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #13", "Test #13.ttf")
+    fonts = FactoryABCFont.from_font_path(font_path)
+
+    expected_fonts = [
+        Font(
+            font_path, 
+            0, 
+            set([Name("Alegreya", Language.get("en"))]), 
+            set([Name("Alegreya Italic", Language.get("en"))]), 
+            400, 
+            True,
+            False,
+            FontType.TRUETYPE,
+        ),
+    ]
+
+    assert collections.Counter(fonts) == collections.Counter(expected_fonts)
+
+
+def test_opentype_font():
+    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "PENBOX.otf")
+    fonts = FactoryABCFont.from_font_path(font_path)
+
+    expected_fonts = [
+        Font(
+            font_path, 
+            0, 
+            set([Name("PENBOX", Language.get("en"))]), 
+            set([Name("PENBOXRegular", Language.get("en"))]), 
+            400, 
+            False,
+            False,
+            FontType.OPENTYPE,
+        ),
+    ]
+
+    assert collections.Counter(fonts) == collections.Counter(expected_fonts)
