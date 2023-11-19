@@ -2,7 +2,7 @@ from fontTools.ttLib import TTFont, newTable, getTableModule
 from fontTools.ttLib.tables.O_S_2f_2 import *
 import os
 
-from font_collector.font.font_parser import FontParser, PlatformID
+from font_collector.font.font_parser import FontParser, PlatformID, CMap
 from langcodes import Language
 from typing import Hashable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
@@ -94,10 +94,10 @@ def test_get_var_font_family_prefix():
     name_record_designer.langID = 0x409
 
 
-    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_typo], platform_id=3) == set([Name(name_record_typo.string.decode("utf_16_be", "ignore"), Language.get("en"))])
-    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=3) == set([Name(name_record_family.string.decode("utf_16_be", "ignore"), Language.get("en"))])
-    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=0) == set()
-    assert FontParser.get_var_font_family_prefix([name_record_designer], platform_id=3) == set()
+    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_typo], platform_id=3) == [Name(name_record_typo.string.decode("utf_16_be", "ignore"), Language.get("en"))]
+    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=3) == [Name(name_record_family.string.decode("utf_16_be", "ignore"), Language.get("en"))]
+    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=0) == []
+    assert FontParser.get_var_font_family_prefix([name_record_designer], platform_id=3) == []
 
 """
 def test_get_distance_between_axis_value_and_coordinates():
@@ -143,23 +143,14 @@ def test_get_filtered_names():
 
     expected_name = Name(name_record.string.decode("utf_16_be"), Language.get("und"))
 
-    assert FontParser.get_filtered_names(names_record, platformID=0) == set()
-    assert FontParser.get_filtered_names(names_record, platformID=3) == set([expected_name])
-    assert FontParser.get_filtered_names(names_record, platEncID=0) == set()
-    assert FontParser.get_filtered_names(names_record, platEncID=2) == set([expected_name])
-    assert FontParser.get_filtered_names(names_record, nameID=0) == set()
-    assert FontParser.get_filtered_names(names_record, nameID=1) == set([expected_name])
-    assert FontParser.get_filtered_names(names_record, langID=1) == set()
-    assert FontParser.get_filtered_names(names_record, langID=0) == set([expected_name])
-
-
-    name_record = NameRecord()
-    name_record.nameID = 2
-    name_record.string = b"test"
-    name_record.platformID = 1
-    name_record.platEncID = 2
-    name_record.langID = 2
-    names_record.append(name_record)
+    assert FontParser.get_filtered_names(names_record, platformID=0) == []
+    assert FontParser.get_filtered_names(names_record, platformID=3) == [expected_name]
+    assert FontParser.get_filtered_names(names_record, platEncID=0) == []
+    assert FontParser.get_filtered_names(names_record, platEncID=2) == [expected_name]
+    assert FontParser.get_filtered_names(names_record, nameID=0) == []
+    assert FontParser.get_filtered_names(names_record, nameID=1) == [expected_name]
+    assert FontParser.get_filtered_names(names_record, langID=1) == []
+    assert FontParser.get_filtered_names(names_record, langID=0) == [expected_name]
 
 
 def test_get_font_italic_bold_property_with_freetype():
@@ -206,14 +197,24 @@ def test_get_font_italic_bold_property_mac_platform():
 
 
 def test_get_supported_cmaps():
+    # This font contain 1 valid mac cmap
     font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.ttf")
     font = TTFont(font_path)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
+    assert cmaps == [CMap(1, 0)]
 
-    cmaps = FontParser.get_supported_cmaps(font["cmap"].tables)
+    # This font contain unicode cmap and multiple microsoft cmap
+    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_1.ttf")
+    font = TTFont(font_path)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
+    assert cmaps == [CMap(3, 1), CMap(3, 10)]
 
-    assert len(cmaps) == 1
-    assert cmaps[0].platformID == PlatformID.MACINTOSH and cmaps[0].platEncID == 0
-    
+    # This font contain 1 microsoft cmap, 1 valid mac cmap and 1 unicode cmap
+    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_0.ttf")
+    font = TTFont(font_path)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
+    assert cmaps == [CMap(3, 0)]
+
 
 def test_get_cmap_encoding():
     # It could be any format
@@ -222,45 +223,45 @@ def test_get_cmap_encoding():
 
     # Non-supported platform
     cmap.platformID = PlatformID.UNICODE
-    assert FontParser.get_cmap_encoding(cmap) == None
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == None
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 0
-    assert FontParser.get_cmap_encoding(cmap) == "utf_16_be"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unknown"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 1
-    assert FontParser.get_cmap_encoding(cmap) == "utf_16_be"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unicode"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 2
-    assert FontParser.get_cmap_encoding(cmap) == "cp932"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp932"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 3
-    assert FontParser.get_cmap_encoding(cmap) == "cp936"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp936"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 4
-    assert FontParser.get_cmap_encoding(cmap) == "cp950"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp950"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 5
-    assert FontParser.get_cmap_encoding(cmap) == "cp949"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp949"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 6
-    assert FontParser.get_cmap_encoding(cmap) == "cp1361"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp1361"
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 10
-    assert FontParser.get_cmap_encoding(cmap) == "utf_16_be"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unicode"
 
     cmap.platformID = PlatformID.MACINTOSH
     cmap.platEncID = 0
-    assert FontParser.get_cmap_encoding(cmap) == "mac_roman"
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "mac_roman"
 
     # Non-supported platEncID
     cmap.platformID = PlatformID.MACINTOSH
     cmap.platEncID = 1
-    assert FontParser.get_cmap_encoding(cmap) == None
+    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == None

@@ -20,98 +20,96 @@ def test_variable_font_to_collection():
         if os.path.isfile(save_path):
             os.remove(save_path)
 
-    print(generated_fonts)
-
     expected_fonts = [
         Font(
             save_path,
             0,
-            set([Name("Asap Thin", Language.get("en"))]),
-            set([Name("Asap Thin", Language.get("en"))]),
+            [Name("Asap Thin", Language.get("en"))],
+            [Name("Asap Thin", Language.get("en"))],
             100,
             False,
             False,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             1,
-            set([Name("Asap ExtraLight", Language.get("en"))]),
-            set([Name("Asap ExtraLight", Language.get("en"))]),
+            [Name("Asap ExtraLight", Language.get("en"))],
+            [Name("Asap ExtraLight", Language.get("en"))],
             200,
             False,
             False,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             2,
-            set([Name("Asap Light", Language.get("en"))]),
-            set([Name("Asap Light", Language.get("en"))]),
+            [Name("Asap Light", Language.get("en"))],
+            [Name("Asap Light", Language.get("en"))],
             300,
             False,
             False,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             3,
-            set([Name("Asap", Language.get("en"))]),
-            set([Name("Asap Regular", Language.get("en"))]),
+            [Name("Asap", Language.get("en"))],
+            [Name("Asap Regular", Language.get("en"))],
             400,
             False,
             False,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             4,
-            set([Name("Asap Medium", Language.get("en"))]),
-            set([Name("Asap Medium", Language.get("en"))]),
+            [Name("Asap Medium", Language.get("en"))],
+            [Name("Asap Medium", Language.get("en"))],
             500,
             False,
             True,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             5,
-            set([Name("Asap SemiBold", Language.get("en"))]),
-            set([Name("Asap SemiBold", Language.get("en"))]),
+            [Name("Asap SemiBold", Language.get("en"))],
+            [Name("Asap SemiBold", Language.get("en"))],
             600,
             False,
             True,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             6,
-            set([Name("Asap", Language.get("en"))]),
-            set([Name("Asap Bold", Language.get("en"))]),
+            [Name("Asap", Language.get("en"))],
+            [Name("Asap Bold", Language.get("en"))],
             700,
             False,
             True,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             7,
-            set([Name("Asap ExtraBold", Language.get("en"))]),
-            set([Name("Asap ExtraBold", Language.get("en"))]),
+            [Name("Asap ExtraBold", Language.get("en"))],
+            [Name("Asap ExtraBold", Language.get("en"))],
             800,
             False,
             True,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         ),
         Font(
             save_path,
             8,
-            set([Name("Asap Black", Language.get("en"))]),
-            set([Name("Asap Black", Language.get("en"))]),
+            [Name("Asap Black", Language.get("en"))],
+            [Name("Asap Black", Language.get("en"))],
             900,
             False,
             True,
-            FontType.TRUETYPE
+            FontType.TRUETYPE_COLLECTION
         )
     ]
 

@@ -13,20 +13,22 @@ def test__init__():
     font = Font(
         "example",
         0,
-        {Name("family_names", Language.get("en"))},
-        {Name("exact_names", Language.get("en"))},
+        [Name("family_names", Language.get("en"))],
+        [Name("exact_names", Language.get("en"))],
         400,
         False,
         False,
         FontType.TRUETYPE
     )
     mismatch_bold = True
+    need_faux_bold = True
     mismatch_italic = False
 
-    font_result = FontResult(font, mismatch_bold, mismatch_italic)
+    font_result = FontResult(font, mismatch_bold, need_faux_bold, mismatch_italic)
 
     assert font_result.font == font
     assert font_result.mismatch_bold == mismatch_bold
+    assert font_result.need_faux_bold == need_faux_bold
     assert font_result.mismatch_italic == mismatch_italic
 
 
@@ -34,15 +36,16 @@ def test__repr__():
     font = Font(
         "example",
         0,
-        {Name("family_names", Language.get("en"))},
-        {Name("exact_names", Language.get("en"))},
+        [Name("family_names", Language.get("en"))],
+        [Name("exact_names", Language.get("en"))],
         400,
         False,
         False,
         FontType.TRUETYPE
     )
     mismatch_bold = True
+    need_faux_bold = True
     mismatch_italic = False
 
-    font_result = FontResult(font, mismatch_bold, mismatch_italic)
-    assert repr(font_result) == 'FontResult(Font="Font(Filename="example", Font index="0", Family_names="{Name(value="family_names", lang_code="en")}", Exact_names="{Name(value="exact_names", lang_code="en")}", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Mismatch italic="False")'
+    font_result = FontResult(font, mismatch_bold, need_faux_bold, mismatch_italic)
+    assert repr(font_result) == 'FontResult(Font="Font(Filename="example", Font index="0", Family_names="[Name(value="family_names", lang_code="en")]", Exact_names="[Name(value="exact_names", lang_code="en")]", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Need faux bold="True", Mismatch italic="False")'

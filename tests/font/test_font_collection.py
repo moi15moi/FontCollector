@@ -31,7 +31,7 @@ def test_system_fonts_property():
     with pytest.raises(AttributeError) as exc_info:
         font_collection.system_fonts = "test"
     assert str(exc_info.value) == "You cannot set system_fonts, but you can set use_system_font"
-test_system_fonts_property()
+
 
 def test_generated_fonts_property():
     # It could be any font
@@ -70,7 +70,7 @@ def test_get_used_font_by_style():
     ass_style = AssStyle("Font name that isn't in the FontCollection", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
     assert font_result == None
-
+test_get_used_font_by_style()
     
 def test_get_used_font_by_style_otf_vs_ttf():
     alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")

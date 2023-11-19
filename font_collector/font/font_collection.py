@@ -95,6 +95,7 @@ class FontCollection:
         selected_font: Optional[ABCFont] = None
         for font in self.fonts:
             score = float('inf')
+            exact_name_match = False
 
             family_name_match = any(style.fontname.lower() == family_name.value.lower() for family_name in font.family_names)
 
@@ -110,22 +111,32 @@ class FontCollection:
                     score_min = score
                     selected_font = font
                 elif score == score_min:
-                    if selected_font is None or getctime(font.filename) < getctime(selected_font.filename):
+                    # GDI prefers the oldest font when the score between 2 fonts is exactly the same.
+                    # However, for us, it is impossible to know when a font has been installed. 
+                    # GDI, DirectWrite, CoreText and Fontconfig don't offer a way to retrieve the installation date of a font.
+                    # So, we get the creation date of the font, which should be the same as when it has been installed.
+                    # But, there is an exception:
+                    #   On Windows, if the user has called AddFontResourceW to install a font, the creation date of the file is not the same as when it has been installed.
+                    #   On macOS, the same problem occurs with CTFontManagerRegisterFontsForURL.
+                    # But, this use case is really rare, so it is almost impossible to happen and anyways, there is nothing we can do to avoid it.
+                    #if selected_font is None or getctime(font.filename) < getctime(selected_font.filename):
+                    if getctime(font.filename) < getctime(selected_font.filename):
                         selected_font = font
 
         if selected_font is None:
             return None
 
+        need_faux_bold = selected_font.need_faux_bold(style.weight)
         mismatch_bold = abs(selected_font.weight - style.weight) >= 150
         mismatch_italic = selected_font.is_italic != style.italic
 
-        font_result = FontResult(selected_font, mismatch_bold, mismatch_italic)
+        font_result = FontResult(selected_font, mismatch_bold, need_faux_bold, mismatch_italic)
         return font_result
     
 
     def __eq__(self: FontCollection, other: FontCollection) -> bool:
-        return (self.fonts, self.reload_system_font, self.use_generated_fonts, self.additional_fonts) == (
-            other.use_system_font, other.reload_system_font, other.use_generated_fonts, other.fonts
+        return (self.use_system_font, self.reload_system_font, self.use_generated_fonts, self.additional_fonts) == (
+            other.use_system_font, other.reload_system_font, other.use_generated_fonts, other.additional_fonts
         )
 
     def __hash__(self: FontCollection) -> int:

@@ -50,7 +50,7 @@ class Helpers:
         if len(fonts) == 0:
             raise ValueError(f"There is no valid font at the index {font_index}")
 
-        cmaps = FontParser.get_supported_cmaps(ttFont["cmap"].tables)
+        cmaps = FontParser.get_supported_cmaps(ttFont, filename, font_index)
 
 
         for font in fonts:
@@ -60,19 +60,19 @@ class Helpers:
 
             for cmap in cmaps:
                 for family_name in font.family_names:
-                    generated_font["name"].setName(family_name.value, NameID.FAMILY_NAME, cmap.platformID, cmap.platEncID, family_name.get_lang_code_platform_code(cmap.platformID))
+                    generated_font["name"].setName(family_name.value, NameID.FAMILY_NAME, cmap.platform_id, cmap.platform_enc_id, family_name.get_lang_code_platform_code(cmap.platform_id))
             
                 for exact_name in font.exact_names:
-                    generated_font["name"].setName(exact_name.value, NameID.FULL_NAME, cmap.platformID, cmap.platEncID, exact_name.get_lang_code_platform_code(cmap.platformID))
-                    generated_font["name"].setName(exact_name.value, NameID.POSTSCRIPT_NAME, cmap.platformID, cmap.platEncID, exact_name.get_lang_code_platform_code(cmap.platformID))
-                    generated_font["name"].setName(exact_name.value, NameID.SUBFAMILY_NAME, cmap.platformID, cmap.platEncID, exact_name.get_lang_code_platform_code(cmap.platformID))
+                    generated_font["name"].setName(exact_name.value, NameID.FULL_NAME, cmap.platform_id, cmap.platform_enc_id, exact_name.get_lang_code_platform_code(cmap.platform_id))
+                    generated_font["name"].setName(exact_name.value, NameID.POSTSCRIPT_NAME, cmap.platform_id, cmap.platform_enc_id, exact_name.get_lang_code_platform_code(cmap.platform_id))
+                    generated_font["name"].setName(exact_name.value, NameID.SUBFAMILY_NAME, cmap.platform_id, cmap.platform_enc_id, exact_name.get_lang_code_platform_code(cmap.platform_id))
 
                     generated_font["name"].setName(
                         f"FontCollector v {__version__}:{exact_name.value}:{date.today()}",
                         NameID.UNIQUE_ID,
-                        cmap.platformID, 
-                        cmap.platEncID,
-                        exact_name.get_lang_code_platform_code(cmap.platformID),
+                        cmap.platform_id, 
+                        cmap.platform_enc_id,
+                        exact_name.get_lang_code_platform_code(cmap.platform_id),
                     )
 
             selection = generated_font["OS/2"].fsSelection
@@ -119,6 +119,8 @@ class Helpers:
                     It convert it in a format that libass support
                 If false, it won't do anything special. The variable font will be copied like any other font.
         """
+
+        # TODO rework this method
 
         if not os.path.exists(output_directory) and create_directory_if_doesnt_exist:
             os.makedirs(output_directory)

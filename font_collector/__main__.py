@@ -1,3 +1,8 @@
+# TODO Vérifier s'il y a des différences avec ce code, la V3 en ligne ET la v2.1.4
+
+
+
+
 import logging
 import sys
 from .ass.ass_document import AssDocument
@@ -45,12 +50,14 @@ def main():
             else:
                 font_results.append(font_result)
 
-                if font_result.mismatch_bold:
+                if font_result.need_faux_bold:
+                    _logger.warning(f"Faux bold used for '{style.fontname}'.")
+                elif font_result.mismatch_bold:
                     _logger.warning(f"'{style.fontname}' does not have a bold variant.")
                 if font_result.mismatch_italic:
                     _logger.warning(f"'{style.fontname}' does not have an italic variant.")
 
-                if font_result.mismatch_bold or font_result.mismatch_italic:
+                if font_result.need_faux_bold or font_result.mismatch_bold or font_result.mismatch_italic:
                     _logger.warning(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
 
                 

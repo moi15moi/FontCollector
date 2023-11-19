@@ -2,7 +2,7 @@ from __future__ import annotations
 
 class AssStyle:
     """
-    AssStyle is an instance that does not only represent "[V4+ Styles]" section of an .ass script.
+    AssStyle is an instance that does NOT only represent "[V4+ Styles]" section of an .ass script.
     It also consider the tags \\r, \\i, \\b and \\fn
     """
 
@@ -20,6 +20,7 @@ class AssStyle:
         self.weight = weight
         self.italic = italic
 
+
     @property
     def fontname(self: AssStyle):
         return self.__fontname
@@ -28,6 +29,7 @@ class AssStyle:
     def fontname(self: AssStyle, value: str):
         self.__fontname = AssStyle.strip_fontname(value)
 
+
     def __eq__(self: AssStyle, other: AssStyle):
         return (self.fontname.lower(), self.weight, self.italic) == (
             other.fontname.lower(),
@@ -35,11 +37,14 @@ class AssStyle:
             other.italic,
         )
 
+
     def __hash__(self: AssStyle):
         return hash((self.fontname.lower(), self.weight, self.italic))
 
+
     def __repr__(self: AssStyle):
         return f'AssStyle(Font name="{self.fontname}", Weight="{self.weight}", Italic="{self.italic}")'
+
 
     @staticmethod
     def strip_fontname(font_name: str) -> str:

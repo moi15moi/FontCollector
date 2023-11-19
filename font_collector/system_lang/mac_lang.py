@@ -21,7 +21,7 @@ class MacLang(SystemLang):
 
         if languages_count == 0:
             # Fallback to english if not found
-            return "en"
+            return "en-US"
 
         language = MacLang.__core_foundation.CFArrayGetValueAtIndex(languages, 0)
         language_str = MacLang.__cfstring_to_string(language)

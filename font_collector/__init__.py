@@ -6,7 +6,7 @@ from .font import *
 from .system_lang import *
 # Files
 from .exceptions import (
-    InvalidFontException, 
+    InvalidNormalFontException, 
     InvalidNameRecord,
     InvalidVariableFontException, 
     InvalidLanguageCode, 
@@ -17,7 +17,7 @@ from ._version import __version__
 
 from fontTools.misc.loggingTools import configLogger
 
-configLogger(level="ERROR")
+configLogger(level="CRITICAL")
 
 # Set our default logger
 _logger = logging.getLogger(__name__)

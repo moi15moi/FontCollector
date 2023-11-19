@@ -8,5 +8,5 @@ class LinuxLang(SystemLang):
         lang, _ = getdefaultlocale()
         if lang is None:
             # Fallback to english if not found
-            lang = "en"
+            lang = "en-US"
         return lang

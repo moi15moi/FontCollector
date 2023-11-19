@@ -3,6 +3,7 @@ from .abc_font import ABCFont, FontType
 from ..exceptions import InvalidLanguageCode
 from .name import Name
 from langcodes import Language, tag_is_valid
+from os import PathLike
 from typing import List, Set
 
 
@@ -10,10 +11,10 @@ class Font(ABCFont):
 
     def __init__(
         self: Font,
-        filename: str,
+        filename: PathLike[str],
         font_index: int,
-        family_names: Set[Name],
-        exact_names: Set[Name],
+        family_names: List[Name],
+        exact_names: List[Name],
         weight: int,
         is_italic: bool,
         is_glyph_emboldened: bool,
@@ -34,19 +35,21 @@ class Font(ABCFont):
             other.filename, other.font_index, other.family_names, other.exact_names, other.weight, other.is_italic, other.is_glyph_emboldened, other.font_type
         )
 
+
     def __hash__(self: Font) -> int:
         return hash(
             (
                 self.filename,
                 self.font_index,
-                frozenset(self.family_names),
-                frozenset(self.exact_names),
+                tuple(self.family_names),
+                tuple(self.exact_names),
                 self.weight,
                 self.is_italic,
                 self.is_glyph_emboldened,
                 self.font_type,
             )
         )
+
 
     def __repr__(self: Font) -> str:
         return f'Font(Filename="{self.filename}", Font index="{self.font_index}", Family_names="{self.family_names}", Exact_names="{self.exact_names}", Weight="{self.weight}", Italic="{self.is_italic}", Glyph emboldened="{self.is_glyph_emboldened}", Font type="{self.font_type.name}")'

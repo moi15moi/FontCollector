@@ -1,8 +1,9 @@
 from __future__ import annotations
 from ..exceptions import InvalidNameRecord
+from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
 from enum import IntEnum
 from typing import Optional
-from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES, _WINDOWS_LANGUAGES, _WINDOWS_LANGUAGE_CODES
+from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
 from langcodes import Language
 
 
@@ -146,7 +147,7 @@ class Name:
             The IETF BCP-47 code corresponding to the language id. If the lang code isn't found, it return "und".
         """
         if platform_id == PlatformID.MICROSOFT:
-            return _WINDOWS_LANGUAGES.get(lang_id, "und")
+            return WINDOWS_LCID_CODE_TO_LANGUAGES.get(lang_id, "und")
         elif platform_id == PlatformID.MACINTOSH:
             return _MAC_LANGUAGES.get(lang_id, "und")
         else:
@@ -164,9 +165,9 @@ class Name:
         """
         str_lang_code = str(self.lang_code)
         if platform_id == PlatformID.MICROSOFT:
-            if str_lang_code not in _WINDOWS_LANGUAGE_CODES:
+            if str_lang_code not in WINDOWS_LANGUAGES_TO_LCID_CODE:
                 raise ValueError(f'The lang_code "{str_lang_code}" isn\'t supported by the microsoft platform')
-            return _WINDOWS_LANGUAGE_CODES[str_lang_code]
+            return WINDOWS_LANGUAGES_TO_LCID_CODE[str_lang_code]
 
         elif platform_id == PlatformID.MACINTOSH:
             if str_lang_code not in _MAC_LANGUAGE_CODES:

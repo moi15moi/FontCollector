@@ -8,8 +8,20 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 def test_from_font():
     font_path = os.path.join(os.path.dirname(dir_path), "fonts", "PENBOX.otf")
     opentype_font = TTFont(font_path)
-    assert FontType.from_font(opentype_font) == FontType.OPENTYPE
+    is_collection_font = False
+    assert FontType.from_font(opentype_font, is_collection_font) == FontType.OPENTYPE
 
     font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
-    opentype_font = TTFont(font_path)
-    assert FontType.from_font(opentype_font) == FontType.TRUETYPE
+    truetype_font = TTFont(font_path)
+    is_collection_font = False
+    assert FontType.from_font(truetype_font, is_collection_font) == FontType.TRUETYPE
+
+    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "opentype_font_collection.ttc")
+    opentype_collection_font = TTFont(font_path, fontNumber=0)
+    is_collection_font = True
+    assert FontType.from_font(opentype_collection_font, is_collection_font) == FontType.OPENTYPE_COLLECTION
+
+    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    truetype_collection_font = TTFont(font_path, fontNumber=0)
+    is_collection_font = True
+    assert FontType.from_font(truetype_collection_font, is_collection_font) == FontType.TRUETYPE_COLLECTION

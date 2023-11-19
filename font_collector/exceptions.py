@@ -9,11 +9,16 @@ class InvalidNameRecord(Exception):
 
 
 class InvalidFontException(Exception):
-    "Raised when a font isn't valid"
+    "Raised when a font (can be a normal font or a variable font) isn't valid"
     pass
 
 
-class InvalidVariableFontException(Exception):
+class InvalidNormalFontException(InvalidFontException):
+    "Raised when a normal font isn't valid"
+    pass
+
+
+class InvalidVariableFontException(InvalidFontException):
     "Raised when a variable font isn't valid"
     pass
 

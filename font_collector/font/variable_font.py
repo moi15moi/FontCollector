@@ -3,6 +3,7 @@ from .._version import __version__
 from .abc_font import ABCFont, FontType
 from .name import Name
 from itertools import product
+from os import PathLike
 from typing import Any, Dict, List, Set
 
 
@@ -10,11 +11,11 @@ class VariableFont(ABCFont):
 
     def __init__(
         self: VariableFont,
-        filename: str,
+        filename: PathLike[str],
         font_index: int,
-        families_prefix: Set[Name],
-        families_suffix: Set[Name],
-        exact_names_suffix: Set[Name],
+        families_prefix: List[Name],
+        families_suffix: List[Name],
+        exact_names_suffix: List[Name],
         weight: int,
         is_italic: bool,
         font_type: FontType,
@@ -32,34 +33,34 @@ class VariableFont(ABCFont):
 
 
     @property
-    def families_prefix(self: VariableFont):
+    def families_prefix(self: VariableFont) -> List[Name]:
         return self._families_prefix
 
     @families_prefix.setter
-    def families_prefix(self: VariableFont, value: Set[Name]):
+    def families_prefix(self: VariableFont, value: List[Name]):
         self._families_prefix = value
 
 
     @property
-    def families_suffix(self: VariableFont):
+    def families_suffix(self: VariableFont) -> List[Name]:
         return self._families_suffix
 
     @families_suffix.setter
-    def families_suffix(self: VariableFont, value: Set[Name]):
+    def families_suffix(self: VariableFont, value: List[Name]):
         self._families_suffix = value
 
 
     @property
-    def exact_names_suffix(self: VariableFont):
+    def exact_names_suffix(self: VariableFont) -> List[Name]:
         return self._exact_names_suffix
 
     @exact_names_suffix.setter
-    def exact_names_suffix(self: VariableFont, value: Set[Name]):
+    def exact_names_suffix(self: VariableFont, value: List[Name]):
         self._exact_names_suffix = value
 
 
     @property
-    def named_instance_coordinates(self: VariableFont):
+    def named_instance_coordinates(self: VariableFont) -> Dict[str, float]:
         return self._named_instance_coordinates
 
     @named_instance_coordinates.setter
@@ -68,14 +69,14 @@ class VariableFont(ABCFont):
 
 
     @property
-    def family_names(self: VariableFont) -> Set[Name]:
-        family_names: Set[Name] = set()
+    def family_names(self: VariableFont) -> List[Name]:
+        family_names: List[Name] = []
         for item in product(*[self.families_prefix, self.families_suffix]):
             value = " ".join(element.value for element in item).rstrip(" ")
-            # We always use the exact_name lang_code. DirectWrite seems to do that.
-            # Since GDI doesn't expose the lang_code of an family or exact_name, there is no way to know how his behaviour.
+            # We always use the suffix lang_code. DirectWrite seems to do that.
+            # Since GDI doesn't expose the lang_code of an prefix or suffix, there is no way to know how his behaviour.
             lang_code = item[1].lang_code
-            family_names.add(Name(value, lang_code))
+            family_names.append(Name(value, lang_code))
         return family_names
     
     @family_names.setter
@@ -84,14 +85,14 @@ class VariableFont(ABCFont):
 
     
     @property
-    def exact_names(self: VariableFont) -> Set[Name]:
-        exact_names: Set[Name] = set()
+    def exact_names(self: VariableFont) -> List[Name]:
+        exact_names: List[Name] = []
         for item in product(*[self.families_prefix, self.exact_names_suffix]):
             value = " ".join(element.value for element in item).rstrip(" ")
-            # We always use the exact_name lang_code. DirectWrite seems to do that.
-            # Since GDI doesn't expose the lang_code of an family or exact_name, there is no way to know how his behaviour.
+            # We always use the suffix lang_code. DirectWrite seems to do that.
+            # Since GDI doesn't expose the lang_code of an prefix or suffix, there is no way to know how his behaviour.
             lang_code = item[1].lang_code
-            exact_names.add(Name(value, lang_code))
+            exact_names.append(Name(value, lang_code))
         return exact_names
 
     @exact_names.setter
@@ -134,9 +135,9 @@ class VariableFont(ABCFont):
             (
                 self.filename,
                 self.font_index,
-                frozenset(self.families_prefix),
-                frozenset(self.families_suffix),
-                frozenset(self.exact_names_suffix),
+                tuple(self.families_prefix),
+                tuple(self.families_suffix),
+                tuple(self.exact_names_suffix),
                 self.weight,
                 self.is_italic,
                 self.font_type,

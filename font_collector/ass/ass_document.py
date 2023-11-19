@@ -61,6 +61,7 @@ class AssDocument(ABCAssDocument):
     def _get_line_style_name(self: AssDocument, i: int) -> str:
         return self.subtitle.events[i].style
 
+
     def _get_line_text(self: AssDocument, i: int) -> str:
         return self.subtitle.events[i].text
     
