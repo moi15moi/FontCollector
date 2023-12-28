@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections import Counter
 from .factory_abc_font_face import FactoryABCFontFace
 from os import PathLike
-from os.path import realpath
+from os.path import isfile, realpath
 from time import time
 from typing import Iterable, TYPE_CHECKING, List
 
@@ -15,14 +15,22 @@ class FontFile:
     def __init__(
         self: FontFile,
         filename: PathLike[str],
-        font_faces: Iterable[ABCFontFace],
-        last_loaded_time: float = time()
+        font_faces: List[ABCFontFace],
+        last_loaded_time: float = None
     ) -> FontFile:
+        if not isfile(filename):
+            raise FileNotFoundError(f'The file "{filename}" doesn\'t exist.')
+        if len(font_faces) == 0:
+            raise ValueError(f"A FontFile need to contain at least 1 ABCFontFace.")
         self.__filename = realpath(filename)
-        self.__font_faces = list(font_faces)
+        self.__font_faces = font_faces
         for font_face in self.__font_faces:
             font_face.link_face_to_a_font_file(self)
-        self.__last_loaded_time = last_loaded_time
+
+        if last_loaded_time is None:
+            self.__last_loaded_time = time()
+        else:
+            self.__last_loaded_time = last_loaded_time
 
     @property
     def filename(self: FontFile) -> PathLike[str]:
@@ -48,19 +56,15 @@ class FontFile:
         self.__last_loaded_time = time()
 
     def __eq__(self: FontFile, other: FontFile) -> bool:
-        return (self.filename, self.last_loaded_time) == (
-            other.filename, other.last_loaded_time
-        ) and Counter(self.font_faces) == Counter(other.font_faces)
+        return self.filename == other.filename and Counter(self.font_faces) == Counter(other.font_faces)
 
     def __hash__(self: FontFile) -> int:
         return hash(
             (
                 self.filename,
-                self.font_faces,
-                self.last_loaded_time,
+                tuple(self.font_faces),
             )
         )
 
-
     def __repr__(self: FontFile) -> str:
-        return f'{self.__class__.__name__}(Filename="{self.filename}", Font faces="{self.font_faces}", Last loaded time="{self.last_loaded_time}"'
+        return f'{self.__class__.__name__}(Filename="{self.filename}", Font faces="{self.font_faces}", Last loaded time="{self.last_loaded_time}")'
