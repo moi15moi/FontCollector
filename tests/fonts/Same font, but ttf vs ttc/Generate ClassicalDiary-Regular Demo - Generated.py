@@ -1,6 +1,5 @@
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.ttLib.ttCollection import TTCollection
-from font_collector import FactoryABCFont
 import os
 
 # Test if GDI perfer TTF VS TTC file when family, weight and italic is the same

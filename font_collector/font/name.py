@@ -4,7 +4,7 @@ from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
 from enum import IntEnum
 from typing import Optional
 from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
-from langcodes import Language
+from langcodes import Language, closest_supported_match
 
 
 class PlatformID(IntEnum):
@@ -154,25 +154,27 @@ class Name:
             return "und"
 
 
-    def get_lang_code_platform_code(self: Name, platform_id: PlatformID) -> int:
+    def get_lang_code_platform_code(self: Name, platform_id: PlatformID, fallback_to_language: bool = False) -> int:
         """
         Parameters:
             platform_id (PlatformID): The platform id of which you wanna retrieve the lang_code
+            fallback_to_language (bool): If the platform doesn't support the language, try to only match the a language with a different regional (ex: en-US with en-GB)
         Returns:
             The language code corresponding to the platform:
                 - https://learn.microsoft.com/en-us/typography/opentype/spec/name#macintosh-language-ids
                 - https://learn.microsoft.com/en-us/typography/opentype/spec/name#windows-language-ids
         """
-        str_lang_code = str(self.lang_code)
+        tag_distance = 9 if fallback_to_language else 0
         if platform_id == PlatformID.MICROSOFT:
-            if str_lang_code not in WINDOWS_LANGUAGES_TO_LCID_CODE:
-                raise ValueError(f'The lang_code "{str_lang_code}" isn\'t supported by the microsoft platform')
-            return WINDOWS_LANGUAGES_TO_LCID_CODE[str_lang_code]
-
+            result = closest_supported_match(self.lang_code, WINDOWS_LANGUAGES_TO_LCID_CODE.keys(), tag_distance)
+            if result is None:
+                raise ValueError(f'The lang_code "{self.lang_code.to_tag()}" isn\'t supported by the microsoft platform')
+            return WINDOWS_LANGUAGES_TO_LCID_CODE[result]
         elif platform_id == PlatformID.MACINTOSH:
-            if str_lang_code not in _MAC_LANGUAGE_CODES:
-                raise ValueError(f'The lang_code "{str_lang_code}" isn\'t supported by the macintosh platform')
-            return _MAC_LANGUAGE_CODES[str_lang_code]
+            result = closest_supported_match(self.lang_code, _MAC_LANGUAGE_CODES.keys(), tag_distance)
+            if result is None:
+                raise ValueError(f'The lang_code "{self.lang_code.to_tag()}" isn\'t supported by the macintosh platform')
+            return _MAC_LANGUAGE_CODES[result]
         raise ValueError(f"You cannot specify the platform id {platform_id}. You can only specify the microsoft or the macintosh id")
 
 

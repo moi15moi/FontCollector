@@ -10,7 +10,7 @@ from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 import os
 from langcodes import Language
 import pytest
-from font_collector import Name, InvalidVariableFontException
+from font_collector import Name, InvalidVariableFontFaceException
 from font_collector.font.font_parser import FontParser, NameID
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib.ttFont import TTFont
@@ -66,7 +66,7 @@ def test_is_valid_variable_font():
 
     font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #12", "Test #12.ttf")
     font = TTFont(font_path)
-    with pytest.raises(InvalidVariableFontException) as exc_info:
+    with pytest.raises(InvalidVariableFontFaceException) as exc_info:
         FontParser.is_valid_variable_font(font)
     assert str(exc_info.value) == "The font has a stat table, but it doesn't have any DesignAxisRecord"
 
@@ -94,8 +94,8 @@ def test_get_var_font_family_prefix():
     name_record_designer.langID = 0x409
 
 
-    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_typo], platform_id=3) == [Name(name_record_typo.string.decode("utf_16_be", "ignore"), Language.get("en"))]
-    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=3) == [Name(name_record_family.string.decode("utf_16_be", "ignore"), Language.get("en"))]
+    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_typo], platform_id=3) == [Name(name_record_typo.string.decode("utf_16_be", "ignore"), Language.get("en-US"))]
+    assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=3) == [Name(name_record_family.string.decode("utf_16_be", "ignore"), Language.get("en-US"))]
     assert FontParser.get_var_font_family_prefix([name_record_family, name_record_designer], platform_id=0) == []
     assert FontParser.get_var_font_family_prefix([name_record_designer], platform_id=3) == []
 

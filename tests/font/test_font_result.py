@@ -2,7 +2,7 @@ import collections
 import os
 import pytest
 import string
-from font_collector import Font, FontResult, FontType, Name
+from font_collector import FontResult, FontType, Name, NormalFontFace
 from langcodes import Language
 from typing import Hashable
 
@@ -10,8 +10,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test__init__():
-    font = Font(
-        "example",
+    font = NormalFontFace(
         0,
         [Name("family_names", Language.get("en"))],
         [Name("exact_names", Language.get("en"))],
@@ -33,8 +32,7 @@ def test__init__():
 
 
 def test__repr__():
-    font = Font(
-        "example",
+    font = NormalFontFace(
         0,
         [Name("family_names", Language.get("en"))],
         [Name("exact_names", Language.get("en"))],
@@ -48,4 +46,4 @@ def test__repr__():
     mismatch_italic = False
 
     font_result = FontResult(font, mismatch_bold, need_faux_bold, mismatch_italic)
-    assert repr(font_result) == 'FontResult(Font="Font(Filename="example", Font index="0", Family_names="[Name(value="family_names", lang_code="en")]", Exact_names="[Name(value="exact_names", lang_code="en")]", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Need faux bold="True", Mismatch italic="False")'
+    assert repr(font_result) == 'FontResult(Font="NormalFontFace(Font index="0", Family names="[Name(value="family_names", lang_code="en")]", Exact names="[Name(value="exact_names", lang_code="en")]", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Need faux bold="True", Mismatch italic="False")'

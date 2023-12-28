@@ -1,6 +1,7 @@
+from __future__ import annotations
 from ctypes import byref, c_uint, create_string_buffer
 import logging
-from ..exceptions import InvalidNormalFontException, InvalidVariableFontException
+from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
 from .cmap import CMap
 from .font_type import FontType
 from .name import Name, NameID, PlatformID
@@ -71,7 +72,7 @@ class FontParser:
             return False
         
         if font["STAT"].table.DesignAxisRecord is None:
-            raise InvalidVariableFontException("The font has a stat table, but it doesn't have any DesignAxisRecord")
+            raise InvalidVariableFontFaceException("The font has a stat table, but it doesn't have any DesignAxisRecord")
 
         for axe in font["fvar"].axes:
             if not (axe.minValue <= axe.defaultValue <= axe.maxValue):
@@ -123,7 +124,7 @@ class FontParser:
         try:
             axis_tag = font["STAT"].table.DesignAxisRecord.Axis[axis_value.AxisIndex].AxisTag
         except IndexError:
-            raise InvalidVariableFontException(f"The DesignAxisRecord doesn't contain an axis at the index {axis_value.AxisIndex}")
+            raise InvalidVariableFontFaceException(f"The DesignAxisRecord doesn't contain an axis at the index {axis_value.AxisIndex}")
 
         # If the coordinates cannot be found, default to 0
         instance_value = coordinates.get(axis_tag, 0)
@@ -260,7 +261,7 @@ class FontParser:
 
             axis_value_name = FontParser.get_filtered_names(ttfont["name"].names, platformID=PlatformID.MICROSOFT, nameID=axis_value.ValueNameID)
             if not axis_value_name:
-                raise InvalidVariableFontException("An axis value has an invalid ValueNameID")
+                raise InvalidVariableFontFaceException("An axis value has an invalid ValueNameID")
             axis_values_names.append(axis_value_name)
 
             # If the Format 4 only contain only 1 AxisValueRecord, it will treat it as an single AxisValue like the Format 1, 2 or 3.
@@ -312,8 +313,8 @@ class FontParser:
             fullname.extend([Name(fullname_str, lang) for lang in langs])
         
         # An element in the family_name haven't be found
-        if not family_name:
-            family_name = [Name("", Language.get("en"))]
+        #if not family_name:
+        #    family_name = [Name("", Language.get("en"))]
 
 
         if all(not element for element in fullname_axis_value_index):
@@ -327,9 +328,9 @@ class FontParser:
                     # The elided_fallback_name haven't been found
                     weight = FontParser.DEFAULT_WEIGHT
                     italic = FontParser.DEFAULT_ITALIC
-                    fullname = [Name(f"Regular", Language.get("en"))]
+                    fullname = [Name(f"Regular", Language.get("en-US"))]
             else:
-                fullname = [Name(f"Normal", Language.get("en"))]
+                fullname = [Name(f"Normal", Language.get("en-US"))]
 
         # Remove duplicate name while preserving the order
         family_name = list(dict.fromkeys(family_name))
@@ -490,7 +491,7 @@ class FontParser:
                 continue
             font_glyph_names.add(buffer.value.decode("ascii").lower())
 
-        count_codepage: dict[str, int] = {}
+        count_codepage: Dict[str, int] = {}
         for code_page, glyph_names in UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE.items():
             count = sum(1 for font_glyph_name in font_glyph_names if font_glyph_name in glyph_names)
             count_codepage[code_page] = count

@@ -6,9 +6,9 @@ from .font import *
 from .system_lang import *
 # Files
 from .exceptions import (
-    InvalidNormalFontException, 
+    InvalidNormalFontFaceException, 
     InvalidNameRecord,
-    InvalidVariableFontException, 
+    InvalidVariableFontFaceException, 
     InvalidLanguageCode, 
     NameNotFoundException
 )

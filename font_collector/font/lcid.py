@@ -459,5 +459,5 @@ WINDOWS_LCID_CODE_TO_LANGUAGES = {
 
 
 WINDOWS_LANGUAGES_TO_LCID_CODE = {
-    lang.lower(): code for code, lang in WINDOWS_LCID_CODE_TO_LANGUAGES.items()
+    lang: code for code, lang in WINDOWS_LCID_CODE_TO_LANGUAGES.items()
 }

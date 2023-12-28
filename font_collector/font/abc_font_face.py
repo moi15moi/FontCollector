@@ -20,136 +20,103 @@ from freetype import (
     FT_Set_Charmap,
 )
 from langcodes import Language, tag_is_valid
-from os import PathLike
-from typing import List, Sequence, Set
+from typing import List, Sequence, Set, TYPE_CHECKING
 import logging
+
+if TYPE_CHECKING:
+    from .font_file import FontFile
+
 
 
 _logger = logging.getLogger(__name__)
 
 
-class ABCFont(ABC):
+class ABCFontFace(ABC):
 
     @property
-    def filename(self: ABCFont) -> PathLike[str]:
-        return self.__filename
-
-    @filename.setter
-    def filename(self: ABCFont, value: PathLike[str]):
-        self.__filename = value
-
+    def font_index(self: ABCFontFace) -> int:
+        return self._font_index
 
     @property
-    def font_index(self: ABCFont) -> int:
-        return self.__font_index
-
-    @font_index.setter
-    def font_index(self: ABCFont, value: int):
-        self.__font_index = value
-
+    def family_names(self: ABCFontFace) -> List[Name]:
+        return self._family_names
 
     @property
-    def family_names(self: ABCFont) -> Set[Name]:
-        return self.__family_names
-
-    @family_names.setter
-    def family_names(self: ABCFont, value: Set[Name]):
-        self.__family_names = value
-
-
-    @property
-    def exact_names(self: ABCFont) -> Set[Name]:
+    def exact_names(self: ABCFontFace) -> List[Name]:
         # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
-        return self.__exact_names
+        return self._exact_names
     
-    @exact_names.setter
-    def exact_names(self: ABCFont, value: Set[Name]):
-        self.__exact_names = value
-
+    @property
+    def weight(self: ABCFontFace) -> int:
+        return self._weight
 
     @property
-    def weight(self: ABCFont) -> int:
-        return self.__weight
-
-    @weight.setter
-    def weight(self: ABCFont, value: int):
-        self.__weight = value
-
+    def is_italic(self: ABCFontFace) -> bool:
+        return self._is_italic
+    
+    @property
+    def is_glyph_emboldened(self: ABCFontFace) -> bool:
+        return self._is_glyph_emboldened
+    
+    @property
+    def font_type(self: ABCFontFace) -> FontType:
+        return self._font_type
 
     @property
-    def is_italic(self: ABCFont) -> bool:
-        return self.__is_italic
+    def font_file(self: ABCFontFace) -> FontFile:
+        return self._font_file
     
-    @is_italic.setter
-    def is_italic(self: ABCFont, value: bool):
-        self.__is_italic = value
-
-
-    @property
-    def is_glyph_emboldened(self: ABCFont) -> bool:
-        return self.__is_glyph_emboldened
-    
-    @is_glyph_emboldened.setter
-    def is_glyph_emboldened(self: ABCFont, value: bool):
-        self.__is_glyph_emboldened = value
-
-
-    @property
-    def font_type(self: ABCFont) -> FontType:
-        return self.__font_type
-
-    @font_type.setter
-    def font_type(self: ABCFont, value: FontType):
-        self.__font_type = value
-
+    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile):
+        # Since there is a circular reference between FontFile and this class, we need to be able to set the value
+        self._font_file = value
 
     @abstractmethod
-    def __eq__(self: ABCFont) -> bool:
+    def __eq__(self: ABCFontFace) -> bool:
         pass
 
 
     @abstractmethod
-    def __hash__(self: ABCFont) -> int:
+    def __hash__(self: ABCFontFace) -> int:
         pass
     
 
     @abstractmethod
-    def __repr__(self: ABCFont) -> str:
+    def __repr__(self: ABCFontFace) -> str:
         pass
 
 
     @abstractmethod
-    def get_family_from_lang(self: ABCFont) -> List[Name]:
+    def get_family_from_lang(self: ABCFontFace) -> List[Name]:
         pass
     
 
     @abstractmethod
-    def get_exact_name_from_lang(self: ABCFont) -> List[Name]:
+    def get_exact_name_from_lang(self: ABCFontFace) -> List[Name]:
         pass
 
 
-    def get_family_from_lang(self: ABCFont, lang_code: str, exact_match: bool = False) -> List[Name]:
+    def get_family_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> List[Name]:
         """
         See the doc of _get_names_from_lang
         """
         return self._get_names_from_lang(self.family_names, lang_code, exact_match)
     
 
-    def get_best_family_from_lang(self: ABCFont) -> Name:
+    def get_best_family_from_lang(self: ABCFontFace) -> Name:
         """
         See the doc of _get_best_names_from_lang
         """
         return self._get_best_names_from_lang(self.family_names)
 
 
-    def get_exact_name_from_lang(self: ABCFont, lang_code: str, exact_match: bool = False) -> List[Name]:
+    def get_exact_name_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> List[Name]:
         """
         See the doc of _get_names_from_lang
         """
         return self._get_names_from_lang(self.exact_names, lang_code, exact_match)
     
 
-    def get_best_exact_name_from_lang(self: ABCFont) -> Name:
+    def get_best_exact_name_from_lang(self: ABCFontFace) -> Name:
         """
         See the doc of _get_best_names_from_lang
         """
@@ -157,7 +124,7 @@ class ABCFont(ABC):
 
 
     @staticmethod
-    def _get_lowest_name_lang_code(names: Set[Name]) -> Name:
+    def _get_lowest_name_lang_code(names: List[Name]) -> Name:
         lowest_lang_code = float('inf')
         selected_name = None
         for name in names:
@@ -172,7 +139,7 @@ class ABCFont(ABC):
 
 
     @staticmethod
-    def _get_best_names_from_lang(names: Set[Name]) -> Name:
+    def _get_best_names_from_lang(names: List[Name]) -> Name:
         """
         Parameters:
             names (Set[Name]): A set of Names. Can be the family_names or exact_names.
@@ -192,15 +159,15 @@ class ABCFont(ABC):
             ignore_system_lang = True
 
         if not ignore_system_lang:
-            results = ABCFont._get_names_from_lang(names, system_lang, False)
+            results = ABCFontFace._get_names_from_lang(names, system_lang, False)
             if results:
                 return results[0]
 
-        results = ABCFont._get_names_from_lang(names, "en", False)
+        results = ABCFontFace._get_names_from_lang(names, "en", False)
         if results:
-            return ABCFont._get_lowest_name_lang_code(results)
+            return ABCFontFace._get_lowest_name_lang_code(results)
         
-        results = ABCFont._get_lowest_name_lang_code(names)
+        results = ABCFontFace._get_lowest_name_lang_code(names)
         if results:
             return results
         
@@ -209,7 +176,7 @@ class ABCFont(ABC):
 
     
     @staticmethod
-    def _get_names_from_lang(names: Set[Name], lang_code: str, exact_match: bool) -> List[Name]:
+    def _get_names_from_lang(names: List[Name], lang_code: str, exact_match: bool) -> List[Name]:
         """
         Parameters:
             names (Set[Name]): A set of Names. Can be the family_names or exact_names.
@@ -249,11 +216,11 @@ class ABCFont(ABC):
         return matched_names
     
 
-    def need_faux_bold(self: ABCFont, style_weight: int) -> bool:
+    def need_faux_bold(self: ABCFontFace, style_weight: int) -> bool:
         return style_weight > self.weight + 150 and not self.is_glyph_emboldened
 
 
-    def get_similarity_score(self: ABCFont, style: AssStyle) -> int:
+    def get_similarity_score(self: ABCFontFace, style: AssStyle) -> int:
         """
         Parameters:
             style (AssStyle): An AssStyle
@@ -273,7 +240,7 @@ class ABCFont(ABC):
 
         score += (73 * abs(weight_compare - style.weight)) // 256
 
-        if self.font_type != FontType.TRUETYPE:
+        if self.font_type not in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION):
             score += 9000
 
         return score
@@ -304,7 +271,7 @@ class ABCFont(ABC):
         if error: raise FT_Exception(error)
 
         # We cannot use FT_New_Face due to this issue: https://github.com/rougier/freetype-py/issues/157
-        with open(self.filename, mode="rb") as f:
+        with open(self.font_file.filename, mode="rb") as f:
             filebody = f.read()
         error = FT_New_Memory_Face(library, filebody, len(filebody), self.font_index, byref(face))
         if error: raise FT_Exception(error)

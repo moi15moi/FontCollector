@@ -6,7 +6,7 @@
 import logging
 import sys
 from .ass.ass_document import AssDocument
-from .font import ABCFont, FontCollection, FontLoader, FontResult, Helpers
+from .font import ABCFontFace, FontCollection, FontLoader, FontResult, Helpers
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from typing import List
@@ -70,7 +70,7 @@ def main():
         else:
             _logger.info(f"{nbr_font_not_found} fonts could not be found.")
 
-    fonts_found: List[ABCFont] = [font_result.font for font_result in font_results]
+    fonts_found: List[ABCFontFace] = [font_result.font for font_result in font_results]
 
     if mkv_path is not None:
         if delete_fonts:

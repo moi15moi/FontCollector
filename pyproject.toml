@@ -13,6 +13,7 @@ dependencies = [
     "fontTools>=4.38.0",
     "freetype-py",
     "FindSystemFontsFilename>=0.1.2",
+    "langcodes",
 ]
 classifiers=[
         "Development Status :: 5 - Production/Stable",

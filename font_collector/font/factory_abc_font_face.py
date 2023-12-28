@@ -1,23 +1,25 @@
+from __future__ import annotations
 import logging
 import os
-from ..exceptions import InvalidNormalFontException, InvalidVariableFontException
-from .abc_font import ABCFont, FontType
-from .font import Font
+from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
+from .abc_font_face import ABCFontFace, FontType
+from .normal_font_face import NormalFontFace
 from .font_parser import FontParser
 from .name import NameID, PlatformID
-from .variable_font import VariableFont
+from .variable_font_face import VariableFontFace
 from fontTools.ttLib.ttFont import TTFont
+from os import PathLike
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 _logger = logging.getLogger(__name__)
 
 
-class FactoryABCFont:
+class FactoryABCFontFace:
     @staticmethod
-    def from_font_path(font_path: str) -> List[ABCFont]:
+    def from_font_path(font_path: PathLike[str]) -> List[ABCFontFace]:
         """
         Parameters:
-            font_path (str): Font path. The font can be a .ttf, .otf, .ttc or .otc file
+            font_path (PathLike[str]): Font path. The font can be a .ttf, .otf, .ttc or .otc file
         Returns:
             An list of Font or VariableFont object that represent the file at the font_path
         """
@@ -36,7 +38,7 @@ class FactoryABCFont:
                     font = TTFont(font_path, fontNumber=index)
                     ttFonts.append(font)
 
-        fonts: List[ABCFont] = []
+        fonts: List[ABCFontFace] = []
         try:
             for font_index, ttFont in enumerate(ttFonts):
 
@@ -44,14 +46,14 @@ class FactoryABCFont:
                 is_var_font = FontParser.is_valid_variable_font(ttFont)
                 if is_var_font:
                     try:
-                        fonts.extend(FactoryABCFont.__create_variable_fonts(ttFont, font_path, font_index, is_collection_font))
-                    except InvalidVariableFontException:
+                        fonts.extend(FactoryABCFontFace.__create_variable_fonts(ttFont, font_index, is_collection_font))
+                    except InvalidVariableFontFaceException:
                         is_var_font = False
 
                 if not is_var_font:
-                    font = FactoryABCFont.__create_font(ttFont, font_path, font_index, is_collection_font)
+                    font = FactoryABCFontFace.__create_font(ttFont, font_path, font_index, is_collection_font)
                     fonts.append(font)
-        except (InvalidNormalFontException, InvalidVariableFontException):
+        except (InvalidNormalFontFaceException, InvalidVariableFontFaceException):
             _logger.error(f'The font "{font_path}" is invalid.{os.linesep}If you think it is an error, please open an issue on github, share the font and the following error message:')
             raise
         except Exception:
@@ -62,11 +64,11 @@ class FactoryABCFont:
 
 
     @staticmethod
-    def __create_font(ttFont: TTFont, font_path: str, font_index: int, is_collection_font: bool) -> Font:
+    def __create_font(ttFont: TTFont, font_path: PathLike[str], font_index: int, is_collection_font: bool) -> NormalFontFace:
         """
         Parameters:
             ttFont (TTFont): An fontTools object
-            font_path (str): Font path.
+            font_path (PathLike[str]): Font path.
             font_index (int): Font index.
             is_collection_font (bool): If true, then the file is from a collection font.
         Returns:
@@ -74,14 +76,10 @@ class FactoryABCFont:
         """
         cmaps = FontParser.get_supported_cmaps(ttFont, font_path, font_index)
         if len(cmaps) == 0:
-             raise InvalidNormalFontException(f"The font {font_path} doesn't contain any valid cmap.")
+             raise InvalidNormalFontFaceException(f"The font doesn't contain any valid cmap.")
         
         cmap_platform_id = cmaps[0].platform_id
         family_names = FontParser.get_filtered_names(ttFont["name"].names, platformID=cmap_platform_id, nameID=NameID.FAMILY_NAME)
-        
-        # This is something like: https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_fontselect.c#L303-L311
-        if len(family_names) == 0:
-                raise InvalidNormalFontException("The font does not contain an valid family name")
         
         font_type = FontType.from_font(ttFont, is_collection_font)
         if font_type in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION):
@@ -89,9 +87,9 @@ class FactoryABCFont:
         elif font_type in (FontType.OPENTYPE, FontType.OPENTYPE_COLLECTION):
             exact_names = FontParser.get_filtered_names(ttFont["name"].names, platformID=cmap_platform_id, nameID=NameID.POSTSCRIPT_NAME)
         elif font_type == FontType.UNKNOWN:
-            raise InvalidNormalFontException(f"The font type is not recognized.")
+            raise InvalidNormalFontFaceException(f"The font type is not recognized.")
         else:
-            raise InvalidNormalFontException(f"The font isn't an opentype or truetype. It is {font_type.name}")
+            raise InvalidNormalFontFaceException(f"The font isn't an opentype or truetype. It is {font_type.name}")
 
 
         if cmap_platform_id == PlatformID.MICROSOFT:
@@ -100,11 +98,10 @@ class FactoryABCFont:
             is_italic, is_glyphs_emboldened, weight = FontParser.get_font_italic_bold_property_mac_platform(ttFont, font_path, font_index)
         else:
             # This should never happen
-             raise InvalidNormalFontException(f"The font {font_path} doesn't contain any valid cmap.")
+             raise InvalidNormalFontFaceException(f"The font {font_path} doesn't contain any valid cmap.")
 
 
-        return Font(
-            font_path,
+        return NormalFontFace(
             font_index,
             family_names,
             exact_names,
@@ -115,29 +112,25 @@ class FactoryABCFont:
         )
 
 
-    def __create_variable_fonts(ttFont: TTFont, font_path: str, font_index: int, is_collection_font: bool) -> List[VariableFont]:
+    def __create_variable_fonts(ttFont: TTFont, font_index: int, is_collection_font: bool) -> List[VariableFontFace]:
         """
         Parameters:
             ttFont (TTFont): An fontTools object
-            font_path (str): Font path.
             font_index (int): Font index.
             is_collection_font (bool): If true, then the file is from a collection font.
         Returns:
             An list of Font instance that represent the ttFont.
         """
 
-        fonts: Set[VariableFont] = set()
+        fonts: Set[VariableFontFace] = set()
         # GDI support only microsoft variable font
         families_prefix = FontParser.get_var_font_family_prefix(ttFont["name"].names, PlatformID.MICROSOFT)
 
-        if len(families_prefix) == 0:
-                raise InvalidVariableFontException("The font does not contain an valid family name")
-
         font_type = FontType.from_font(ttFont, is_collection_font)
         if font_type == FontType.UNKNOWN:
-            raise InvalidVariableFontException(f"The font type is not recognized.")
+            raise InvalidVariableFontFaceException(f"The font type is not recognized.")
         elif font_type not in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION, FontType.OPENTYPE, FontType.OPENTYPE_COLLECTION):
-            raise InvalidVariableFontException(f"The font isn't an opentype or truetype. It is {font_type.name}")
+            raise InvalidVariableFontFaceException(f"The font isn't an opentype or truetype. It is {font_type.name}")
 
         # Ex axis_values_coordinates: [([AxisValue], {"wght", 400.0})]
         axis_values_coordinates: List[Tuple[List[Any], Dict[str, float]]] = []
@@ -162,8 +155,7 @@ class FactoryABCFont:
                 ttFont, axis_value_table
             )
 
-            font = VariableFont(
-                font_path,
+            font = VariableFontFace(
                 font_index,
                 families_prefix,
                 families_suffix,

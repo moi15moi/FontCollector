@@ -1,6 +1,6 @@
 import os
 import pytest
-from font_collector import AssStyle, Font, FontCollection, FontLoader, FontType
+from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -24,7 +24,7 @@ def test__init__():
 
 def test_system_fonts_property():
     font_collection = FontCollection(use_system_font=False)
-    assert font_collection.system_fonts == set()
+    assert font_collection.system_fonts == []
     font_collection.use_system_font = True
     assert len(font_collection.system_fonts) > 0
 
@@ -35,11 +35,16 @@ def test_system_fonts_property():
 
 def test_generated_fonts_property():
     # It could be any font
-    FontLoader.add_generated_font(Font(os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #6", "Test #6.ttf"), 0, {}, {}, 400, False, False, FontType.TRUETYPE))
+    font_file = FontFile.from_font_path(os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #6", "Test #6.ttf"))
+
     font_collection = FontCollection(use_generated_fonts=False)
-    assert font_collection.generated_fonts == set()
+    assert len(font_collection.generated_fonts) == 0
+
     font_collection.use_generated_fonts = True
-    assert len(font_collection.generated_fonts) > 0
+    nbr_generated_font_before = len(font_collection.generated_fonts)
+    FontLoader.add_generated_font(font_file)
+    nbr_generated_font_after = len(font_collection.generated_fonts)
+    assert nbr_generated_font_before + 1 == nbr_generated_font_after
 
     with pytest.raises(AttributeError) as exc_info:
         font_collection.generated_fonts = "test"
@@ -52,6 +57,7 @@ def test_fonts_property():
     with pytest.raises(AttributeError) as exc_info:
         font_collection.fonts = "test"
     assert str(exc_info.value) == "You cannot set the fonts. If you want to add font, set additional_fonts"
+
 
 def test_get_used_font_by_style():
     fonts_path = os.path.join(os.path.dirname(dir_path), "fonts", "Raleway", "generated_fonts")
@@ -70,8 +76,8 @@ def test_get_used_font_by_style():
     ass_style = AssStyle("Font name that isn't in the FontCollection", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
     assert font_result == None
-test_get_used_font_by_style()
-    
+
+
 def test_get_used_font_by_style_otf_vs_ttf():
     alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")
     alivia_otf_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia.otf")
@@ -98,7 +104,7 @@ def test_get_used_font_by_style_otf_vs_ttf():
     ass_style = AssStyle("Alivia", 400, False)
     font_result = font_collection.get_used_font_by_style(ass_style)
 
-    assert font_result.font.filename == alivia_generated_font_path
+    assert font_result.font.font_file.filename == alivia_generated_font_path
 
 
 def test__eq__():

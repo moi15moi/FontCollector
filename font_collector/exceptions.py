@@ -13,12 +13,12 @@ class InvalidFontException(Exception):
     pass
 
 
-class InvalidNormalFontException(InvalidFontException):
+class InvalidNormalFontFaceException(InvalidFontException):
     "Raised when a normal font isn't valid"
     pass
 
 
-class InvalidVariableFontException(InvalidFontException):
+class InvalidVariableFontFaceException(InvalidFontException):
     "Raised when a variable font isn't valid"
     pass
 

@@ -1,16 +1,16 @@
 from __future__ import annotations
-from .abc_font import ABCFont
+from .abc_font_face import ABCFontFace
 
 
 class FontResult:
 
-    font: ABCFont
+    font: ABCFontFace
     mismatch_bold: bool
     mismatch_italic: bool
 
     def __init__(
         self: FontResult,
-        font: ABCFont,
+        font: ABCFontFace,
         mismatch_bold: bool,
         need_faux_bold: bool,
         mismatch_italic: bool,

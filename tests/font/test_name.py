@@ -1,7 +1,8 @@
 import os
 import pytest
 from font_collector import InvalidNameRecord, Name, PlatformID
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
+from font_collector.font.lcid import WINDOWS_LCID_CODE_TO_LANGUAGES
+from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
 from langcodes import Language
 from typing import Hashable
 
@@ -19,7 +20,7 @@ def test__init__():
 
 def test_from_name_record():
     expected_value = "Example"
-    expected_lang_code = Language.get("en")
+    expected_lang_code = Language.get("en-US")
 
     name_record = NameRecord()
     name_record.nameID = 1
@@ -195,7 +196,7 @@ def test_get_lang_code_of_namerecord():
 
 
 def test_get_lang_code_platform_code():
-    name = Name("test", Language.get("en"))
+    name = Name("test", Language.get("en-US"))
     assert 0x409 == name.get_lang_code_platform_code(PlatformID.MICROSOFT)
     assert 0 == name.get_lang_code_platform_code(PlatformID.MACINTOSH)
 
@@ -203,14 +204,21 @@ def test_get_lang_code_platform_code():
     with pytest.raises(ValueError) as exc_info:
         invalid_language_code.get_lang_code_platform_code(PlatformID.MICROSOFT)
     assert str(exc_info.value) == 'The lang_code "en-FR" isn\'t supported by the microsoft platform'
+    assert Language.get(WINDOWS_LCID_CODE_TO_LANGUAGES[invalid_language_code.get_lang_code_platform_code(PlatformID.MICROSOFT, True)]).language == "en"
 
     with pytest.raises(ValueError) as exc_info:
         invalid_language_code.get_lang_code_platform_code(PlatformID.MACINTOSH)
     assert str(exc_info.value) == 'The lang_code "en-FR" isn\'t supported by the macintosh platform'
+    assert Language.get(_MAC_LANGUAGES[invalid_language_code.get_lang_code_platform_code(PlatformID.MACINTOSH, True)]).language == "en"
 
     with pytest.raises(ValueError) as exc_info:
         invalid_language_code.get_lang_code_platform_code(10)
     assert str(exc_info.value) == 'You cannot specify the platform id 10. You can only specify the microsoft or the macintosh id'
+
+    name = Name("test", Language.get("qaa"))
+    with pytest.raises(ValueError) as exc_info:
+        name.get_lang_code_platform_code(PlatformID.MACINTOSH)
+    assert str(exc_info.value) == 'The lang_code "qaa" isn\'t supported by the macintosh platform'
 
 
 def test__eq__():
