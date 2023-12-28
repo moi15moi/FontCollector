@@ -36,4 +36,4 @@ class UsageData:
 
 
     def __repr__(self: UsageData):
-        return f'UsageData(Characters used="{self.characters_used}", Lines="{self.ordered_lines}")'
+        return f'{self.__class__.__name__}(Characters used="{self.characters_used}", Lines="{self.ordered_lines}")'

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from .name import PlatformID
 
 class CMap:
     """
@@ -6,12 +7,9 @@ class CMap:
     https://learn.microsoft.com/en-us/typography/opentype/spec/cmap
     """
 
-    platform_id: int
-    platform_enc_id: int
-
     def __init__(
         self: CMap,
-        platform_id: int,
+        platform_id: PlatformID,
         platform_enc_id: int,
     ):
         self.platform_id = platform_id
@@ -27,4 +25,4 @@ class CMap:
 
 
     def __repr__(self: CMap):
-        return f'CMap(Platform ID="{self.platform_id}", Platform encoding ID="{self.platform_enc_id}")'
+        return f'{self.__class__.__name__}(Platform ID="{self.platform_id}", Platform encoding ID="{self.platform_enc_id}")'

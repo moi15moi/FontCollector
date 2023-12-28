@@ -187,4 +187,4 @@ class Name:
 
 
     def __repr__(self: Name) -> str:
-        return f'Name(value="{self.value}", lang_code="{self.lang_code}")'
+        return f'{self.__class__.__name__}(value="{self.value}", lang_code="{self.lang_code}")'

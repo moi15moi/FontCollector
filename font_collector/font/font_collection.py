@@ -151,4 +151,4 @@ class FontCollection:
         )
 
     def __repr__(self: FontCollection) -> str:
-        return f'FontCollection(Use system font="{self.use_system_font}", Reload system font="{self.reload_system_font}", Use generated fonts="{self.use_generated_fonts}", Additional fonts="{self.additional_fonts}")'
+        return f'{self.__class__.__name__}(Use system font="{self.use_system_font}", Reload system font="{self.reload_system_font}", Use generated fonts="{self.use_generated_fonts}", Additional fonts="{self.additional_fonts}")'

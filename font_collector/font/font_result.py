@@ -22,4 +22,4 @@ class FontResult:
 
 
     def __repr__(self):
-        return f'FontResult(Font="{self.font}", Mismatch bold="{self.mismatch_bold}", Need faux bold="{self.need_faux_bold}", Mismatch italic="{self.mismatch_italic}")'
+        return f'{self.__class__.__name__}(Font="{self.font}", Mismatch bold="{self.mismatch_bold}", Need faux bold="{self.need_faux_bold}", Mismatch italic="{self.mismatch_italic}")'

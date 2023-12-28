@@ -43,7 +43,7 @@ class AssStyle:
 
 
     def __repr__(self: AssStyle):
-        return f'AssStyle(Font name="{self.fontname}", Weight="{self.weight}", Italic="{self.italic}")'
+        return f'{self.__class__.__name__}(Font name="{self.fontname}", Weight="{self.weight}", Italic="{self.italic}")'
 
 
     @staticmethod
