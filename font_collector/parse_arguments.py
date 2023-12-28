@@ -37,6 +37,7 @@ def parse_arguments() -> Tuple[
     Set[Path],
     Set[Path],
     bool,
+    bool,
     bool
 ]:
     """
@@ -120,6 +121,13 @@ def parse_arguments() -> Tuple[
     If specified, FontCollector will collect the font used by the draw. For more detail when this is usefull, see: https://github.com/libass/libass/issues/617
     """,
     )
+    parser.add_argument(
+        "--dont-convert-variable-to-collection",
+        action="store_false",
+        help="""
+    If specified, FontCollector won't convert variable font to a font collection. see: https://github.com/libass/libass/issues/386
+    """,
+    )
 
     args = parser.parse_args()
 
@@ -147,6 +155,7 @@ def parse_arguments() -> Tuple[
 
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
+    convert_variable_to_collection = args.dont_convert_variable_to_collection
 
     return (
         ass_files_path,
@@ -156,5 +165,6 @@ def parse_arguments() -> Tuple[
         additional_fonts,
         additional_fonts_recursive,
         use_system_fonts,
-        collect_draw_fonts
+        collect_draw_fonts,
+        convert_variable_to_collection
     )
