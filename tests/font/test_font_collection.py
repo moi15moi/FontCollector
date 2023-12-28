@@ -70,8 +70,8 @@ def test_get_used_font_by_style():
 
     # VSFilter prefer to match to the weight then the italic.
     # If it would have prefer to match the italic, the weight would be 700 and italic would be true.
-    assert font_result.font.weight == 900
-    assert font_result.font.is_italic == False
+    assert font_result.font_face.weight == 900
+    assert font_result.font_face.is_italic == False
 
     ass_style = AssStyle("Font name that isn't in the FontCollection", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
@@ -104,7 +104,7 @@ def test_get_used_font_by_style_otf_vs_ttf():
     ass_style = AssStyle("Alivia", 400, False)
     font_result = font_collection.get_used_font_by_style(ass_style)
 
-    assert font_result.font.font_file.filename == alivia_generated_font_path
+    assert font_result.font_face.font_file.filename == alivia_generated_font_path
 
 
 def test__eq__():
