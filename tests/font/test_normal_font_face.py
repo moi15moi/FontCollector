@@ -95,10 +95,12 @@ def test_font_type():
 
 
 def test_link_face_to_a_font_file():
-    font = NormalFontFace(0, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
-    font_file = FontFile("", set())
-    font.link_face_to_a_font_file(font_file)
-    assert font.font_file == font_file
+    font_face_1 = NormalFontFace(0, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
+    font_face_2 = NormalFontFace(1, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_file = FontFile(font_collection_path, [font_face_1])
+    font_face_2.link_face_to_a_font_file(font_file)
+    assert font_face_2.font_file == font_file
 
 
 def test_font_get_missing_glyphs_cmap_encoding_0():
@@ -436,9 +438,6 @@ def test__repr__():
     is_italic = True
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
-
-    exact_names = set()
-
     family_names = [Name("value", Language.get("fr"))]
     exact_names = [Name("value 1", Language.get("fr"))]
 
