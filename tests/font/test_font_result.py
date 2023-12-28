@@ -25,7 +25,7 @@ def test__init__():
 
     font_result = FontResult(font, mismatch_bold, need_faux_bold, mismatch_italic)
 
-    assert font_result.font == font
+    assert font_result.font_face == font
     assert font_result.mismatch_bold == mismatch_bold
     assert font_result.need_faux_bold == need_faux_bold
     assert font_result.mismatch_italic == mismatch_italic
@@ -46,4 +46,4 @@ def test__repr__():
     mismatch_italic = False
 
     font_result = FontResult(font, mismatch_bold, need_faux_bold, mismatch_italic)
-    assert repr(font_result) == 'FontResult(Font="NormalFontFace(Font index="0", Family names="[Name(value="family_names", lang_code="en")]", Exact names="[Name(value="exact_names", lang_code="en")]", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Need faux bold="True", Mismatch italic="False")'
+    assert repr(font_result) == 'FontResult(Font face="NormalFontFace(Font index="0", Family names="[Name(value="family_names", lang_code="en")]", Exact names="[Name(value="exact_names", lang_code="en")]", Weight="400", Italic="False", Glyph emboldened="False", Font type="TRUETYPE")", Mismatch bold="True", Need faux bold="True", Mismatch italic="False")'
