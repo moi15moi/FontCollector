@@ -5,7 +5,7 @@ from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from os.path import getctime
-from typing import Any, Iterable, List, Optional, Set
+from typing import Any, Generator, Iterable, List, Optional, Set
 
 
 class FontCollection:
@@ -33,14 +33,14 @@ class FontCollection:
         reload_system_font: bool = False,
         use_generated_fonts: bool = True,
         additional_fonts: List[FontFile] = [], 
-    ) -> FontCollection:
+    ) -> None:
         self.use_system_font = use_system_font
         self.reload_system_font = reload_system_font
         self.use_generated_fonts = use_generated_fonts
         self.additional_fonts = additional_fonts
 
     
-    def __iter__(self: FontCollection) -> FontFile:
+    def __iter__(self: FontCollection) -> Generator[FontFile, None, None]:
         for font in self.fonts:
             yield font
 
@@ -135,7 +135,9 @@ class FontCollection:
         return font_result
     
 
-    def __eq__(self: FontCollection, other: FontCollection) -> bool:
+    def __eq__(self: FontCollection, other: object) -> bool:
+        if not isinstance(other, FontCollection):
+            return False
         return (self.use_system_font, self.reload_system_font, self.use_generated_fonts, self.additional_fonts) == (
             other.use_system_font, other.reload_system_font, other.use_generated_fonts, other.additional_fonts
         )

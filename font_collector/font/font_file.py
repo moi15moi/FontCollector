@@ -4,7 +4,7 @@ from .factory_abc_font_face import FactoryABCFontFace
 from os import PathLike
 from os.path import isfile, realpath
 from time import time
-from typing import Iterable, TYPE_CHECKING, List
+from typing import Iterable, TYPE_CHECKING, List, Optional, Type
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace
@@ -16,13 +16,13 @@ class FontFile:
         self: FontFile,
         filename: PathLike[str],
         font_faces: List[ABCFontFace],
-        last_loaded_time: float = None
-    ) -> FontFile:
+        last_loaded_time: Optional[float] = None
+    ) -> None:
         if not isfile(filename):
             raise FileNotFoundError(f'The file "{filename}" doesn\'t exist.')
         if len(font_faces) == 0:
             raise ValueError(f"A FontFile need to contain at least 1 ABCFontFace.")
-        self.__filename = realpath(filename)
+        self.__filename: PathLike[str] = realpath(filename)
         self.__font_faces = font_faces
         for font_face in self.__font_faces:
             font_face.link_face_to_a_font_file(self)
@@ -45,7 +45,7 @@ class FontFile:
         return self.__last_loaded_time
 
     @classmethod
-    def from_font_path(cls: FontFile, filename: PathLike[str]) -> FontFile:
+    def from_font_path(cls: Type[FontFile], filename: PathLike[str]) -> FontFile:
         font_faces = FactoryABCFontFace.from_font_path(filename)
         return cls(filename, font_faces)
 
@@ -55,7 +55,9 @@ class FontFile:
             font_face.font_file = self
         self.__last_loaded_time = time()
 
-    def __eq__(self: FontFile, other: FontFile) -> bool:
+    def __eq__(self: FontFile, other: object) -> bool:
+        if not isinstance(other, FontFile):
+            return False
         return self.filename == other.filename and Counter(self.font_faces) == Counter(other.font_faces)
 
     def __hash__(self: FontFile) -> int:

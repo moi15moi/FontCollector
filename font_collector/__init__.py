@@ -14,7 +14,6 @@ from .exceptions import (
 )
 from .mkvpropedit import Mkvpropedit
 from ._version import __version__
-
 from fontTools.misc.loggingTools import configLogger
 
 configLogger(level="CRITICAL")

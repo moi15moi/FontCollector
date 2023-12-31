@@ -15,7 +15,7 @@ class AssStyle:
         fontname: str,
         weight: int,
         italic: bool,
-    ):
+    ) -> None:
         self.fontname = fontname
         self.weight = weight
         self.italic = italic
@@ -30,7 +30,9 @@ class AssStyle:
         self.__fontname = AssStyle.strip_fontname(value)
 
 
-    def __eq__(self: AssStyle, other: AssStyle):
+    def __eq__(self: AssStyle, other: object):
+        if not isinstance(other, AssStyle):
+            return False
         return (self.fontname.lower(), self.weight, self.italic) == (
             other.fontname.lower(),
             other.weight,

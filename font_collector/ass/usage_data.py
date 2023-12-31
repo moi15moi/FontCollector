@@ -11,7 +11,7 @@ class UsageData:
         self: UsageData,
         characters_used: Set[str],
         lines: Set[int],
-    ):
+    ) -> None:
         self.characters_used = characters_used
         self.lines = lines
 
@@ -28,7 +28,9 @@ class UsageData:
         raise AttributeError("You cannot set the ordered lines property. If you want to add an lines, set lines")
 
 
-    def __eq__(self: UsageData, other: UsageData):
+    def __eq__(self: UsageData, other: object):
+        if not isinstance(other, UsageData):
+            return False
         return (self.characters_used, self.lines) == (
             other.characters_used,
             other.lines,

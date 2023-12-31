@@ -9,6 +9,7 @@ class MacLang(SystemLang):
     __core_foundation = None
     kCFStringEncodingUTF8 = 0x08000100 # https://developer.apple.com/documentation/corefoundation/cfstringbuiltinencodings/kcfstringencodingutf8?language=objc
 
+    @staticmethod
     def get_lang() -> Optional[str]:
         if not MacVersionHelpers.is_mac_version_or_greater(10, 5):
             raise OSNotSupported("get_lang() only works on mac 10.5 or more")

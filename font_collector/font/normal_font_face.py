@@ -18,7 +18,7 @@ class NormalFontFace(ABCFontFace):
         is_italic: bool,
         is_glyph_emboldened: bool,
         font_type: FontType,
-    ) -> NormalFontFace:
+    ) -> None:
         if len(family_names) == 0:
                 raise InvalidNormalFontFaceException("The font does not contain an valid family name")
 
@@ -31,7 +31,9 @@ class NormalFontFace(ABCFontFace):
         self._font_type = font_type
         self._font_file = None
     
-    def __eq__(self: NormalFontFace, other: NormalFontFace) -> bool:
+    def __eq__(self: NormalFontFace, other: object) -> bool:
+        if not isinstance(other, NormalFontFace):
+            return False
         return (self.font_index, self.family_names, self.exact_names, self.weight, self.is_italic, self.is_glyph_emboldened, self.font_type) == (
             other.font_index, other.family_names, other.exact_names, other.weight, other.is_italic, other.is_glyph_emboldened, other.font_type
         )

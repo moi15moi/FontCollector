@@ -3,22 +3,22 @@ import os
 from .abc_ass_document import ABCAssDocument
 from ass import Dialogue, Document, parse_file, parse_string
 from ass_tag_analyzer import WrapStyle
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Type
 
 
 class AssDocument(ABCAssDocument):
 
-    def __init__(self: AssDocument, subtitle: Document) -> AssDocument:
+    def __init__(self: AssDocument, subtitle: Document) -> None:
         self.subtitle = subtitle
 
 
     @classmethod
-    def from_string(cls: AssDocument, file_text: str) -> AssDocument:
+    def from_string(cls: Type[AssDocument], file_text: str) -> AssDocument:
         return cls(parse_string(file_text))
 
 
     @classmethod
-    def from_file(cls: AssDocument, filename: str, encoding: str = "utf_8_sig") -> AssDocument:
+    def from_file(cls: Type[AssDocument], filename: str, encoding: str = "utf_8_sig") -> AssDocument:
         if not os.path.isfile(filename):
             raise FileNotFoundError(f"The file {filename} is not reachable")
 

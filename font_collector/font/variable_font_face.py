@@ -28,7 +28,7 @@ class VariableFontFace(ABCFontFace):
         is_italic: bool,
         font_type: FontType,
         named_instance_coordinates: Dict[str, float],
-    ):
+    ) -> None:
         if len(families_prefix) == 0:
             raise InvalidVariableFontFaceException("The font does not contain an valid family name")
 
@@ -54,10 +54,6 @@ class VariableFontFace(ABCFontFace):
     @property
     def exact_names_suffix(self: VariableFontFace) -> List[Name]:
         return self._exact_names_suffix
-
-    @property
-    def named_instance_coordinates(self: VariableFontFace) -> Dict[str, float]:
-        return self._named_instance_coordinates
 
     @property
     def family_names(self: VariableFontFace) -> List[Name]:
@@ -119,10 +115,10 @@ class VariableFontFace(ABCFontFace):
         return self._get_names_from_lang(self.families_prefix, lang_code, exact_match)
     
 
-    def variable_font_to_collection(self: VariableFontFace, save_path: str, cache_generated_font: bool = True) -> None:
+    def variable_font_to_collection(self: VariableFontFace, save_path: PathLike[str], cache_generated_font: bool = True) -> FontFile:
         """
         Parameters:
-            save_path (str): Path where to save the generated font
+            save_path (PathLike[str]): Path where to save the generated font
             cache_generated_font (bool):  Converting an variable font into an collection font is a slow process. Caching the result boost the performance.
                 If true, then the generated font will be cached.
                 If false, then the generated font won't be cached.
@@ -191,7 +187,9 @@ class VariableFontFace(ABCFontFace):
         return generated_font
 
 
-    def __eq__(self: VariableFontFace, other: VariableFontFace):
+    def __eq__(self: VariableFontFace, other: object):
+        if not isinstance(other, VariableFontFace):
+            return False
         return (self.font_index, self.families_prefix, self.families_suffix, self.exact_names_suffix, self.weight, self.is_italic, self.font_type, self.named_instance_coordinates) == (
             other.font_index, other.families_prefix, other.families_suffix, other.exact_names_suffix, other.weight, other.is_italic, other.font_type, other.named_instance_coordinates
         )

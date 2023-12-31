@@ -1,6 +1,7 @@
 from __future__ import annotations
 from ctypes import byref, c_uint, create_string_buffer
 import logging
+from os import PathLike
 from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
 from .cmap import CMap
 from .font_type import FontType
@@ -39,7 +40,7 @@ class FontParser:
     DEFAULT_WEIGHT = 400
     DEFAULT_ITALIC = False
 
-    CMAP_ENCODING_MAP = {
+    CMAP_ENCODING_MAP: Dict[PlatformID, Dict[int, str]] = {
         PlatformID.MACINTOSH: {
             0: "mac_roman",
         },
@@ -170,7 +171,7 @@ class FontParser:
         for axis_value in ttfont["STAT"].table.AxisValueArray.AxisValue:
 
             if axis_value.Format == 4:
-                distance = 0
+                distance = 0.0
 
                 for axis_value_format_4 in axis_value.AxisValueRecord:
                     distance += (
@@ -393,12 +394,12 @@ class FontParser:
 
     @staticmethod
     def get_font_italic_bold_property_microsoft_platform(
-        font: TTFont, font_path: str, font_index: int
+        font: TTFont, font_path: PathLike[str], font_index: int
     ) -> Tuple[bool, bool, int]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (str): Font path.
+            font_path (PathLike[str]): Font path.
             font_index (int): Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
@@ -441,12 +442,12 @@ class FontParser:
 
     @staticmethod
     def get_font_italic_bold_property_mac_platform(
-        font: TTFont, font_path: str, font_index: int
-    ) -> Tuple[bool, int]:
+        font: TTFont, font_path: PathLike[str], font_index: int
+    ) -> Tuple[bool, bool, int]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (str): Font path.
+            font_path (PathLike[str]): Font path.
             font_index (int): Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
@@ -505,11 +506,11 @@ class FontParser:
 
 
     @staticmethod
-    def get_supported_cmaps(ttFont: TTFont, font_path: str, font_index: int) -> List[CMap]:
+    def get_supported_cmaps(ttFont: TTFont, font_path: PathLike[str], font_index: int) -> List[CMap]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (str): Font path.
+            font_path (PathLike[str]): Font path.
             font_index (int): Font index.
         Returns:
             TODO

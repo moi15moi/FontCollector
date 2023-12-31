@@ -1,6 +1,7 @@
 from __future__ import annotations
 from enum import auto, Enum
 from fontTools.ttLib.ttFont import TTFont
+from typing import Type
 
 
 class FontType(Enum):
@@ -11,7 +12,7 @@ class FontType(Enum):
     OPENTYPE_COLLECTION = auto()
 
     @classmethod
-    def from_font(cls: FontType, font: TTFont, is_collection_font: bool) -> FontType:
+    def from_font(cls: Type[FontType], font: TTFont, is_collection_font: bool) -> FontType:
         """
         Parameters:
             font (TTFont): An fontTools object.

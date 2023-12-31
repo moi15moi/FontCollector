@@ -11,12 +11,14 @@ class CMap:
         self: CMap,
         platform_id: PlatformID,
         platform_enc_id: int,
-    ):
+    ) -> None:
         self.platform_id = platform_id
         self.platform_enc_id = platform_enc_id
 
 
-    def __eq__(self: CMap, other: CMap):
+    def __eq__(self: CMap, other: object):
+        if not isinstance(other, CMap):
+            return False
         return (self.platform_id, self.platform_enc_id) == (other.platform_id, other.platform_enc_id)
 
 

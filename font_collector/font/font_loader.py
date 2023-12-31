@@ -40,13 +40,13 @@ class FontLoader:
 
             if cache_file_content.font_collector_version != __version__:
                 os.remove(cache_file)
-                return set()
+                return []
 
             return cache_file_content.cached_fonts
 
         # Remove file since it contain invalid data
         os.remove(cache_file)
-        return set()
+        return []
 
 
     @staticmethod
@@ -72,7 +72,7 @@ class FontLoader:
                 if scan_subdirs:
                     for root, dirs, files in os.walk(font_path):
                         for name in files:
-                            file_path = os.path.join(root, name)
+                            file_path: os.PathLike[str] = os.path.join(root, name)
                             if is_file_font(Path(file_path)):
                                 try:
                                     additional_fonts.append(FontFile.from_font_path(file_path))

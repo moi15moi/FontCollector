@@ -2,7 +2,7 @@ from __future__ import annotations
 from ..exceptions import InvalidNameRecord
 from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, Type
 from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
 from langcodes import Language, closest_supported_match
 
@@ -51,13 +51,13 @@ class Name:
         self: Name,
         value: str,
         lang_code: Language
-    ) -> Name:
+    ) -> None:
         self.value = value
         self.lang_code = lang_code
 
 
     @classmethod
-    def from_name_record(cls: Name, name_record: NameRecord) -> Name:
+    def from_name_record(cls: Type[Name], name_record: NameRecord) -> Name:
         """
         Parameters:
             name_record (NameRecord): Name record from the naming table
@@ -178,7 +178,9 @@ class Name:
         raise ValueError(f"You cannot specify the platform id {platform_id}. You can only specify the microsoft or the macintosh id")
 
 
-    def __eq__(self: Name, other: Name) -> bool:
+    def __eq__(self: Name, other: object) -> bool:
+        if not isinstance(other, Name):
+            return False
         return (self.value, self.lang_code) == (other.value, other.lang_code)
 
 

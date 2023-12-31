@@ -2,15 +2,15 @@ import logging
 import shutil
 import subprocess
 from .font import FontFile
-from os import path
+from os import PathLike, path
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Optional, Sequence
 
 _logger = logging.getLogger(__name__)
 
 
 class Mkvpropedit:
-    path: str = shutil.which("mkvpropedit")
+    path: Optional[str] = shutil.which("mkvpropedit")
 
     @staticmethod
     def is_mkv(filename: Path) -> bool:
