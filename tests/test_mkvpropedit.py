@@ -29,7 +29,7 @@ def test_delete_fonts_of_mkv():
     original_mkv_file = os.path.join(dir_path, "file", "test_video.mkv")
     temp_mkv_file = os.path.join(dir_path, "file", "test_video_temp.mkv")
     shutil.copy(original_mkv_file, temp_mkv_file)
-    font_cmap_encoding_0 = os.path.join(dir_path, "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF")
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     # Get the video detail
@@ -86,7 +86,7 @@ def test_merge_fonts_into_mkv():
     original_mkv_file = os.path.join(dir_path, "file", "test_video.mkv")
     temp_mkv_file = os.path.join(dir_path, "file", "test_video_temp_1.mkv")
     shutil.copy(original_mkv_file, temp_mkv_file)
-    font_cmap_encoding_0 = os.path.join(dir_path, "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF")
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     # Get the video detail

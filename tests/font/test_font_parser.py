@@ -19,52 +19,52 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_is_valid_variable_font():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #1", "Test #1.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #1", "Test #1.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == False
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #2", "Test #2.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #2", "Test #2.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #3", "Test #3.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #3", "Test #3.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == False
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #4", "Test #4.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #4", "Test #4.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #5", "Test #5.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #5", "Test #5.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #6", "Test #6.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #6", "Test #6.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #7", "Test #7.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #7", "Test #7.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #8", "Test #8.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #8", "Test #8.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #9", "Test #9.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #9", "Test #9.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #10", "Test #10.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #10", "Test #10.ttf")
     font = TTFont(font_path)
     # In reality, it is false since it contain an invalid axis_value_id, but this check is done later.
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #11", "Test #11.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "Test #11.ttf")
     font = TTFont(font_path)
     assert FontParser.is_valid_variable_font(font) == True
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #12", "Test #12.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #12", "Test #12.ttf")
     font = TTFont(font_path)
     with pytest.raises(InvalidVariableFontFaceException) as exc_info:
         FontParser.is_valid_variable_font(font)
@@ -120,8 +120,8 @@ def test_get_axis_value_from_coordinates():
     assert False
 
 def test_get_axis_value_table_property():
-    #font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #11", "Test #11.ttf")
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #11", "AdventPro - Original.ttf")
+    #font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "Test #11.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "AdventPro - Original.ttf")
     font = TTFont(font_path)
 
     
@@ -154,7 +154,7 @@ def test_get_filtered_names():
 
 
 def test_get_font_italic_bold_property_with_freetype():
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_2.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.ttf")
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_with_freetype(font_path, 0)
 
     # Invalid font_path
@@ -165,7 +165,7 @@ def test_get_font_italic_bold_property_with_freetype():
 
 def test_get_font_italic_bold_property_microsoft_platform():
     # Test font with invalid os/2 table
-    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_with_invalid_os2_table.ttf")
+    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf")
     invalid_0s2_table_font = TTFont(invalid_0s2_table_font_path)
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_microsoft_platform(invalid_0s2_table_font, invalid_0s2_table_font_path, 0)
 
@@ -184,7 +184,7 @@ def test_get_font_italic_bold_property_microsoft_platform():
 def test_get_font_italic_bold_property_mac_platform():
     font = TTFont()
     # Test font without head table. It need to fallback to freetype.
-    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_with_invalid_os2_table.ttf")
+    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf")
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_mac_platform(font, invalid_0s2_table_font_path, 0)
 
     font["head"] = head = newTable("head")
@@ -198,19 +198,19 @@ def test_get_font_italic_bold_property_mac_platform():
 
 def test_get_supported_cmaps():
     # This font contain 1 valid mac cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.ttf")
     font = TTFont(font_path)
     cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(1, 0)]
 
     # This font contain unicode cmap and multiple microsoft cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_1.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf")
     font = TTFont(font_path)
     cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(3, 1), CMap(3, 10)]
 
     # This font contain 1 microsoft cmap, 1 valid mac cmap and 1 unicode cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_0.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf")
     font = TTFont(font_path)
     cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(3, 0)]

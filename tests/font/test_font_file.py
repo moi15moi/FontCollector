@@ -9,7 +9,7 @@ from typing import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-filename = os.path.join(os.path.dirname(dir_path), "fonts", "Asap-VariableFont_wdth,wght.ttf")
+filename = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
 
 def test__init__():
     filename_upper = filename.upper()
@@ -59,7 +59,7 @@ def test_last_loaded_time_property():
     assert str(exc_info.value) == "property 'last_loaded_time' of 'FontFile' object has no setter"
 
 def test_from_font_path():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     time_before = time()
     font_file = FontFile.from_font_path(font_mac_platform)
     time_after = time()
@@ -81,7 +81,7 @@ def test_from_font_path():
     assert time_before <= font_file.last_loaded_time <= time_after
 
 def test__eq__():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font_faces_1 = [
         VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
         VariableFontFace(1, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
@@ -98,12 +98,12 @@ def test__eq__():
     font_file_3 = FontFile(font_mac_platform, font_faces_2)
     font_file_1 == font_file_3
 
-    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file_4 = FontFile(font_collection_path, font_faces_1)
     font_file_1 != font_file_4
 
 def test__hash__():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font_faces_1 = [
         VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
         VariableFontFace(1, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
@@ -121,12 +121,12 @@ def test__hash__():
     font_file_3 = FontFile(font_mac_platform, font_faces_2)
     {font_file_1} == {font_file_3}
 
-    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file_4 = FontFile(font_collection_path, font_faces_1)
     {font_file_1} != {font_file_4}
 
 def test__repr__():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font_faces = [
         VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
     ]

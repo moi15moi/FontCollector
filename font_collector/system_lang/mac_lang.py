@@ -11,7 +11,7 @@ class MacLang(SystemLang):
 
     def get_lang() -> Optional[str]:
         if not MacVersionHelpers.is_mac_version_or_greater(10, 5):
-            raise OSNotSupported("get_lang() only works on mac 10.6 or more")
+            raise OSNotSupported("get_lang() only works on mac 10.5 or more")
 
         if MacLang.__core_foundation is None:
             MacLang.__load__core_foundation()

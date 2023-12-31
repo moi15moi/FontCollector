@@ -10,7 +10,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_font_without_os2_table():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     fonts = FactoryABCFontFace.from_font_path(font_mac_platform)
     expected_fonts = [
         NormalFontFace(
@@ -28,7 +28,7 @@ def test_font_without_os2_table():
 
 
 def test_font_collection():
-    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     fonts = FactoryABCFontFace.from_font_path(font_collection_path)
     expected_fonts = [
         NormalFontFace(
@@ -74,7 +74,7 @@ def test_font_collection():
 
 
 def test_font_with_fvar_table_but_without_stat_table():
-    font_without_stat_table = os.path.join(os.path.dirname(dir_path), "fonts", "Cabin VF Beta Regular.ttf")
+    font_without_stat_table = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Cabin VF Beta Regular.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_without_stat_table)
     expected_fonts = [
         NormalFontFace(
@@ -92,7 +92,7 @@ def test_font_with_fvar_table_but_without_stat_table():
 
 
 def test_font_without_axis_value():
-    font_without_axis_value = os.path.join(os.path.dirname(dir_path), "fonts", "font_without axis_value.ttf")
+    font_without_axis_value = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_without axis_value.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_without_axis_value)
     expected_fonts = [
         VariableFontFace(
@@ -111,7 +111,7 @@ def test_font_without_axis_value():
 
 
 def test_variable_font_with_invalid_fvar_defaultValue():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #1", "Test #1.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #1", "Test #1.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_font = [NormalFontFace(
         0, 
@@ -127,7 +127,7 @@ def test_variable_font_with_invalid_fvar_defaultValue():
 
 
 def test_variable_font_with_empty_axis_value_array():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #2", "Test #2.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #2", "Test #2.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_font = [
         VariableFontFace(
@@ -145,7 +145,7 @@ def test_variable_font_with_empty_axis_value_array():
     assert fonts == expected_font
 
 def test_variable_font_without_fvar_table():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #3", "Test #3.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #3", "Test #3.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
 
 
@@ -165,7 +165,7 @@ def test_variable_font_without_fvar_table():
 def test_variable_font_with_axis_value_format_4_one_axis_value_record():
     # The AxisValue Format 4 contain only 1 AxisValue in the AxisValueRecord
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #4", "Test #4.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #4", "Test #4.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -228,7 +228,7 @@ def test_variable_font_with_axis_value_format_4_one_axis_value_record():
 def test_variable_font_with_axis_value_format_4_multiple_axis_value_record():
     # The AxisValue Format 4 contain multiple AxisValue in the AxisValueRecord
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #5", "Test #5.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #5", "Test #5.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -289,7 +289,7 @@ def test_variable_font_with_axis_value_format_4_multiple_axis_value_record():
 
 def test_variable_font_with_invalid_elided_fallback_nameid():
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #6", "Test #6.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #6", "Test #6.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -311,7 +311,7 @@ def test_variable_font_with_invalid_elided_fallback_nameid():
 def test_variable_font_match_with_axis_value_format_4_and_axis_format_1():
     # The NamedInstance "wght" == 800 will take the AxisValue Format 4 weight and the AxisValue Format 1 "ital".
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #7", "Test #7.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #7", "Test #7.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -371,7 +371,7 @@ def test_variable_font_match_with_axis_value_format_4_and_axis_format_1():
 
 
 def test_variable_font_duplicate_font_face():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #8", "Test #8.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #8", "Test #8.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -421,7 +421,7 @@ def test_variable_font_duplicate_font_face():
 
 
 def test_variable_font_with_multiple_lang_name_id():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #9", "Test #9.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #9", "Test #9.ttf")
 
     fonts = FactoryABCFontFace.from_font_path(font_path)
     expected_fonts = [
@@ -481,7 +481,7 @@ def test_variable_font_with_multiple_lang_name_id():
 
 
 def test_stat_invalid_axis_value_id():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #10", "Test #10.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #10", "Test #10.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
 
 
@@ -499,7 +499,7 @@ def test_stat_invalid_axis_value_id():
 
 
 def test_without_ElidedFallbackNameID():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #11", "Test #11.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "Test #11.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
 
     expected_fonts = [
@@ -600,7 +600,7 @@ def test_without_ElidedFallbackNameID():
 
 def test_variable_font_without_DesignAxisRecord():
 
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #12", "Test #12.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #12", "Test #12.ttf")
 
     with pytest.raises(InvalidVariableFontFaceException) as exc_info:
         FactoryABCFontFace.from_font_path(font_path)
@@ -608,7 +608,7 @@ def test_variable_font_without_DesignAxisRecord():
 
 
 def test_variable_font_without_invalid_name_id():
-    font_path = os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #13", "Test #13.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #13", "Test #13.ttf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
 
     expected_fonts = [
@@ -627,7 +627,7 @@ def test_variable_font_without_invalid_name_id():
 
 
 def test_opentype_font():
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "PENBOX.otf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "PENBOX.otf")
     fonts = FactoryABCFontFace.from_font_path(font_path)
 
     expected_fonts = [

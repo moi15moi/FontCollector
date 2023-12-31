@@ -6,6 +6,5 @@ from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .font_type import FontType
-from .helpers import Helpers
 from .name import Name, NameID, PlatformID
 from .variable_font_face import VariableFontFace

@@ -2,8 +2,7 @@ import logging
 import shutil
 import subprocess
 from .font import FontFile
-from .font.helpers import Helpers
-from os import getcwd, path
+from os import path
 from pathlib import Path
 from typing import Iterable, Sequence
 

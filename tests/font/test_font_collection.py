@@ -35,7 +35,7 @@ def test_system_fonts_property():
 
 def test_generated_fonts_property():
     # It could be any font
-    font_file = FontFile.from_font_path(os.path.join(os.path.dirname(dir_path), "variable font tests", "Test #6", "Test #6.ttf"))
+    font_file = FontFile.from_font_path(os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #6", "Test #6.ttf"))
 
     font_collection = FontCollection(use_generated_fonts=False)
     assert len(font_collection.generated_fonts) == 0
@@ -60,7 +60,7 @@ def test_fonts_property():
 
 
 def test_get_used_font_by_style():
-    fonts_path = os.path.join(os.path.dirname(dir_path), "fonts", "Raleway", "generated_fonts")
+    fonts_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway", "generated_fonts")
     additional_fonts = FontLoader.load_additional_fonts([fonts_path])            
 
     font_collection = FontCollection(use_system_font=False, additional_fonts=additional_fonts)
@@ -79,8 +79,8 @@ def test_get_used_font_by_style():
 
 
 def test_get_used_font_by_style_otf_vs_ttf():
-    alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")
-    alivia_otf_font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Same Font, but otf vs ttf", "Alivia.otf")
+    alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")
+    alivia_otf_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia.otf")
 
     with open(alivia_generated_font_path, 'rb') as file:
         alivia_generated_content = file.read()

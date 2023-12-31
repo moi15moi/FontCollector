@@ -97,14 +97,14 @@ def test_font_type():
 def test_link_face_to_a_font_file():
     font_face_1 = NormalFontFace(0, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
     font_face_2 = NormalFontFace(1, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
-    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file = FontFile(font_collection_path, [font_face_1])
     font_face_2.link_face_to_a_font_file(font_file)
     assert font_face_2.font_file == font_file
 
 
 def test_font_get_missing_glyphs_cmap_encoding_0():
-    font_cmap_encoding_0 = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.TTF")
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     assert len(font_file.font_faces) == 1
@@ -123,7 +123,7 @@ def test_font_get_missing_glyphs_cmap_encoding_0():
 
 
 def test_font_get_missing_glyphs_cmap_encoding_1():
-    font_cmap_encoding_1 = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_1.TTF")
+    font_cmap_encoding_1 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.TTF")
     font_file = FontFile.from_font_path(font_cmap_encoding_1)
 
     assert len(font_file.font_faces) == 1
@@ -135,7 +135,7 @@ def test_font_get_missing_glyphs_cmap_encoding_1():
 
 
 def test_font_get_missing_glyphs_cmap_encoding_2():
-    font_cmap_encoding_2 = os.path.join(os.path.dirname(dir_path), "fonts", "font_cmap_encoding_2.TTF")
+    font_cmap_encoding_2 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.TTF")
     font_file = FontFile.from_font_path(font_cmap_encoding_2)
 
     assert len(font_file.font_faces) == 1
@@ -150,7 +150,7 @@ def test_font_get_missing_glyphs_cmap_encoding_2():
 
 
 def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "fonts", "font_mac.TTF")
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font_file = FontFile.from_font_path(font_mac_platform)
 
     assert len(font_file.font_faces) == 1

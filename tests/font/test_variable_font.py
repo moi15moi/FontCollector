@@ -161,14 +161,14 @@ def test_named_instance_coordinates_property():
 def test_link_face_to_a_font_file():
     font_face_1 = VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})
     font_face_2 = VariableFontFace(1, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})
-    font_collection_path = os.path.join(os.path.dirname(dir_path), "fonts", "truetype_font_collection.ttc")
+    font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file = FontFile(font_collection_path, [font_face_1])
     font_face_2.link_face_to_a_font_file(font_file)
     assert font_face_2.font_file == font_file
 
 
 def test_get_missing_glyphs():
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Asap-VariableFont_wdth,wght.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
     font_file = FontFile.from_font_path(font_path)
 
     assert len(font_file.font_faces) == 9
@@ -180,7 +180,7 @@ def test_get_missing_glyphs():
 
 
 def test_variable_font_to_collection():
-    font_path = os.path.join(os.path.dirname(dir_path), "fonts", "Asap-VariableFont_wdth,wght.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
     font_file = FontFile.from_font_path(font_path)
 
     assert len(font_file.font_faces) == 9

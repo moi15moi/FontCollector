@@ -6,7 +6,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_load_additional_fonts():
-    font_directory = os.path.join(os.path.dirname(dir_path), "fonts")
+    font_directory = os.path.join(os.path.dirname(dir_path), "file", "fonts")
 
     fonts_result = FontLoader.load_additional_fonts([Path(font_directory)])
     result = list(set([font.filename for font in fonts_result]))
@@ -26,7 +26,7 @@ def test_load_additional_fonts():
 
     assert sorted(result) == sorted(expected_result)
 
-    font_directory = os.path.join(os.path.dirname(dir_path), "fonts", "Raleway")
+    font_directory = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway")
     fonts_result = FontLoader.load_additional_fonts([Path(font_directory)], scan_subdirs=True)
     result = list(set([font.filename for font in fonts_result]))
     expected_result = [
