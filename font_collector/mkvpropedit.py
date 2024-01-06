@@ -1,16 +1,18 @@
 import logging
-import shutil
 import subprocess
-from .font import FontFile
-from os import PathLike, path
+from .font.font_file import FontFile
+from os import path
 from pathlib import Path
-from typing import Iterable, Optional, Sequence
+from shutil import which
+from typing import Iterable, Optional
+
+__all__ = ["Mkvpropedit"]
 
 _logger = logging.getLogger(__name__)
 
 
 class Mkvpropedit:
-    path: Optional[str] = shutil.which("mkvpropedit")
+    path: Optional[str] = which("mkvpropedit")
 
     @staticmethod
     def is_mkv(filename: Path) -> bool:
@@ -74,7 +76,7 @@ class Mkvpropedit:
     def merge_fonts_into_mkv(
         fonts_file: Iterable[FontFile],
         mkv_filename: Path,
-    ):
+    ) -> None:
         """
         Parameters:
             font_collection (Sequence[Font]): All font file that will be merge to the mkv

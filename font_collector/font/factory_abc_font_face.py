@@ -1,25 +1,31 @@
 from __future__ import annotations
 import logging
-import os
 from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
-from .abc_font_face import ABCFontFace, FontType
+from .abc_font_face import ABCFontFace
 from .normal_font_face import NormalFontFace
 from .font_parser import FontParser
+from .font_type import FontType
 from .name import NameID, PlatformID
 from .variable_font_face import VariableFontFace
 from fontTools.ttLib.ttFont import TTFont
-from os import PathLike
-from typing import Any, Dict, List, Optional, Set, Tuple
+from os import linesep
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any, Dict, List, Set, Tuple
+
+__all__ = ["FactoryABCFontFace"]
 
 _logger = logging.getLogger(__name__)
 
 
 class FactoryABCFontFace:
     @staticmethod
-    def from_font_path(font_path: PathLike[str]) -> List[ABCFontFace]:
+    def from_font_path(font_path: Path) -> List[ABCFontFace]:
         """
         Parameters:
-            font_path (PathLike[str]): Font path. The font can be a .ttf, .otf, .ttc or .otc file
+            font_path (Path): Font path. The font can be a .ttf, .otf, .ttc or .otc file
         Returns:
             An list of Font or VariableFont object that represent the file at the font_path
         """
@@ -54,21 +60,21 @@ class FactoryABCFontFace:
                     font = FactoryABCFontFace.__create_font(ttFont, font_path, font_index, is_collection_font)
                     fonts.append(font)
         except (InvalidNormalFontFaceException, InvalidVariableFontFaceException):
-            _logger.error(f'The font "{font_path}" is invalid.{os.linesep}If you think it is an error, please open an issue on github, share the font and the following error message:')
+            _logger.error(f'The font "{font_path}" is invalid.{linesep}If you think it is an error, please open an issue on github, share the font and the following error message:')
             raise
         except Exception:
-            _logger.error(f'An unknown error occurred while reading the font "{font_path}"{os.linesep}Please open an issue on github, share the font and the following error message:')
+            _logger.error(f'An unknown error occurred while reading the font "{font_path}"{linesep}Please open an issue on github, share the font and the following error message:')
             raise
 
         return fonts
 
 
     @staticmethod
-    def __create_font(ttFont: TTFont, font_path: PathLike[str], font_index: int, is_collection_font: bool) -> NormalFontFace:
+    def __create_font(ttFont: TTFont, font_path: Path, font_index: int, is_collection_font: bool) -> NormalFontFace:
         """
         Parameters:
             ttFont (TTFont): An fontTools object
-            font_path (PathLike[str]): Font path.
+            font_path (Path): Font path.
             font_index (int): Font index.
             is_collection_font (bool): If true, then the file is from a collection font.
         Returns:

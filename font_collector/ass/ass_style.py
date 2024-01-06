@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ["AssStyle"]
+
 class AssStyle:
     """
     AssStyle is an instance that does NOT only represent "[V4+ Styles]" section of an .ass script.
@@ -22,15 +24,15 @@ class AssStyle:
 
 
     @property
-    def fontname(self: AssStyle):
+    def fontname(self: AssStyle) -> str:
         return self.__fontname
 
     @fontname.setter
-    def fontname(self: AssStyle, value: str):
+    def fontname(self: AssStyle, value: str) -> None:
         self.__fontname = AssStyle.strip_fontname(value)
 
 
-    def __eq__(self: AssStyle, other: object):
+    def __eq__(self: AssStyle, other: object) -> bool:
         if not isinstance(other, AssStyle):
             return False
         return (self.fontname.lower(), self.weight, self.italic) == (
@@ -40,11 +42,11 @@ class AssStyle:
         )
 
 
-    def __hash__(self: AssStyle):
+    def __hash__(self: AssStyle) -> int:
         return hash((self.fontname.lower(), self.weight, self.italic))
 
 
-    def __repr__(self: AssStyle):
+    def __repr__(self: AssStyle) -> str:
         return f'{self.__class__.__name__}(Font name="{self.fontname}", Weight="{self.weight}", Italic="{self.italic}")'
 
 

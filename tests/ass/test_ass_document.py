@@ -1,16 +1,16 @@
 import os
+from pathlib import Path
 import pytest
 from font_collector import AssDocument, AssStyle, UsageData
 from ass import Comment, Dialogue, Document, Style
 from ass_tag_analyzer import WrapStyle
 
 
-# Get ass path used for tests
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
+test_ass_file_dir_path = os.path.join(os.path.dirname(dir_path), "file", "ass")
 
 def test_get_style_used():
-    path_ass = os.path.join(dir_path, "Style test.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Style test.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -37,7 +37,7 @@ def test_get_style_used():
 
 
 def test_get_style_used_with_and_without_collect_draw_fonts():
-    path_ass = os.path.join(dir_path, "Collect Draw Style test.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Collect Draw Style test.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -55,7 +55,7 @@ def test_get_style_used_with_and_without_collect_draw_fonts():
 
 
 def test_get_style_used_with_invalid_style_name_and_empty_line():
-    path_ass = os.path.join(dir_path, "Empty line with invalid style.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Empty line with invalid style.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -64,7 +64,7 @@ def test_get_style_used_with_invalid_style_name_and_empty_line():
 
 
 def test_get_style_used_with_invalid_style_name_and_non_empty_line():
-    path_ass = os.path.join(dir_path, "Non-empty line with invalid style.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Non-empty line with invalid style.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     with pytest.raises(ValueError) as exc_info:
@@ -73,7 +73,7 @@ def test_get_style_used_with_invalid_style_name_and_non_empty_line():
 
 
 def test_get_style_used_with_wrap_tag():
-    path_ass = os.path.join(dir_path, "WrapStyle.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "WrapStyle.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -87,7 +87,7 @@ def test_get_style_used_with_wrap_tag():
 
 
 def test_get_style_used_usage_data():
-    path_ass = os.path.join(dir_path, "Usage Data Test.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Usage Data Test.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style(collect_draw_fonts=True)
@@ -99,7 +99,7 @@ def test_get_style_used_usage_data():
 
 
 def test_get_style_used_empty_line_style_name():
-    path_ass = os.path.join(dir_path, "Empty line style name.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "Empty line style name.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -110,7 +110,7 @@ def test_get_style_used_empty_line_style_name():
 
 
 def test_get_style_used_2_duplicate_style_name():
-    path_ass = os.path.join(dir_path, "2 duplicate style name.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "2 duplicate style name.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -121,7 +121,7 @@ def test_get_style_used_2_duplicate_style_name():
 
 
 def test_get_style_used_3_duplicate_style_name():
-    path_ass = os.path.join(dir_path, "3 duplicate style name.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "3 duplicate style name.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -132,7 +132,7 @@ def test_get_style_used_3_duplicate_style_name():
 
 
 def test_get_style_used_2_duplicate_style_name_with_number():
-    path_ass = os.path.join(dir_path, "2 duplicate style name with number.ass")
+    path_ass = Path(os.path.join(test_ass_file_dir_path, "2 duplicate style name with number.ass"))
     subtitle = AssDocument.from_file(path_ass)
 
     styles = subtitle.get_used_style()
@@ -257,13 +257,13 @@ def test_from_string():
 
 
 def test_from_file():
-    filename = os.path.join(dir_path, "Ass file that doesn't exist.ass")
+    filename = Path(os.path.join(test_ass_file_dir_path, "Ass file that doesn't exist.ass"))
 
     with pytest.raises(FileNotFoundError) as exc_info:
         AssDocument.from_file(filename)
     assert str(exc_info.value) == f"The file {filename} is not reachable"
 
-    filename = os.path.join(dir_path, "Style test.ass")
+    filename = Path(os.path.join(test_ass_file_dir_path, "Style test.ass"))
     subtitle = AssDocument.from_file(filename)
     assert subtitle.is_line_dialogue(6) == True
     assert subtitle.get_line_text(6) == "{\\b900\\b}Test"

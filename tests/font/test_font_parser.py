@@ -1,3 +1,5 @@
+from ctypes import byref
+from pathlib import Path
 from fontTools.ttLib import TTFont, newTable, getTableModule
 from fontTools.ttLib.tables.O_S_2f_2 import *
 import os
@@ -14,6 +16,16 @@ from font_collector import Name, InvalidVariableFontFaceException
 from font_collector.font.font_parser import FontParser, NameID
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib.ttFont import TTFont
+from freetype import (
+    FT_Done_Face,
+    FT_Done_FreeType,
+    FT_Exception,
+    FT_Face,
+    FT_Init_FreeType,
+    FT_Library,
+    FT_New_Memory_Face,
+)
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -154,18 +166,18 @@ def test_get_filtered_names():
 
 
 def test_get_font_italic_bold_property_with_freetype():
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.ttf")
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.ttf"))
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_with_freetype(font_path, 0)
 
     # Invalid font_path
     with pytest.raises(FileNotFoundError) as exc_info:
-        FontParser.get_font_italic_bold_property_with_freetype("example", 0)
+        FontParser.get_font_italic_bold_property_with_freetype(Path("example"), 0)
     assert str(exc_info.typename) == "FileNotFoundError"
 
 
 def test_get_font_italic_bold_property_microsoft_platform():
     # Test font with invalid os/2 table
-    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf")
+    invalid_0s2_table_font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf"))
     invalid_0s2_table_font = TTFont(invalid_0s2_table_font_path)
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_microsoft_platform(invalid_0s2_table_font, invalid_0s2_table_font_path, 0)
 
@@ -184,7 +196,7 @@ def test_get_font_italic_bold_property_microsoft_platform():
 def test_get_font_italic_bold_property_mac_platform():
     font = TTFont()
     # Test font without head table. It need to fallback to freetype.
-    invalid_0s2_table_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf")
+    invalid_0s2_table_font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_with_invalid_os2_table.ttf"))
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_mac_platform(font, invalid_0s2_table_font_path, 0)
 
     font["head"] = head = newTable("head")
@@ -194,6 +206,25 @@ def test_get_font_italic_bold_property_mac_platform():
 
     head.macStyle = 0b10
     assert (True, False, 400) == FontParser.get_font_italic_bold_property_mac_platform(font, "example", 0)
+
+
+def test_get_symbol_cmap_encoding():
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf")
+    library = FT_Library()
+    face = FT_Face()
+
+    error = FT_Init_FreeType(byref(library))
+    if error: raise FT_Exception(error)
+
+    # We cannot use FT_New_Face due to this issue: https://github.com/rougier/freetype-py/issues/157
+    with open(font_path, mode="rb") as f:
+        filebody = f.read()
+    error = FT_New_Memory_Face(library, filebody, len(filebody), 0, byref(face))
+    encoding = FontParser.get_symbol_cmap_encoding(face)
+    FT_Done_Face(face)
+    FT_Done_FreeType(library)
+
+    assert encoding == "cp1253"
 
 
 def test_get_supported_cmaps():

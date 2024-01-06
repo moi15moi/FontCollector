@@ -1,6 +1,9 @@
 import os
+from pathlib import Path
+from typing import Hashable
+from langcodes import Language
 import pytest
-from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType
+from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType, FontResult, Name, NormalFontFace, VariableFontFace
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -60,10 +63,10 @@ def test_fonts_property():
 
 
 def test_get_used_font_by_style():
-    fonts_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway", "generated_fonts")
+    fonts_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway", "generated_fonts"))
     additional_fonts = FontLoader.load_additional_fonts([fonts_path])            
 
-    font_collection = FontCollection(use_system_font=False, additional_fonts=additional_fonts)
+    font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
 
     ass_style = AssStyle("Raleway", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
@@ -77,10 +80,19 @@ def test_get_used_font_by_style():
     font_result = font_collection.get_used_font_by_style(ass_style)
     assert font_result == None
 
+    # Test if it match exact_names
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
+    font_faces = [NormalFontFace(0, [Name("family", Language.get("en"))], [Name("exact", Language.get("en"))], 400, False, False, FontType.TRUETYPE)]
+    font_file = FontFile(font_mac_platform, font_faces)
+    font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=[font_file])
+    ass_style = AssStyle("exact", 900, True)
+    font_result = font_collection.get_used_font_by_style(ass_style)
+    assert font_result == FontResult(font_faces[0], True, True, True)
+
 
 def test_get_used_font_by_style_otf_vs_ttf():
-    alivia_generated_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf")
-    alivia_otf_font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia.otf")
+    alivia_generated_font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia - Generated.ttf"))
+    alivia_otf_font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Same Font, but otf vs ttf", "Alivia.otf"))
 
     with open(alivia_generated_font_path, 'rb') as file:
         alivia_generated_content = file.read()
@@ -99,7 +111,7 @@ def test_get_used_font_by_style_otf_vs_ttf():
         file.write(alivia_generated_content)
 
     additional_fonts = FontLoader.load_additional_fonts([alivia_generated_font_path, alivia_otf_font_path])
-    font_collection = FontCollection(use_system_font=False, additional_fonts=additional_fonts)
+    font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
 
     ass_style = AssStyle("Alivia", 400, False)
     font_result = font_collection.get_used_font_by_style(ass_style)
@@ -108,11 +120,53 @@ def test_get_used_font_by_style_otf_vs_ttf():
 
 
 def test__eq__():
-    pass
+    font_collection_1 = FontCollection(True, True, True, [])
+    font_collection_2 = FontCollection(True, True, True, [])
 
+    assert font_collection_1 == font_collection_2
+
+    font_collection_3 = FontCollection(False, True, True, [])
+    assert font_collection_1 != font_collection_3
+
+    font_collection_4 = FontCollection(True, False, True, [])
+    assert font_collection_1 != font_collection_4
+
+    font_collection_5 = FontCollection(True, True, False, [])
+    assert font_collection_1 != font_collection_5
+
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
+    font_faces = [
+        VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
+    ]
+    font_file = FontFile(font_mac_platform, font_faces)
+    font_collection_6 = FontCollection(True, True, True, [font_file])
+    assert font_collection_1 != font_collection_6
+
+    assert font_collection_1 != "test"
 
 def test__hash__():
-    pass
+    font_collection_1 = FontCollection(True, True, True, [])
+    font_collection_2 = FontCollection(True, True, True, [])
+    assert isinstance(font_collection_1, Hashable)
+
+    assert {font_collection_1} == {font_collection_2}
+
+    font_collection_3 = FontCollection(False, True, True, [])
+    assert {font_collection_1} != {font_collection_3}
+
+    font_collection_4 = FontCollection(True, False, True, [])
+    assert {font_collection_1} != {font_collection_4}
+
+    font_collection_5 = FontCollection(True, True, False, [])
+    assert {font_collection_1} != {font_collection_5}
+
+    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
+    font_faces = [
+        VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {}),
+    ]
+    font_file = FontFile(font_mac_platform, font_faces)
+    font_collection_6 = FontCollection(True, True, True, [font_file])
+    assert {font_collection_1} != {font_collection_6}
 
 def test__repr__():
     font_collection = FontCollection(

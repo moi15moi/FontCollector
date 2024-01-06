@@ -1,6 +1,9 @@
 # From https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/70feba9f-294e-491e-b6eb-56532684c37f
 # Specifically from protocol 15.0 (in the future, the link may not be the 15.0) : https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-LCID/[MS-LCID].pdf
-WINDOWS_LCID_CODE_TO_LANGUAGES = {
+from typing import Dict
+
+
+WINDOWS_LCID_CODE_TO_LANGUAGES: Dict[int, str] = {
     0x0001: "ar",
     0x0002: "bg",
     0x0003: "ca",
@@ -458,6 +461,6 @@ WINDOWS_LCID_CODE_TO_LANGUAGES = {
 }
 
 
-WINDOWS_LANGUAGES_TO_LCID_CODE = {
+WINDOWS_LANGUAGES_TO_LCID_CODE: Dict[str, int] = {
     lang: code for code, lang in WINDOWS_LCID_CODE_TO_LANGUAGES.items()
 }

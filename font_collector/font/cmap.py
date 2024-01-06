@@ -1,5 +1,8 @@
 from __future__ import annotations
-from .name import PlatformID
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import PlatformID
 
 class CMap:
     """
@@ -16,15 +19,15 @@ class CMap:
         self.platform_enc_id = platform_enc_id
 
 
-    def __eq__(self: CMap, other: object):
+    def __eq__(self: CMap, other: object) -> bool:
         if not isinstance(other, CMap):
             return False
         return (self.platform_id, self.platform_enc_id) == (other.platform_id, other.platform_enc_id)
 
 
-    def __hash__(self: CMap):
+    def __hash__(self: CMap) -> int:
         return hash((self.platform_id, self.platform_enc_id))
 
 
-    def __repr__(self: CMap):
+    def __repr__(self: CMap) -> str:
         return f'{self.__class__.__name__}(Platform ID="{self.platform_id}", Platform encoding ID="{self.platform_enc_id}")'

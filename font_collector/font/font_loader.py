@@ -2,18 +2,20 @@ from __future__ import annotations
 import logging
 import os
 import pickle
-import time
 from ..exceptions import InvalidFontException
 from .._version import __version__
-from .abc_font_face import ABCFontFace
 from .font_file import FontFile
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Iterable, List, Set
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Iterable, List
 
 _logger = logging.getLogger(__name__)
 
+__all__ = ["FontLoader"]
 
 class CacheFileContent:
     font_collector_version: str
@@ -28,25 +30,29 @@ class FontLoader:
 
     @staticmethod
     def load_font_cache_file(cache_file: Path) -> List[FontFile]:
+        cached_fonts = []
         if not os.path.isfile(cache_file):
             raise FileNotFoundError(f'The file "{cache_file}" does not exist')
 
         with open(cache_file, "rb") as file:
             # TODO add try except. If fail, os.remove(cache_file)
-            file_content = pickle.load(file)
+            try:
+                file_content = pickle.load(file)
+            except Exception:
+                os.remove(cache_file)
+                return cached_fonts
 
         if isinstance(file_content, CacheFileContent):
             cache_file_content = file_content
 
-            if cache_file_content.font_collector_version != __version__:
+            if cache_file_content.font_collector_version == __version__:
+                cached_fonts = cache_file_content.cached_fonts
+            else:
                 os.remove(cache_file)
-                return []
+        else:
+            os.remove(cache_file)
 
-            return cache_file_content.cached_fonts
-
-        # Remove file since it contain invalid data
-        os.remove(cache_file)
-        return []
+        return cached_fonts
 
 
     @staticmethod
@@ -56,8 +62,8 @@ class FontLoader:
 
 
     @staticmethod
-    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs=False) -> List[FontFile]:
-        def is_file_font(file_name: Path):
+    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs: bool = False) -> List[FontFile]:
+        def is_file_font(file_name: Path) -> bool:
             return file_name.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]
 
         additional_fonts: List[FontFile] = []
@@ -72,7 +78,7 @@ class FontLoader:
                 if scan_subdirs:
                     for root, dirs, files in os.walk(font_path):
                         for name in files:
-                            file_path: os.PathLike[str] = os.path.join(root, name)
+                            file_path = Path(os.path.join(root, name))
                             if is_file_font(Path(file_path)):
                                 try:
                                     additional_fonts.append(FontFile.from_font_path(file_path))
@@ -80,8 +86,8 @@ class FontLoader:
                                     _logger.info(f"{e}. The font {font_path} will be ignored.")
                 else:
                     for file in os.listdir(font_path):
-                        file_path = os.path.join(font_path, file)
-                        if is_file_font(Path(file_path)):
+                        file_path = Path(os.path.join(font_path, file))
+                        if is_file_font(file_path):
                             try:
                                 additional_fonts.append(FontFile.from_font_path(file_path))
                             except InvalidFontException as e:
@@ -174,14 +180,14 @@ class FontLoader:
 
 
     @staticmethod
-    def discard_system_font_cache():
+    def discard_system_font_cache() -> None:
         system_font_cache = FontLoader.get_system_font_cache_file_path()
         if os.path.isfile(system_font_cache):
             os.remove(system_font_cache)
 
 
     @staticmethod
-    def discard_generated_font_cache():
+    def discard_generated_font_cache() -> None:
         generated_font_cache = FontLoader.get_generated_font_cache_file_path()
         if os.path.isfile(generated_font_cache):
             os.remove(generated_font_cache)

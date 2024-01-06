@@ -8,7 +8,7 @@ import os
 import shutil
 import sys
 from .ass.ass_document import AssDocument
-from .font import FontCollection, FontFile, FontLoader, FontResult, Helpers, VariableFontFace
+from .font import FontCollection, FontFile, FontLoader, FontResult, VariableFontFace
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from typing import List, Set

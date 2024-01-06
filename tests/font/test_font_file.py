@@ -1,5 +1,7 @@
 import collections
 import os
+from pathlib import Path
+import shutil
 from time import time
 import pytest
 import string
@@ -8,15 +10,13 @@ from langcodes import Language
 from typing import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
-filename = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
+filename = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf"))
 
 def test__init__():
-    filename_upper = filename.upper()
     font_faces = [VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})]
 
     time_before = time()
-    font_file = FontFile(filename_upper, font_faces)
+    font_file = FontFile(filename, font_faces)
     time_after = time()
 
     assert font_file.filename == filename
@@ -25,7 +25,7 @@ def test__init__():
     assert font_faces[0].font_file == font_file
 
     last_loaded_time = 1000
-    font_file = FontFile(filename_upper, font_faces, last_loaded_time)
+    font_file = FontFile(filename, font_faces, last_loaded_time)
     assert font_file.last_loaded_time == last_loaded_time
 
     with pytest.raises(FileNotFoundError) as exc_info:
@@ -59,7 +59,7 @@ def test_last_loaded_time_property():
     assert str(exc_info.value) == "property 'last_loaded_time' of 'FontFile' object has no setter"
 
 def test_from_font_path():
-    font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
+    font_mac_platform = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF"))
     time_before = time()
     font_file = FontFile.from_font_path(font_mac_platform)
     time_after = time()
@@ -78,7 +78,63 @@ def test_from_font_path():
 
     assert font_file.filename == font_mac_platform
     assert font_file.font_faces == expected_fonts
+    assert all(font_face.font_file == font_file for font_face in font_file.font_faces)
     assert time_before <= font_file.last_loaded_time <= time_after
+
+
+def test_reload_font_file():
+    font_mac_platform = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF"))
+    temp_font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "temp_font.TTF"))
+    shutil.copy(font_mac_platform, temp_font_path)
+
+    # Test before reloading the font file
+    time_before = time()
+    font_file = FontFile.from_font_path(temp_font_path)
+    time_after = time()
+
+    expected_fonts = [
+        NormalFontFace(
+            0,
+            [Name("Brushstroke Plain", Language.get("en"))],
+            [Name("Brushstroke Plain", Language.get("en"))],
+            400,
+            False,
+            False,
+            FontType.TRUETYPE
+        )
+    ]
+
+    assert font_file.filename == temp_font_path
+    assert font_file.font_faces == expected_fonts
+    assert all(font_face.font_file == font_file for font_face in font_file.font_faces)
+    assert time_before <= font_file.last_loaded_time <= time_after
+
+    # Test after reloading the font file
+    font_without_stat_table = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Cabin VF Beta Regular.ttf"))
+    shutil.copy(font_without_stat_table, temp_font_path)
+
+    time_before = time()
+    font_file.reload_font_file()
+    time_after = time()
+
+    expected_fonts = [
+        NormalFontFace(
+            0,
+            [Name("Cabin VF Beta", Language.get("en-US"))],
+            [Name("Cabin VF Beta Regular", Language.get("en-US"))],
+            400,
+            False,
+            False,
+            FontType.TRUETYPE
+        )
+    ]
+
+    assert font_file.filename == temp_font_path
+    assert font_file.font_faces == expected_fonts
+    assert all(font_face.font_file == font_file for font_face in font_file.font_faces)
+    assert time_before <= font_file.last_loaded_time <= time_after
+
+    os.remove(temp_font_path)
 
 def test__eq__():
     font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
@@ -93,14 +149,17 @@ def test__eq__():
 
     font_file_1 = FontFile(font_mac_platform, font_faces_1)
     font_file_2 = FontFile(font_mac_platform, font_faces_1)
-    font_file_1 == font_file_2
+    assert font_file_1 == font_file_2
 
     font_file_3 = FontFile(font_mac_platform, font_faces_2)
-    font_file_1 == font_file_3
+    assert font_file_1 == font_file_3
 
     font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file_4 = FontFile(font_collection_path, font_faces_1)
-    font_file_1 != font_file_4
+    assert font_file_1 != font_file_4
+
+    assert font_file_1 != "test"
+
 
 def test__hash__():
     font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
@@ -116,14 +175,14 @@ def test__hash__():
     font_file_1 = FontFile(font_mac_platform, font_faces_1)
     font_file_2 = FontFile(font_mac_platform, font_faces_1)
     assert isinstance(font_file_1, Hashable)
-    {font_file_1} == {font_file_2}
+    assert {font_file_1} == {font_file_2}
 
     font_file_3 = FontFile(font_mac_platform, font_faces_2)
-    {font_file_1} == {font_file_3}
+    assert {font_file_1} == {font_file_3}
 
     font_collection_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "truetype_font_collection.ttc")
     font_file_4 = FontFile(font_collection_path, font_faces_1)
-    {font_file_1} != {font_file_4}
+    assert {font_file_1} != {font_file_4}
 
 def test__repr__():
     font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")

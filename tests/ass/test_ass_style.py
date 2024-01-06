@@ -65,6 +65,8 @@ def test__eq__():
 
     assert ass_style_1 != ass_style_4
 
+    assert ass_style_1 != "test"
+
 
 def test__hash__():
     ass_style_1 = AssStyle("Test", 700, False)

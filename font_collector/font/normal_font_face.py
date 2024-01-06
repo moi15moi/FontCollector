@@ -1,11 +1,14 @@
 from __future__ import annotations
 from ..exceptions import InvalidNormalFontFaceException
-from .abc_font_face import ABCFontFace, FontType
-from .name import Name
-from langcodes import Language, tag_is_valid
-from os import PathLike
-from typing import List, TYPE_CHECKING
+from .abc_font_face import ABCFontFace
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from . import FontFile, FontType, Name
+    from typing import List, Optional
+
+
+__all__ = ["NormalFontFace"]
 
 class NormalFontFace(ABCFontFace):
 
@@ -22,14 +25,52 @@ class NormalFontFace(ABCFontFace):
         if len(family_names) == 0:
                 raise InvalidNormalFontFaceException("The font does not contain an valid family name")
 
-        self._font_index = font_index
-        self._family_names = family_names
-        self._exact_names = exact_names
-        self._weight = weight
-        self._is_italic = is_italic
-        self._is_glyph_emboldened = is_glyph_emboldened
-        self._font_type = font_type
-        self._font_file = None
+        self.__font_index = font_index
+        self.__family_names = family_names
+        self.__exact_names = exact_names
+        self.__weight = weight
+        self.__is_italic = is_italic
+        self.__is_glyph_emboldened = is_glyph_emboldened
+        self.__font_type = font_type
+        self.__font_file = None
+
+    @property
+    def font_index(self: ABCFontFace) -> int:
+        return self.__font_index
+
+    @property
+    def family_names(self: ABCFontFace) -> List[Name]:
+        return self.__family_names
+
+    @property
+    def exact_names(self: ABCFontFace) -> List[Name]:
+        # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
+        return self.__exact_names
+    
+    @property
+    def weight(self: ABCFontFace) -> int:
+        return self.__weight
+
+    @property
+    def is_italic(self: ABCFontFace) -> bool:
+        return self.__is_italic
+    
+    @property
+    def is_glyph_emboldened(self: ABCFontFace) -> bool:
+        return self.__is_glyph_emboldened
+    
+    @property
+    def font_type(self: ABCFontFace) -> FontType:
+        return self.__font_type
+
+    @property
+    def font_file(self: ABCFontFace) -> Optional[FontFile]:
+        return self.__font_file
+
+    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile) -> None:
+        # Since there is a circular reference between FontFile and this class, we need to be able to set the value
+        self.__font_file = value
+
     
     def __eq__(self: NormalFontFace, other: object) -> bool:
         if not isinstance(other, NormalFontFace):

@@ -15,7 +15,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def test_is_mkv():
     assert Mkvpropedit.is_mkv(os.path.join(dir_path, "file", "test_video.mkv"))
-    assert not Mkvpropedit.is_mkv(os.path.join(dir_path, "ass", "Style test.ass"))
+    assert not Mkvpropedit.is_mkv(os.path.join(dir_path, "file", "ass", "Style test.ass"))
     file_that_does_not_exist = os.path.join(dir_path, "file", "file that does not exist")
     with pytest.raises(FileNotFoundError) as exc_info:
         Mkvpropedit.is_mkv(file_that_does_not_exist)

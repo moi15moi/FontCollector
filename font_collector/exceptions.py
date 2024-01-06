@@ -1,3 +1,13 @@
+__all__ = [
+    "NameNotFoundException",
+    "InvalidNameRecord",
+    "InvalidFontException",
+    "InvalidNormalFontFaceException",
+    "InvalidVariableFontFaceException",
+    "InvalidLanguageCode",
+    "OSNotSupported",
+]
+
 class NameNotFoundException(Exception):
     "Raised when the Naming Table doesn't contain an NameID"
     pass

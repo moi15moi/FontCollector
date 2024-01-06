@@ -1,5 +1,6 @@
 import collections
 import os
+from pathlib import Path
 import pytest
 import string
 from font_collector import VariableFontFace, FontFile, FontType, NormalFontFace, InvalidLanguageCode, Name
@@ -180,14 +181,14 @@ def test_get_missing_glyphs():
 
 
 def test_variable_font_to_collection():
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf"))
     font_file = FontFile.from_font_path(font_path)
 
     assert len(font_file.font_faces) == 9
     font_face = font_file.font_faces[0]
     assert isinstance(font_face, VariableFontFace)
 
-    save_path = os.path.join(dir_path, "Asap - Test.ttf")
+    save_path = Path(os.path.join(dir_path, "Asap - Test.ttf"))
     try:
         font_face.variable_font_to_collection(save_path, False)
         generated_fonts = FontFile.from_font_path(save_path)
@@ -287,7 +288,7 @@ def test_variable_font_to_collection():
         font_found = False
 
         for i in range(len(expected_fonts)):
-            font._font_index = i # little hack
+            font._NormalFontFace__font_index = i # little hack
             if font in generated_fonts.font_faces:
                 font_found = True
                 break

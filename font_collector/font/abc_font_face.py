@@ -1,11 +1,10 @@
 from __future__ import annotations
 from ctypes import byref
-from ..ass.ass_style import AssStyle
 from ..exceptions import InvalidLanguageCode, OSNotSupported
 from ..system_lang import get_system_lang
+from .chinese_variant import ChineseVariant
 from .font_parser import FontParser
 from .font_type import FontType
-from .name import Name, PlatformID
 from abc import ABC, abstractmethod
 from freetype import (
     FT_Done_Face,
@@ -20,58 +19,78 @@ from freetype import (
     FT_Set_Charmap,
 )
 from langcodes import Language, tag_is_valid
-from typing import List, Sequence, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from .font_file import FontFile
+    from ..ass import AssStyle
+    from . import Name, FontFile
+    from typing import List, Optional, Sequence, Set
 
+__all__ = ["ABCFontFace"]
 
 
 _logger = logging.getLogger(__name__)
 
 
 class ABCFontFace(ABC):
+    __font_index: int
+    __family_names: List[Name]
+    __exact_names: List[Name]
+    __weight: int
+    __is_italic: bool
+    __is_glyph_emboldened: bool
+    __font_type: FontType
+    __font_file: Optional[FontFile]
 
     @property
+    @abstractmethod
     def font_index(self: ABCFontFace) -> int:
-        return self._font_index
+        pass
 
     @property
+    @abstractmethod
     def family_names(self: ABCFontFace) -> List[Name]:
-        return self._family_names
+        pass
 
     @property
+    @abstractmethod
     def exact_names(self: ABCFontFace) -> List[Name]:
         # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
-        return self._exact_names
+        pass
     
     @property
+    @abstractmethod
     def weight(self: ABCFontFace) -> int:
-        return self._weight
+        pass
 
     @property
+    @abstractmethod
     def is_italic(self: ABCFontFace) -> bool:
-        return self._is_italic
+        pass
     
     @property
+    @abstractmethod
     def is_glyph_emboldened(self: ABCFontFace) -> bool:
-        return self._is_glyph_emboldened
+        pass
     
     @property
+    @abstractmethod
     def font_type(self: ABCFontFace) -> FontType:
-        return self._font_type
+        pass
 
     @property
-    def font_file(self: ABCFontFace) -> FontFile:
-        return self._font_file
-    
-    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile):
+    @abstractmethod
+    def font_file(self: ABCFontFace) -> Optional[FontFile]:
+        pass
+
+    @abstractmethod
+    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile) -> None:
         # Since there is a circular reference between FontFile and this class, we need to be able to set the value
         self._font_file = value
 
     @abstractmethod
-    def __eq__(self: ABCFontFace) -> bool:
+    def __eq__(self: ABCFontFace, other: object) -> bool:
         pass
 
 
@@ -82,16 +101,6 @@ class ABCFontFace(ABC):
 
     @abstractmethod
     def __repr__(self: ABCFontFace) -> str:
-        pass
-
-
-    @abstractmethod
-    def get_family_from_lang(self: ABCFontFace) -> List[Name]:
-        pass
-    
-
-    @abstractmethod
-    def get_exact_name_from_lang(self: ABCFontFace) -> List[Name]:
         pass
 
 
@@ -124,21 +133,6 @@ class ABCFontFace(ABC):
 
 
     @staticmethod
-    def _get_lowest_name_lang_code(names: List[Name]) -> Name:
-        lowest_lang_code = float('inf')
-        selected_name = None
-        for name in names:
-            try:
-                lang_code = name.get_lang_code_platform_code(PlatformID.MICROSOFT)
-            except ValueError:
-                _logger.warning(f"Could not find the language code of the name {name}. We will ignore the name")
-                continue
-            if lang_code < lowest_lang_code:
-                selected_name = name
-        return selected_name
-
-
-    @staticmethod
     def _get_best_names_from_lang(names: List[Name]) -> Name:
         """
         Parameters:
@@ -150,6 +144,7 @@ class ABCFontFace(ABC):
                 2. Match the system language (ex: "fr")
                 3. Match the english language
                 4. Use the first name (sorted by windows language id https://learn.microsoft.com/en-us/typography/opentype/spec/name#windows-language-ids)
+            It respects what is written here: https://github.com/libass/libass/wiki/Fonts-across-platforms#createfontindirectselectobject-vsfilter
         """
         ignore_system_lang = False
         try:
@@ -159,61 +154,68 @@ class ABCFontFace(ABC):
             ignore_system_lang = True
 
         if not ignore_system_lang:
-            results = ABCFontFace._get_names_from_lang(names, system_lang, False)
-            if results:
-                return results[0]
+            result = ABCFontFace._get_names_from_lang(names, system_lang, False)
+            if result is not None:
+                return result
 
-        results = ABCFontFace._get_names_from_lang(names, "en", False)
-        if results:
-            return ABCFontFace._get_lowest_name_lang_code(results)
+        result = ABCFontFace._get_names_from_lang(names, "en", False)
+        if result is not None:
+            return result
         
-        results = ABCFontFace._get_lowest_name_lang_code(names)
-        if results:
-            return results
-        
-        # Any value. It can only happen if the font contains only unicode name (platformID=0)
-        return next(iter(names))
+        return names[0]
 
     
     @staticmethod
-    def _get_names_from_lang(names: List[Name], lang_code: str, exact_match: bool) -> List[Name]:
+    def _get_names_from_lang(names: List[Name], lang_code: str, exact_match: bool) -> Optional[Name]:
         """
         Parameters:
             names (Set[Name]): A set of Names. Can be the family_names or exact_names.
-            lang_code (str): An IETF BCP-47 tag (only language and territory. Ex: "en-UK", "en")
+            lang_code (str): An IETF BCP-47 tag (only language and territory. Ex: "en-UK", "en", "bs-Latn-BA")
             exact_match (bool):
                 - If true, it will return all the names with the specified AND territory. Ex: "en-US" can only match with "en-US".
                 - If false, it will return search names with the specified language. Ex: "en-US" can match with "en-US", "en", "en-CA", etc...
         Returns:
-            A list of the names that match the specified language.
-            If exact_match is False, the returned list will be in an specific order. 
-                The Order:
-                    1. It prefer the names that match to the requested language and territory (ex: requested: "en-UK" would be "en-UK")
-                    2. Then it will prefer the names with only an language (ex: requested: "en-UK" would be "en")
-                    3. Then it will prefer the name where an language match but the territory doesn't (ex: "en-UK" if the lang_code="en-CA")
-
-                Ex:
-                    names: [Name(value="example_1", lang_code="en-CA"), Name(value="example_2", lang_code="en-UK"), Name(value="example_3", lang_code="en")]
-                    lang_code = "en-CA"
-                    exact_match = False
-                    Return : [Name(value="example_1", lang_code="en-CA"), Name(value="example_3", lang_code="en"), Name(value="example_2", lang_code="en-UK")]
+            The best name that match with the specified language.
+            It respects what is written here: https://github.com/libass/libass/wiki/Fonts-across-platforms#createfontindirectselectobject-vsfilter
         """
         if not tag_is_valid(lang_code):
-            raise InvalidLanguageCode(f"The \"{lang_code}\" does not conform to IETF BCP-47")
+            raise InvalidLanguageCode(f"The language code \"{lang_code}\" does not conform to IETF BCP-47")
         
-        parsed_lang = Language.get(lang_code)
-        matched_names: List[Name] = []
+        requested_lang = Language.get(lang_code)
+        is_requested_chinese = requested_lang.language == "zh"
+        if is_requested_chinese:
+            requested_chinese_variant = ChineseVariant.from_lang_code(requested_lang)
+
+        MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT = 1
+        MATCH_DIFF_CHINESE_VARIANT = 2
+        match_level = float('inf')
+        best_name: Name = None
 
         for name in names:
-            if name.lang_code.language == parsed_lang.language:
-                if not exact_match:
-                        matched_names.append(name)
-                elif name.lang_code.territory == parsed_lang.territory:
-                    matched_names.append(name)
+            if name.lang_code.language == requested_lang.language:
+                is_territory_equal = name.lang_code.territory == requested_lang.territory
+                is_script_equal = name.lang_code.script == requested_lang.script
+                
+                if is_territory_equal and is_script_equal:
+                    best_name = name
+                    break
 
-        if not exact_match:
-            matched_names.sort(key=lambda name: (name.lang_code.territory == parsed_lang.territory, name.lang_code.territory is None), reverse=True)
-        return matched_names
+                if not exact_match:
+                    if is_requested_chinese:
+                        chinese_variant = ChineseVariant.from_lang_code(name.lang_code)
+                        is_same_chinese_variant_match = chinese_variant == requested_chinese_variant
+                        if is_same_chinese_variant_match:
+                            if match_level > MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT:
+                                best_name = name
+                                match_level = MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT
+                        elif match_level > MATCH_DIFF_CHINESE_VARIANT:
+                            best_name = name
+                            match_level = MATCH_DIFF_CHINESE_VARIANT
+                    elif match_level > MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT:
+                        best_name = name
+                        match_level = MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT
+
+        return best_name
     
 
     def need_faux_bold(self: ABCFontFace, style_weight: int) -> bool:
@@ -242,6 +244,10 @@ class ABCFontFace(ABC):
 
         if self.font_type not in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION):
             score += 9000
+        
+        from .variable_font_face import VariableFontFace
+        if isinstance(self, VariableFontFace):
+            score += 0.5
 
         return score
 

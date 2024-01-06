@@ -161,16 +161,18 @@ def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
     assert missing_glyphs == {"@", "¸", "~"}
 
 
-def test_get_family_and_exact_from_lang():
+def test_get_best_family_from_lang():
+    # This method is difficult to test since it depend on the OS language.
+    # In this test, we suppose that the OS language isn't fr-BE or fr. If it is, then, the test will fail
     font_index = 0
     weight = 400
     italic = True
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
 
-    name_1 = Name("", Language.get("fr")) 
-    name_2 = Name("", Language.get("fr-CA")) 
-    name_3 = Name("", Language.get("fr-BE")) 
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
 
     family_names = [name_1, name_2, name_3]
     exact_names = []
@@ -185,33 +187,24 @@ def test_get_family_and_exact_from_lang():
         font_type
     )
 
-    # lang_code where the language match
-    assert font.get_family_from_lang("fr", exact_match=True) == [name_1]
-    assert font.get_family_from_lang("fr")[0] == name_1
-    assert collections.Counter(font.get_family_from_lang("fr")) == collections.Counter([name_1, name_2, name_3])
-    
-    # lang_code where the language and the territory match
-    assert font.get_family_from_lang("fr-CA", exact_match=True) == [name_2]
-    assert font.get_family_from_lang("fr-CA") == [name_2, name_1, name_3]
-
-    # lang_code where the territory doesn't match
-    assert font.get_family_from_lang("fr-US", exact_match=True) == []
-    assert font.get_family_from_lang("fr-US")[0] == name_1
-    assert collections.Counter(font.get_family_from_lang("fr-US")) == collections.Counter([name_1, name_2, name_3])
-
-    # lang_code where the language doesn't match
-    assert font.get_family_from_lang("en", exact_match=True) == []
-    assert font.get_family_from_lang("en") == []
-
-    # lang_code is invalid
-    with pytest.raises(InvalidLanguageCode) as exc_info:
-        font.get_family_from_lang("example")
-    assert str(exc_info.value) == "The \"example\" does not conform to IETF BCP-47"
+    assert font.get_best_family_from_lang() == name_1
 
 
-    # ----- Same test with exact_names -----
-    exact_names = family_names
+def test_get_best_exact_name_from_lang():
+    # Same test as test_get_best_family_from_lang, but for exact_name
+    font_index = 0
+    weight = 400
+    italic = True
+    is_glyph_emboldened = False
+    font_type = FontType.TRUETYPE
+
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
+
     family_names = [Name("anything", Language.get("es"))]
+    exact_names = [name_1, name_2, name_3]
+
     font = NormalFontFace(
         font_index,
         family_names,
@@ -222,27 +215,119 @@ def test_get_family_and_exact_from_lang():
         font_type
     )
 
-    assert font.get_exact_name_from_lang("fr", exact_match=True) == [name_1]
-    assert font.get_exact_name_from_lang("fr")[0] == name_1
-    assert collections.Counter(font.get_exact_name_from_lang("fr")) == collections.Counter([name_1, name_2, name_3])
+    assert font.get_best_exact_name_from_lang() == name_1
+
+
+def test_get_family_from_lang():
+    font_index = 0
+    weight = 400
+    italic = True
+    is_glyph_emboldened = False
+    font_type = FontType.TRUETYPE
+
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
+    name_4 = Name("", Language.get("zh-Hans")) # Simplified
+    name_5 = Name("", Language.get("zh-Hant")) # Traditional
+
+    family_names = [name_1, name_2, name_3, name_4, name_5]
+    exact_names = []
+
+    font = NormalFontFace(
+        font_index,
+        family_names,
+        exact_names,
+        weight,
+        italic,
+        is_glyph_emboldened,
+        font_type
+    )
+
+    # lang_code where the language match
+    assert font.get_family_from_lang("fr", exact_match=True) == name_3
+    assert font.get_family_from_lang("fr") == name_3
     
     # lang_code where the language and the territory match
-    assert font.get_exact_name_from_lang("fr-CA", exact_match=True) == [name_2]
-    assert font.get_exact_name_from_lang("fr-CA") == [name_2, name_1, name_3]
+    assert font.get_family_from_lang("fr-CA", exact_match=True) == name_1
+    assert font.get_family_from_lang("fr-CA") == name_1
 
     # lang_code where the territory doesn't match
-    assert font.get_exact_name_from_lang("fr-US", exact_match=True) == []
-    assert font.get_exact_name_from_lang("fr-US")[0] == name_1
-    assert collections.Counter(font.get_exact_name_from_lang("fr-US")) == collections.Counter([name_1, name_2, name_3])
+    assert font.get_family_from_lang("fr-US", exact_match=True) == None
+    assert font.get_family_from_lang("fr-US") == name_1
 
     # lang_code where the language doesn't match
-    assert font.get_exact_name_from_lang("en", exact_match=True) == []
-    assert font.get_exact_name_from_lang("en") == []
+    assert font.get_family_from_lang("en", exact_match=True) == None
+    assert font.get_family_from_lang("en") == None
+
+    # lang_code where the territory doesn't match, but same chinese variant
+    assert font.get_family_from_lang("zh-CN", exact_match=True) == None
+    assert font.get_family_from_lang("zh-CN") == name_4
+
+    # lang_code where the territory doesn't match, but same chinese variant
+    assert font.get_family_from_lang("zh-TW", exact_match=True) == None
+    assert font.get_family_from_lang("zh-TW") == name_5
+
+    # lang_code is invalid
+    with pytest.raises(InvalidLanguageCode) as exc_info:
+        font.get_family_from_lang("example")
+    assert str(exc_info.value) == "The language code \"example\" does not conform to IETF BCP-47"
+
+def test_get_exact_name_from_lang():
+    # Same test as test_get_family_from_lang, but for exact_name
+    font_index = 0
+    weight = 400
+    italic = True
+    is_glyph_emboldened = False
+    font_type = FontType.TRUETYPE
+
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
+    name_4 = Name("", Language.get("zh-Hans")) # Simplified
+    name_5 = Name("", Language.get("zh-Hant")) # Traditional
+
+    family_names = [Name("anything", Language.get("es"))]
+    exact_names = [name_1, name_2, name_3, name_4, name_5]
+
+    font = NormalFontFace(
+        font_index,
+        family_names,
+        exact_names,
+        weight,
+        italic,
+        is_glyph_emboldened,
+        font_type
+    )
+
+    # lang_code where the language match
+    assert font.get_exact_name_from_lang("fr", exact_match=True) == name_3
+    assert font.get_exact_name_from_lang("fr") == name_3
+    
+    # lang_code where the language and the territory match
+    assert font.get_exact_name_from_lang("fr-CA", exact_match=True) == name_1
+    assert font.get_exact_name_from_lang("fr-CA") == name_1
+
+    # lang_code where the territory doesn't match
+    assert font.get_exact_name_from_lang("fr-US", exact_match=True) == None
+    assert font.get_exact_name_from_lang("fr-US") == name_1
+
+    # lang_code where the language doesn't match
+    assert font.get_exact_name_from_lang("en", exact_match=True) == None
+    assert font.get_exact_name_from_lang("en") == None
+
+    # lang_code where the territory doesn't match, but same chinese variant
+    assert font.get_exact_name_from_lang("zh-CN", exact_match=True) == None
+    assert font.get_exact_name_from_lang("zh-CN") == name_4
+
+    # lang_code where the territory doesn't match, but same chinese variant
+    assert font.get_exact_name_from_lang("zh-TW", exact_match=True) == None
+    assert font.get_exact_name_from_lang("zh-TW") == name_5
 
     # lang_code is invalid
     with pytest.raises(InvalidLanguageCode) as exc_info:
         font.get_exact_name_from_lang("example")
-    assert str(exc_info.value) == "The \"example\" does not conform to IETF BCP-47"
+    assert str(exc_info.value) == "The language code \"example\" does not conform to IETF BCP-47"
 
 
 def test__eq__():

@@ -26,8 +26,13 @@ from ass_tag_analyzer import (
     WrapStyle,
 )
 from copy import deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from typing import Dict, List, Optional, Tuple
+
+
+__all__ = ["ABCAssDocument"]
 
 class ABCAssDocument(ABC):
     """
@@ -158,7 +163,7 @@ class ABCAssDocument(ABC):
                 Key: The style name.
                 Value: An AssStyle corresponding to the style name.
         """
-        def is_ascii_digit(s):
+        def is_ascii_digit(s: str) -> bool:
             return all(ord('0') <= ord(char) <= ord('9') for char in s)
 
         sub_styles: Dict[str, AssStyle] = {}

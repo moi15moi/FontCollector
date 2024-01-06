@@ -1,10 +1,16 @@
 from __future__ import annotations
-import os
 from .abc_ass_document import ABCAssDocument
-from ass import Dialogue, Document, parse_file, parse_string
+from ass import Dialogue, parse_file, parse_string
 from ass_tag_analyzer import WrapStyle
-from typing import Optional, Tuple, Type
+from os.path import isfile
+from pathlib import Path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from ass import Document
+    from typing import Optional, Tuple, Type
+
+__all__ = ["AssDocument"]
 
 class AssDocument(ABCAssDocument):
 
@@ -18,8 +24,8 @@ class AssDocument(ABCAssDocument):
 
 
     @classmethod
-    def from_file(cls: Type[AssDocument], filename: str, encoding: str = "utf_8_sig") -> AssDocument:
-        if not os.path.isfile(filename):
+    def from_file(cls: Type[AssDocument], filename: Path, encoding: str = "utf_8_sig") -> AssDocument:
+        if not isfile(filename):
             raise FileNotFoundError(f"The file {filename} is not reachable")
 
         with open(filename, encoding=encoding) as file:
@@ -54,16 +60,17 @@ class AssDocument(ABCAssDocument):
 
     def get_nbr_line(self: AssDocument) -> int:
         nbr_line = len(self.subtitle.events)
-
         return nbr_line
 
 
     def _get_line_style_name(self: AssDocument, i: int) -> str:
-        return self.subtitle.events[i].style
+        style: str = self.subtitle.events[i].style
+        return style
 
 
     def _get_line_text(self: AssDocument, i: int) -> str:
-        return self.subtitle.events[i].text
+        text: str = self.subtitle.events[i].text
+        return text
     
 
     def _is_line_dialogue(self: AssDocument, i: int) -> bool:

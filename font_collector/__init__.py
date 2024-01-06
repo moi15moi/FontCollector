@@ -5,14 +5,8 @@ from .ass import *
 from .font import *
 from .system_lang import *
 # Files
-from .exceptions import (
-    InvalidNormalFontFaceException, 
-    InvalidNameRecord,
-    InvalidVariableFontFaceException, 
-    InvalidLanguageCode, 
-    NameNotFoundException
-)
-from .mkvpropedit import Mkvpropedit
+from .exceptions import *
+from .mkvpropedit import *
 from ._version import __version__
 from fontTools.misc.loggingTools import configLogger
 
@@ -31,7 +25,7 @@ _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 
 
-def set_loglevel(level: int):
+def set_loglevel(level: int) -> None:
     """
     Parameters:
         level (int): An level from logging module (For more detail, see: https://docs.python.org/3/library/logging.html#logging-levels)

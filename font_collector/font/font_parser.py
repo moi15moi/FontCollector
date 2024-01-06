@@ -1,39 +1,26 @@
 from __future__ import annotations
-from ctypes import byref, c_uint, create_string_buffer
-import logging
-from os import PathLike
-from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
+from ..exceptions import InvalidVariableFontFaceException
 from .cmap import CMap
-from .font_type import FontType
 from .name import Name, NameID, PlatformID
 from ctypes import byref, c_uint, create_string_buffer
-from itertools import product
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
 from fontTools.ttLib.ttFont import TTFont
-from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
 from freetype import (
     Face,
-    FT_Done_Face,
-    FT_Done_FreeType,
-    FT_Exception,
     FT_Face,
-    FT_Get_Char_Index,
-    FT_Get_CMap_Format,
     FT_Get_Glyph_Name,
-    FT_Init_FreeType,
-    FT_Library,
-    FT_New_Memory_Face,
-    FT_Set_Charmap,
 )
-
 from freetype.ft_enums.ft_style_flags import FT_STYLE_FLAGS
+from itertools import product
 from langcodes import Language
 from struct import error as struct_error
+from typing import TypedDict, TYPE_CHECKING
 
-_logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
+    from fontTools.ttLib.tables._n_a_m_e import NameRecord
+    from pathlib import Path
+    from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class FontParser:
@@ -130,6 +117,7 @@ class FontParser:
         # If the coordinates cannot be found, default to 0
         instance_value = coordinates.get(axis_tag, 0)
 
+        clamped_axis_value: float
         if axis_format == 2:
             clamped_axis_value = max(
                 min(instance_value, axis_value.RangeMaxValue),
@@ -374,17 +362,17 @@ class FontParser:
 
     @staticmethod
     def get_font_italic_bold_property_with_freetype(
-        font_path: str, font_index: int
+        font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
         Parameters:
-            font_path (str): Font path.
+            font_path (Path): Font path.
             font_index (int): Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
         """
 
-        font = Face(Path(font_path).open("rb"), font_index)
+        font = Face(font_path.open("rb"), font_index)
         is_italic = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_ITALIC"])
         is_glyphs_emboldened = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_BOLD"])
         weight = 700 if is_glyphs_emboldened else 400
@@ -394,12 +382,12 @@ class FontParser:
 
     @staticmethod
     def get_font_italic_bold_property_microsoft_platform(
-        font: TTFont, font_path: PathLike[str], font_index: int
+        font: TTFont, font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (PathLike[str]): Font path.
+            font_path (Path): Font path.
             font_index (int): Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
@@ -442,12 +430,12 @@ class FontParser:
 
     @staticmethod
     def get_font_italic_bold_property_mac_platform(
-        font: TTFont, font_path: PathLike[str], font_index: int
+        font: TTFont, font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (PathLike[str]): Font path.
+            font_path (Path): Font path.
             font_index (int): Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
@@ -475,7 +463,7 @@ class FontParser:
         Returns:
             The cmap ansi code page encoding.
             If it couldn't guess the encoding, it return None.
-                It can return none if the font is those case if the font doesn't use any unique character of an ansi code page.
+                It can return none if the font doesn't use any unique character of an ansi code page.
                     Note: Chinese (cp936 or cp950) and Korean (cp949) doesn't contain any unique character.
                           So, we can't recognized them.
             Libass currently has an issue about this problem: https://github.com/libass/libass/issues/319
@@ -496,21 +484,21 @@ class FontParser:
         for code_page, glyph_names in UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE.items():
             count = sum(1 for font_glyph_name in font_glyph_names if font_glyph_name in glyph_names)
             count_codepage[code_page] = count
+        
+        if len(count_codepage) == 0:
+            return None
         # If there is a tie, prefer codepage different then cp1252
         codepage_encoding = max(count_codepage, key=lambda codepage: (count_codepage[codepage], codepage != 'cp1252'))
 
-        if count_codepage[codepage_encoding]:
-            return codepage_encoding
-
-        return None
+        return codepage_encoding
 
 
     @staticmethod
-    def get_supported_cmaps(ttFont: TTFont, font_path: PathLike[str], font_index: int) -> List[CMap]:
+    def get_supported_cmaps(ttFont: TTFont, font_path: Path, font_index: int) -> List[CMap]:
         """
         Parameters:
             font (TTFont): An fontTools object
-            font_path (PathLike[str]): Font path.
+            font_path (Path): Font path.
             font_index (int): Font index.
         Returns:
             TODO
@@ -560,7 +548,9 @@ class FontParser:
             The cmap codepoint encoding.
             If GDI does not support the platform_id and/or platform_encoding_id, return None.
         """
-        return FontParser.CMAP_ENCODING_MAP.get(platform_id, {}).get(encoding_id, None)
+        if platform_id in FontParser.CMAP_ENCODING_MAP:
+            return FontParser.CMAP_ENCODING_MAP[PlatformID(platform_id)].get(encoding_id, None)
+        return None
     
 
 # The Chinese (cp936 or cp950) and Korean (cp949) aren't in this dict since they doesn't have any unique char.

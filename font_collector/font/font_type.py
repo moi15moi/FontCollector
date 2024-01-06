@@ -3,6 +3,7 @@ from enum import auto, Enum
 from fontTools.ttLib.ttFont import TTFont
 from typing import Type
 
+__all__ = ["FontType"]
 
 class FontType(Enum):
     UNKNOWN = auto()

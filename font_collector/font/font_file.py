@@ -1,20 +1,22 @@
 from __future__ import annotations
-from collections import Counter
 from .factory_abc_font_face import FactoryABCFontFace
-from os import PathLike
+from collections import Counter
 from os.path import isfile, realpath
+from pathlib import Path
 from time import time
-from typing import Iterable, TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace
+    from typing import List, Optional, Type
 
+__all__ = ["FontFile"]
 
 class FontFile:
 
     def __init__(
         self: FontFile,
-        filename: PathLike[str],
+        filename: Path,
         font_faces: List[ABCFontFace],
         last_loaded_time: Optional[float] = None
     ) -> None:
@@ -22,7 +24,7 @@ class FontFile:
             raise FileNotFoundError(f'The file "{filename}" doesn\'t exist.')
         if len(font_faces) == 0:
             raise ValueError(f"A FontFile need to contain at least 1 ABCFontFace.")
-        self.__filename: PathLike[str] = realpath(filename)
+        self.__filename = filename
         self.__font_faces = font_faces
         for font_face in self.__font_faces:
             font_face.link_face_to_a_font_file(self)
@@ -33,7 +35,7 @@ class FontFile:
             self.__last_loaded_time = last_loaded_time
 
     @property
-    def filename(self: FontFile) -> PathLike[str]:
+    def filename(self: FontFile) -> Path:
         return self.__filename
 
     @property
@@ -45,14 +47,14 @@ class FontFile:
         return self.__last_loaded_time
 
     @classmethod
-    def from_font_path(cls: Type[FontFile], filename: PathLike[str]) -> FontFile:
+    def from_font_path(cls: Type[FontFile], filename: Path) -> FontFile:
         font_faces = FactoryABCFontFace.from_font_path(filename)
         return cls(filename, font_faces)
 
     def reload_font_file(self: FontFile):
         self.__font_faces = FactoryABCFontFace.from_font_path(self.filename)
         for font_face in self.__font_faces:
-            font_face.font_file = self
+            font_face.link_face_to_a_font_file(self)
         self.__last_loaded_time = time()
 
     def __eq__(self: FontFile, other: object) -> bool:
@@ -64,7 +66,7 @@ class FontFile:
         return hash(
             (
                 self.filename,
-                tuple(self.font_faces),
+                frozenset(self.font_faces),
             )
         )
 

@@ -1,13 +1,7 @@
-import collections
 import os
-import pytest
-import string
 from font_collector import PlatformID
 from font_collector.font.cmap import CMap
-from langcodes import Language
 from typing import Hashable
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test__init__():
@@ -18,6 +12,32 @@ def test__init__():
 
     assert cmap.platform_id == platform_id
     assert cmap.platform_enc_id == platform_enc_id
+
+def test__eq__():
+    cmap_1 = CMap(3, 1)
+    cmap_2 = CMap(3, 1)
+    assert cmap_1 == cmap_2
+
+    cmap_3 = CMap(3, 2)
+    assert cmap_1 != cmap_3
+
+    cmap_4 = CMap(1, 1)
+    assert cmap_1 != cmap_4
+
+    assert cmap_1 != 1
+
+def test__hash__():
+    cmap_1 = CMap(3, 1)
+    cmap_2 = CMap(3, 1)
+
+    assert isinstance(cmap_1, Hashable)
+    assert {cmap_1} == {cmap_2}
+
+    cmap_3 = CMap(3, 2)
+    assert {cmap_1} != {cmap_3}
+
+    cmap_4 = CMap(1, 1)
+    assert {cmap_1} != {cmap_4}
 
 
 def test__repr__():

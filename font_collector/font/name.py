@@ -2,10 +2,19 @@ from __future__ import annotations
 from ..exceptions import InvalidNameRecord
 from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
 from enum import IntEnum
-from typing import Optional, Type
-from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
-from langcodes import Language, closest_supported_match
+from fontTools.ttLib.tables._n_a_m_e import _MAC_LANGUAGES, _MAC_LANGUAGE_CODES
+from langcodes import closest_supported_match, Language
+from typing import TYPE_CHECKING, Dict
 
+MAC_LCID_CODE_TO_LANGUAGES: Dict[int, str] = _MAC_LANGUAGES
+MAC_LANGUAGES_TO_LCID_CODE: Dict[str, int] = _MAC_LANGUAGE_CODES
+
+if TYPE_CHECKING:
+    from fontTools.ttLib.tables._n_a_m_e import NameRecord
+    from typing import Optional, Type
+
+
+__all__ = ["Name", "NameID", "PlatformID"]
 
 class PlatformID(IntEnum):
     # From https://learn.microsoft.com/en-us/typography/opentype/spec/name#platform-ids
@@ -115,6 +124,7 @@ class Name:
         if encoding is None:
             raise InvalidNameRecord(f"The NameRecord you provided isn't supported by GDI: NameRecord(PlatformID={name.platformID}, PlatEncID={name.platEncID}, LangID={name.langID}, String={name.string}, NameID={name.nameID})")
 
+        name_to_decode: bytes
         if name.platformID == PlatformID.MICROSOFT and encoding != "utf_16_be":
             # I spoke with a Microsoft employee and he told me that GDI performed this processing:
             name_to_decode = name.string.replace(b"\x00", b"")
@@ -149,7 +159,7 @@ class Name:
         if platform_id == PlatformID.MICROSOFT:
             return WINDOWS_LCID_CODE_TO_LANGUAGES.get(lang_id, "und")
         elif platform_id == PlatformID.MACINTOSH:
-            return _MAC_LANGUAGES.get(lang_id, "und")
+            return MAC_LCID_CODE_TO_LANGUAGES.get(lang_id, "und")
         else:
             return "und"
 
@@ -166,15 +176,15 @@ class Name:
         """
         tag_distance = 9 if fallback_to_language else 0
         if platform_id == PlatformID.MICROSOFT:
-            result = closest_supported_match(self.lang_code, WINDOWS_LANGUAGES_TO_LCID_CODE.keys(), tag_distance)
+            result = closest_supported_match(self.lang_code, list(WINDOWS_LANGUAGES_TO_LCID_CODE.keys()), tag_distance)
             if result is None:
                 raise ValueError(f'The lang_code "{self.lang_code.to_tag()}" isn\'t supported by the microsoft platform')
             return WINDOWS_LANGUAGES_TO_LCID_CODE[result]
         elif platform_id == PlatformID.MACINTOSH:
-            result = closest_supported_match(self.lang_code, _MAC_LANGUAGE_CODES.keys(), tag_distance)
+            result = closest_supported_match(self.lang_code, list(MAC_LANGUAGES_TO_LCID_CODE.keys()), tag_distance)
             if result is None:
                 raise ValueError(f'The lang_code "{self.lang_code.to_tag()}" isn\'t supported by the macintosh platform')
-            return _MAC_LANGUAGE_CODES[result]
+            return MAC_LANGUAGES_TO_LCID_CODE[result]
         raise ValueError(f"You cannot specify the platform id {platform_id}. You can only specify the microsoft or the macintosh id")
 
 

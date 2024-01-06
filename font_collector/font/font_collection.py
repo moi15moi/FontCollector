@@ -1,12 +1,16 @@
 from __future__ import annotations
-from ..ass.ass_style import AssStyle
-from .abc_font_face import ABCFontFace, FontType
-from .font_file import FontFile
+from collections import Counter
 from .font_loader import FontLoader
 from .font_result import FontResult
 from os.path import getctime
-from typing import Any, Generator, Iterable, List, Optional, Set
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from ..ass import AssStyle
+    from . import ABCFontFace, FontFile
+    from typing import Any, Generator, List, Optional
+
+__all__ = ["FontCollection"]
 
 class FontCollection:
     """Contains fonts. This class allows to query fonts.
@@ -57,7 +61,7 @@ class FontCollection:
         return []
 
     @system_fonts.setter
-    def system_fonts(self: FontCollection, value: Any):
+    def system_fonts(self: FontCollection, value: Any) -> None:
         raise AttributeError("You cannot set system_fonts, but you can set use_system_font")
 
 
@@ -68,7 +72,7 @@ class FontCollection:
         return []
 
     @generated_fonts.setter
-    def generated_fonts(self: FontCollection, value: Any):
+    def generated_fonts(self: FontCollection, value: Any) -> None:
         raise AttributeError("You cannot set generated_fonts, but you can set use_generated_fonts")
 
 
@@ -77,7 +81,7 @@ class FontCollection:
         return self.system_fonts + self.generated_fonts + self.additional_fonts
 
     @fonts.setter
-    def fonts(self: FontCollection, value: Any):
+    def fonts(self: FontCollection, value: Any) -> None:
         raise AttributeError("You cannot set the fonts. If you want to add font, set additional_fonts")
 
 
@@ -138,9 +142,10 @@ class FontCollection:
     def __eq__(self: FontCollection, other: object) -> bool:
         if not isinstance(other, FontCollection):
             return False
-        return (self.use_system_font, self.reload_system_font, self.use_generated_fonts, self.additional_fonts) == (
-            other.use_system_font, other.reload_system_font, other.use_generated_fonts, other.additional_fonts
-        )
+        return (self.use_system_font, self.reload_system_font, self.use_generated_fonts) == (
+            other.use_system_font, other.reload_system_font, other.use_generated_fonts
+        ) and Counter(self.additional_fonts) == Counter(other.additional_fonts)
+
 
     def __hash__(self: FontCollection) -> int:
         return hash(
