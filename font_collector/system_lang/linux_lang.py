@@ -1,12 +1,11 @@
-from .system_lang import SystemLang
+from .abc_system_lang import ABCSystemLang
 from locale import getdefaultlocale
-from typing import Optional
 
-class LinuxLang(SystemLang):
+class LinuxLang(ABCSystemLang):
 
-    def get_lang() -> Optional[str]:
+    @staticmethod
+    def get_lang() -> str:
         lang, _ = getdefaultlocale()
         if lang is None:
-            # Fallback to english if not found
-            lang = "en-US"
+            lang = ABCSystemLang.default_lang
         return lang

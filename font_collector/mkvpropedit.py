@@ -51,7 +51,7 @@ class Mkvpropedit:
 
         mkvpropedit_args = [
             Mkvpropedit.path,
-            mkv_filename,
+            str(mkv_filename.resolve()),
             "--delete-attachment", "mime-type:application/x-truetype-font",
             "--delete-attachment", "mime-type:application/vnd.ms-opentype",
             "--delete-attachment", "mime-type:application/x-font-ttf",
@@ -92,11 +92,11 @@ class Mkvpropedit:
 
         mkvpropedit_args = [
             Mkvpropedit.path,
-            mkv_filename,
+            str(mkv_filename.resolve()),
         ]
 
         for font_file in fonts_file:
-            mkvpropedit_args.extend(['--add-attachment', font_file.filename])
+            mkvpropedit_args.extend(['--add-attachment', str(font_file.filename.resolve())])
         
         output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
 

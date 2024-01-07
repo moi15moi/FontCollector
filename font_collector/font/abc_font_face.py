@@ -105,7 +105,7 @@ class ABCFontFace(ABC):
         pass
 
 
-    def get_family_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> List[Name]:
+    def get_family_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> Optional[Name]:
         """
         See the doc of _get_names_from_lang
         """
@@ -119,7 +119,7 @@ class ABCFontFace(ABC):
         return self._get_best_names_from_lang(self.family_names)
 
 
-    def get_exact_name_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> List[Name]:
+    def get_exact_name_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> Optional[Name]:
         """
         See the doc of _get_names_from_lang
         """
@@ -190,7 +190,7 @@ class ABCFontFace(ABC):
         MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT = 1
         MATCH_DIFF_CHINESE_VARIANT = 2
         match_level = float('inf')
-        best_name: Name = None
+        best_name: Optional[Name] = None
 
         for name in names:
             if name.lang_code.language == requested_lang.language:
@@ -223,14 +223,14 @@ class ABCFontFace(ABC):
         return style_weight > self.weight + 150 and not self.is_glyph_emboldened
 
 
-    def get_similarity_score(self: ABCFontFace, style: AssStyle) -> int:
+    def get_similarity_score(self: ABCFontFace, style: AssStyle) -> float:
         """
         Parameters:
             style (AssStyle): An AssStyle
         Returns:
             A matching score - the lower the better. If if it return, it means it is a perfect match.
         """
-        score = 0
+        score = 0.0
 
         if style.italic and not self.is_italic:
             score += 1
@@ -255,7 +255,7 @@ class ABCFontFace(ABC):
 
     def get_missing_glyphs(
         self,
-        text: Sequence[str],
+        text: Iterable[str],
         support_only_ascii_char_for_symbol_font: bool = False
     ) -> Set[str]:
         """
@@ -269,6 +269,9 @@ class ABCFontFace(ABC):
         Returns:
             A set of all the character that the font cannot display.
         """
+        if self.font_file is None:
+            raise ValueError("This font_face isn't linked to any FontFile.")
+
         char_not_found: Set[str] = set()
 
         library = FT_Library()

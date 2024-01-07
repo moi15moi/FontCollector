@@ -1,6 +1,7 @@
 from __future__ import annotations
 from enum import auto, Enum
 from langcodes import Language
+from typing import Type
 
 
 class ChineseVariant(Enum):
@@ -8,7 +9,7 @@ class ChineseVariant(Enum):
     SIMPLIFIED = auto()
 
     @classmethod
-    def from_lang_code(cls: ChineseVariant, lang_code: Language) -> ChineseVariant:
+    def from_lang_code(cls: Type[ChineseVariant], lang_code: Language) -> ChineseVariant:
         """
         Parameters:
             TODO

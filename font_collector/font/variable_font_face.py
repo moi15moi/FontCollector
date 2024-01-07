@@ -33,7 +33,7 @@ class VariableFontFace(ABCFontFace):
         named_instance_coordinates: Dict[str, float],
     ) -> None:
         if len(families_prefix) == 0:
-            raise InvalidVariableFontFaceException("The font does not contain an valid family name")
+            raise InvalidVariableFontFaceException("The font does not contain an valid family prefix.")
 
         self.__font_index = font_index
         self.__families_prefix = families_prefix
@@ -128,11 +128,18 @@ class VariableFontFace(ABCFontFace):
         return self.__named_instance_coordinates
 
 
-    def get_family_prefix_from_lang(self: VariableFontFace, lang_code: str, exact_match: bool = False) -> List[Name]:
+    def get_family_prefix_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
         """
         See the doc of _get_names_from_lang in abc_font
         """
         return self._get_names_from_lang(self.families_prefix, lang_code, exact_match)
+    
+    def get_best_family_prefix_from_lang(self) -> Name:
+        """
+        See the doc of _get_best_names_from_lang
+        """
+        return self._get_best_names_from_lang(self.families_prefix)
+
     
 
     def variable_font_to_collection(self: VariableFontFace, save_path: Path, cache_generated_font: bool = True) -> FontFile:
@@ -145,6 +152,8 @@ class VariableFontFace(ABCFontFace):
         Returns:
             List of Font that represent the truetype collection font generated
         """
+        if self.font_file is None:
+            raise ValueError("This font_face isn't linked to any FontFile.")
 
         if isfile(save_path):
             raise FileExistsError(f'There is already a font at "{save_path}"')
@@ -153,7 +162,10 @@ class VariableFontFace(ABCFontFace):
         ttFont = TTFont(self.font_file.filename, fontNumber=self.font_index)
         
         # Only conserve the right font_index
-        fonts_face = list(filter(lambda font: font.font_index == self.font_index, self.font_file.font_faces))
+        fonts_face: List[VariableFontFace] = [
+            font for font in self.font_file.font_faces
+            if font.font_index == self.font_index and isinstance(font, VariableFontFace)
+        ]
 
         if len(fonts_face) == 0:
             raise ValueError(f"There is no valid font at the index {self.font_index}")

@@ -28,7 +28,7 @@ class FontLoader:
 
     @staticmethod
     def load_font_cache_file(cache_file: Path) -> List[FontFile]:
-        cached_fonts = []
+        cached_fonts: List[FontFile] = []
         if not os.path.isfile(cache_file):
             raise FileNotFoundError(f'The file "{cache_file}" does not exist')
 

@@ -1,28 +1,29 @@
-from typing import Optional
 from ..exceptions import OSNotSupported
-from .system_lang import SystemLang
+from .abc_system_lang import ABCSystemLang
 from ctypes import cdll, c_bool, c_char_p, c_long, c_uint32, c_void_p, create_string_buffer, util
 from find_system_fonts_filename.mac_fonts import MacVersionHelpers
 
 
-class MacLang(SystemLang):
+class MacLang(ABCSystemLang):
     __core_foundation = None
     kCFStringEncodingUTF8 = 0x08000100 # https://developer.apple.com/documentation/corefoundation/cfstringbuiltinencodings/kcfstringencodingutf8?language=objc
 
     @staticmethod
-    def get_lang() -> Optional[str]:
+    def get_lang() -> str:
         if not MacVersionHelpers.is_mac_version_or_greater(10, 5):
             raise OSNotSupported("get_lang() only works on mac 10.5 or more")
 
         if MacLang.__core_foundation is None:
             MacLang.__load__core_foundation()
 
+        assert MacLang.__core_foundation is not None # just to make mypy happy
+
         languages = MacLang.__core_foundation.CFLocaleCopyPreferredLanguages()
         languages_count = MacLang.__core_foundation.CFArrayGetCount(languages)
 
         if languages_count == 0:
             # Fallback to english if not found
-            return "en-US"
+            return ABCSystemLang.default_lang
 
         language = MacLang.__core_foundation.CFArrayGetValueAtIndex(languages, 0)
         language_str = MacLang.__cfstring_to_string(language)
@@ -39,6 +40,8 @@ class MacLang(SystemLang):
         Returns:
             The decoded CFString.
         """
+        assert MacLang.__core_foundation is not None # just to make mypy happy
+
         length = MacLang.__core_foundation.CFStringGetLength(cfstring)
         size = MacLang.__core_foundation.CFStringGetMaximumSizeForEncoding(length, MacLang.kCFStringEncodingUTF8)
         buffer = create_string_buffer(size + 1)
@@ -50,7 +53,7 @@ class MacLang(SystemLang):
 
 
     @staticmethod
-    def __load__core_foundation():
+    def __load__core_foundation() -> None:
         core_foundation_library_name = util.find_library("CoreFoundation")
         # Hack for compatibility with macOS greater or equals to 11.0.
         # From: https://github.com/pyglet/pyglet/blob/a44e83a265e7df8ece793de865bcf3690f66adbd/pyglet/libs/darwin/cocoapy/cocoalibs.py#L10-L14

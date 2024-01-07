@@ -114,10 +114,17 @@ class FontCollection:
                         score = font_face.get_similarity_score(style)
                 
                 if family_name_match or exact_name_match:
-                    if score < score_min:
+                    if selected_font_face is None:
+                        score_min = score
+                        selected_font_face = font_face
+                    elif score < score_min:
                         score_min = score
                         selected_font_face = font_face
                     elif score == score_min:
+                        if font_face.font_file is None:
+                            raise ValueError(f"The font_face \"{font_face}\" isn't linked to any FontFile.")
+                        if selected_font_face.font_file is None:
+                            raise ValueError(f"The selected_font_face \"{selected_font_face}\" isn't linked to any FontFile.")
                         # GDI prefers the oldest font when the score between 2 fonts is exactly the same.
                         # However, for us, it is impossible to know when a font has been installed. 
                         # GDI, DirectWrite, CoreText and Fontconfig don't offer a way to retrieve the installation date of a font.

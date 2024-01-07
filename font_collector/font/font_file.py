@@ -50,7 +50,7 @@ class FontFile:
         font_faces = FactoryABCFontFace.from_font_path(filename)
         return cls(filename, font_faces)
 
-    def reload_font_file(self: FontFile):
+    def reload_font_file(self: FontFile) -> None:
         self.__font_faces = FactoryABCFontFace.from_font_path(self.filename)
         for font_face in self.__font_faces:
             font_face.link_face_to_a_font_file(self)

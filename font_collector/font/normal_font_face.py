@@ -24,7 +24,7 @@ class NormalFontFace(ABCFontFace):
         font_type: FontType,
     ) -> None:
         if len(family_names) == 0:
-                raise InvalidNormalFontFaceException("The font does not contain an valid family name")
+                raise InvalidNormalFontFaceException("The font does not contain an valid family name.")
 
         self.__font_index = font_index
         self.__family_names = family_names
