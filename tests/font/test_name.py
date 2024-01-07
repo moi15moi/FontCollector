@@ -224,17 +224,29 @@ def test_get_lang_code_platform_code():
 def test__eq__():
     name_1 = Name("the value", Language.get("en"))
     name_2 = Name("the value", Language.get("en"))
-    name_3 = Name("no", Language.get("en"))
-    name_4 = Name("the value", Language.get("fr"))
-
-    assert name_1 == name_1
     assert name_1 == name_2
+
+    name_3 = Name("no", Language.get("en"))
     assert name_1 != name_3
+
+    name_4 = Name("the value", Language.get("fr"))
     assert name_1 != name_4
 
+    assert name_1 != "test"
 
 def test__hash__():
-    assert isinstance(Name("test", Language.get("en")), Hashable)
+    name_1 = Name("the value", Language.get("en"))
+    name_2 = Name("the value", Language.get("en"))
+    assert isinstance(name_1, Hashable)
+    assert {name_1} == {name_2}
+
+    name_3 = Name("no", Language.get("en"))
+    assert {name_1} != {name_3}
+
+    name_4 = Name("the value", Language.get("fr"))
+    assert {name_1} != {name_4}
+
+    assert {name_1} != {"test"}
 
 
 def test__repr__():

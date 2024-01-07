@@ -52,6 +52,8 @@ def test__eq__():
 
     assert usage_data_1 != usage_data_4
 
+    assert usage_data_1 != "test"
+
 
 def test__repr__():
     characters_used = {"a", "b"}

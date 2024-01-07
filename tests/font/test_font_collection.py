@@ -148,7 +148,6 @@ def test__hash__():
     font_collection_1 = FontCollection(True, True, True, [])
     font_collection_2 = FontCollection(True, True, True, [])
     assert isinstance(font_collection_1, Hashable)
-
     assert {font_collection_1} == {font_collection_2}
 
     font_collection_3 = FontCollection(False, True, True, [])
@@ -167,6 +166,9 @@ def test__hash__():
     font_file = FontFile(font_mac_platform, font_faces)
     font_collection_6 = FontCollection(True, True, True, [font_file])
     assert {font_collection_1} != {font_collection_6}
+
+    assert {font_collection_1} != {"test"}
+
 
 def test__repr__():
     font_collection = FontCollection(

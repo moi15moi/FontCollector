@@ -307,8 +307,6 @@ def test__eq__():
         FontType.TRUETYPE,
         {"ital": False}
     )
-    assert font_1 == font_1
-
     font_2 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
@@ -495,9 +493,117 @@ def test__eq__():
     )
     assert font_17 != font_18
 
+    assert font_1 != "test"
 
 def test__hash__():
-    font = VariableFontFace(
+    font_1 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    font_2 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert isinstance(font_1, Hashable)
+    assert {font_1} == {font_2}
+
+    font_4 = VariableFontFace(
+        1, # different
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_4}
+
+    font_5 = VariableFontFace(
+        0,
+        [Name("families_prefix different", Language.get("fr"))], # different
+        [Name("families_suffix", Language.get("fr"))],
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_5}
+
+    font_6 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix different", Language.get("fr"))], # different
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_6}
+
+    font_7 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix different", Language.get("fr"))], # different
+        400,
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_7}
+
+    font_8 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        401, # different
+        False,
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_8}
+
+    font_9 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        True, # different
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_1} != {font_9}
+
+    font_10 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.OPENTYPE, # different
+        {"ital": False}
+    )
+    assert {font_1} != {font_10}
+
+    font_11 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
         [Name("families_suffix", Language.get("fr"))],  
@@ -505,45 +611,89 @@ def test__hash__():
         400, 
         False, 
         FontType.TRUETYPE, 
+        {"ital": True} # different
+    )
+    assert {font_1} != {font_11}
+
+    font_12 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.TRUETYPE, 
+        {"ital different": False} # different
+    )
+    assert {font_1} != {font_12}
+
+    font_13 = VariableFontFace(
+        0,
+        [Name("families_prefix_1", Language.get("fr")), Name("families_prefix_2", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.TRUETYPE,
         {"ital": False}
     )
-
-    assert isinstance(font, Hashable)
-
-    font_1 = VariableFontFace(
+    font_14 = VariableFontFace(
         0,
-        [Name("families_prefix_1", Language.get("fr")), Name("families_prefix_2", Language.get("fr"))],
-        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],
+        [Name("families_prefix_2", Language.get("fr")), Name("families_prefix_1", Language.get("fr"))], # order different
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_13} != {font_14}
+
+    font_15 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],  
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    font_16 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix_2", Language.get("fr")), Name("families_suffix_1", Language.get("fr"))], # order different
+        [Name("exact_names_suffix", Language.get("fr"))],
+        400, 
+        False, 
+        FontType.TRUETYPE,
+        {"ital": False}
+    )
+    assert {font_15} != {font_16}
+
+    font_17 = VariableFontFace(
+        0,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
         [Name("exact_names_suffix_1", Language.get("fr")), Name("exact_names_suffix_2", Language.get("fr"))],
-        400,
-        False,
+        400, 
+        False, 
         FontType.TRUETYPE,
-        {"ital": False, "wght": 400}
+        {"ital": False}
     )
-
-    font_2 = VariableFontFace(
+    font_18 = VariableFontFace(
         0,
-        [Name("families_prefix_2", Language.get("fr")), Name("families_prefix_1", Language.get("fr"))],
-        [Name("families_suffix_2", Language.get("fr")), Name("families_suffix_1", Language.get("fr"))],
-        [Name("exact_names_suffix_2", Language.get("fr")), Name("exact_names_suffix_1", Language.get("fr"))],
-        400,
-        False,
+        [Name("families_prefix", Language.get("fr"))],
+        [Name("families_suffix", Language.get("fr"))],  
+        [Name("exact_names_suffix_2", Language.get("fr")), Name("exact_names_suffix_1", Language.get("fr"))], # order different
+        400, 
+        False, 
         FontType.TRUETYPE,
-        {"wght": 400, "ital": False}
+        {"ital": False}
     )
-    assert {font_1} != {font_2}
+    assert {font_17} != {font_18}
 
-    font_3 = VariableFontFace(
-        0,
-        [Name("families_prefix_1", Language.get("fr")), Name("families_prefix_2", Language.get("fr"))],
-        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],
-        [Name("exact_names_suffix_1", Language.get("fr")), Name("exact_names_suffix_2", Language.get("fr"))],
-        400,
-        False,
-        FontType.TRUETYPE,
-        {"wght": 400, "ital": False}
-    )
-    assert {font_1} == {font_3}
+    assert {font_1} != {"test"}
 
 def test__repr__():
     font = VariableFontFace(

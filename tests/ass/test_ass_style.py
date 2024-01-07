@@ -41,7 +41,6 @@ def test__eq__():
         700, 
         False
     )
-
     ass_style_2 = AssStyle(
         "test", # Different
         700,
@@ -69,12 +68,36 @@ def test__eq__():
 
 
 def test__hash__():
-    ass_style_1 = AssStyle("Test", 700, False)
+    ass_style_1 = AssStyle(
+        "Test", 
+        700, 
+        False
+    )
+    ass_style_2 = AssStyle(
+        "test", # Different
+        700,
+        False
+    )
     assert isinstance(ass_style_1, Hashable)
-
-    ass_style_2 = AssStyle("test", 700, False)
-
     assert {ass_style_1} == {ass_style_2}
+
+
+    ass_style_3 = AssStyle(
+        "Test", 
+        800, # Different
+        False
+    )
+    assert {ass_style_1} != {ass_style_3}
+
+    ass_style_4 = AssStyle(
+        "Test", 
+        700, 
+        True # Different
+    )
+
+    assert {ass_style_1} != {ass_style_4}
+
+    assert {ass_style_1} != "test"
 
 
 def test__repr__():

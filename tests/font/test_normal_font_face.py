@@ -2,7 +2,7 @@ import collections
 import os
 import pytest
 import string
-from font_collector import FontFile, FontType, InvalidLanguageCode, Name, NormalFontFace
+from font_collector import InvalidNormalFontFaceException, FontFile, FontType, InvalidLanguageCode, Name, NormalFontFace
 from langcodes import Language
 from typing import Hashable
 
@@ -340,8 +340,6 @@ def test__eq__():
         False,
         FontType.TRUETYPE
     )
-    assert font_1 == font_1
-
     font_2 = NormalFontFace(
         0,
         [Name("family_names", Language.get("fr"))],
@@ -470,51 +468,149 @@ def test__eq__():
     )
     assert font_13 != font_14
 
+    assert font_1 != "test"
+
+
 def test__hash__():
-    font = NormalFontFace(
+    font_1 = NormalFontFace(
         0,
-        [Name("family_name", Language.get("en"))],
-        [Name("exact_names", Language.get("en"))],
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
         400,
         False,
         False,
         FontType.TRUETYPE
     )
-
-    assert isinstance(font, Hashable)
-
-    font_1 = NormalFontFace(
-        0,
-        [Name("family_names_1", Language.get("fr")), Name("family_names_2", Language.get("fr"))],
-        [Name("exact_names", Language.get("fr"))],
-        400,
-        False,
-        False,
-        FontType.TRUETYPE,
-    )
-
     font_2 = NormalFontFace(
         0,
-        [Name("family_names_2", Language.get("fr")), Name("family_names_1", Language.get("fr"))],
+        [Name("family_names", Language.get("fr"))],
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
         False,
-        FontType.TRUETYPE,
+        FontType.TRUETYPE
     )
-    assert {font_1} != {font_2}
+    assert isinstance(font_1, Hashable)
+    assert {font_1} == {font_2}
 
-    font_3 = NormalFontFace(
+    font_4 = NormalFontFace(
+        1, # different
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_4}
+
+    font_5 = NormalFontFace(
+        0,
+        [Name("family_names different", Language.get("fr"))], # different
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_5}
+
+    font_6 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names different", Language.get("fr"))], # different
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_6}
+
+    font_7 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        100, # different
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_7}
+
+    font_8 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        True, # different
+        False,
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_8}
+
+    font_9 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        True,  # different
+        FontType.TRUETYPE
+    )
+    assert {font_1} != {font_9}
+
+    font_10 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,  
+        FontType.OPENTYPE # different
+    )
+    assert {font_1} != {font_10}
+
+    font_11 = NormalFontFace(
         0,
         [Name("family_names_1", Language.get("fr")), Name("family_names_2", Language.get("fr"))],
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,
+        False,  
         FontType.TRUETYPE,
     )
-    assert {font_1} == {font_3}
+    font_12 = NormalFontFace(
+        0,
+        [Name("family_names_2", Language.get("fr")), Name("family_names_1", Language.get("fr"))], # order different
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,  
+        FontType.TRUETYPE,
+    )
+    assert {font_11} != {font_12}
 
+    font_13 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names_1", Language.get("fr")), Name("exact_names_2", Language.get("fr"))],
+        400,
+        False,
+        False,  
+        FontType.TRUETYPE,
+    )
+    font_14 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names_2", Language.get("fr")), Name("exact_names_1", Language.get("fr"))], # order different
+        400,
+        False,
+        False,  
+        FontType.TRUETYPE,
+    )
+    assert {font_13} != {font_14}
+
+    assert {font_1} != {"test"}
 
 
 def test__repr__():

@@ -31,6 +31,83 @@ def test__init__():
     assert font_result.mismatch_italic == mismatch_italic
 
 
+def test__eq__():
+    font_face_1 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    font_face_2 = NormalFontFace(
+        0,
+        [Name("family_names diff", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+
+    font_result_1 = FontResult(font_face_1, True, True, True)
+    font_result_2 = FontResult(font_face_1, True, True, True)
+    assert font_result_1 == font_result_2
+
+    font_result_3 = FontResult(font_face_2, True, True, True)
+    assert font_result_1 != font_result_3
+
+    font_result_4 = FontResult(font_face_1, False, True, True)
+    assert font_result_1 != font_result_4
+
+    font_result_5 = FontResult(font_face_1, True, False, True)
+    assert font_result_1 != font_result_5
+
+    font_result_6 = FontResult(font_face_1, True, True, False)
+    assert font_result_1 != font_result_6
+
+    assert font_result_1 != "test"
+
+def test__hash__():
+    font_face_1 = NormalFontFace(
+        0,
+        [Name("family_names", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+    font_face_2 = NormalFontFace(
+        0,
+        [Name("family_names diff", Language.get("fr"))],
+        [Name("exact_names", Language.get("fr"))],
+        400,
+        False,
+        False,
+        FontType.TRUETYPE
+    )
+
+    font_result_1 = FontResult(font_face_1, True, True, True)
+    font_result_2 = FontResult(font_face_1, True, True, True)
+    assert isinstance(font_result_1, Hashable)
+    assert {font_result_1} == {font_result_2}
+
+    font_result_3 = FontResult(font_face_2, True, True, True)
+    assert {font_result_1} != {font_result_3}
+
+    font_result_4 = FontResult(font_face_1, False, True, True)
+    assert {font_result_1} != font_result_4
+
+    font_result_5 = FontResult(font_face_1, True, False, True)
+    assert {font_result_1} != {font_result_5}
+
+    font_result_6 = FontResult(font_face_1, True, True, False)
+    assert {font_result_1} != {font_result_6}
+
+    assert {font_result_1} != {"test"}
+
 def test__repr__():
     font = NormalFontFace(
         0,

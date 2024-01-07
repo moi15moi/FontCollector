@@ -184,6 +184,9 @@ def test__hash__():
     font_file_4 = FontFile(font_collection_path, font_faces_1)
     assert {font_file_1} != {font_file_4}
 
+    assert {font_file_1} != {"test"}
+
+
 def test__repr__():
     font_mac_platform = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font_faces = [
