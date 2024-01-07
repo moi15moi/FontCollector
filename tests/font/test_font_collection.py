@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import shutil
+from time import sleep
 from typing import Hashable
 from langcodes import Language
 import pytest
@@ -88,6 +90,43 @@ def test_get_used_font_by_style():
     ass_style = AssStyle("exact", 900, True)
     font_result = font_collection.get_used_font_by_style(ass_style)
     assert font_result == FontResult(font_faces[0], True, True, True)
+
+    # FontFile with same attributes (except last_loaded_time). In this case, the algorithm will use the older font
+    sf_pro_display = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-Bold.ttf"))
+    sf_pro_display_italic = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-BoldItalic.ttf"))
+    sf_pro_display_temp = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-Bold - Temp.ttf"))
+    sf_pro_display_italic_temp = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-BoldItalic - Temp.ttf"))
+
+    shutil.copy2(sf_pro_display, sf_pro_display_temp)
+    shutil.copy2(sf_pro_display_italic, sf_pro_display_italic_temp)
+
+    sf_pro_display_temp_font = FontFile.from_font_path(sf_pro_display_temp)
+    sf_pro_display_italic_temp_font = FontFile.from_font_path(sf_pro_display_italic_temp)
+    additional_fonts = [sf_pro_display_temp_font, sf_pro_display_italic_temp_font]            
+    font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
+    ass_style = AssStyle("SF Pro Display", 400, False)
+    result = font_collection.get_used_font_by_style(ass_style)
+    assert result.font_face == sf_pro_display_temp_font.font_faces[0]
+    
+    os.remove(sf_pro_display_italic_temp)
+    os.remove(sf_pro_display_temp)
+
+    # Same test has the previous one, but here SFProDisplay-BoldItalic is older than SFProDisplay-Bold
+    sf_pro_display_temp_2 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-Bold - Temp 2.ttf"))
+    sf_pro_display_italic_temp_2 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-BoldItalic - Temp 2.ttf"))
+
+    shutil.copy2(sf_pro_display_italic, sf_pro_display_italic_temp_2)
+    shutil.copy2(sf_pro_display, sf_pro_display_temp_2)
+
+    sf_pro_display_temp_font_2 = FontFile.from_font_path(sf_pro_display_temp_2)
+    sf_pro_display_italic_temp_font_2 = FontFile.from_font_path(sf_pro_display_italic_temp_2)
+    additional_fonts = [sf_pro_display_temp_font_2, sf_pro_display_italic_temp_font_2]            
+    font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
+    result = font_collection.get_used_font_by_style(ass_style)
+    assert result.font_face == sf_pro_display_italic_temp_font.font_faces[0]
+
+    os.remove(sf_pro_display_temp_2)
+    os.remove(sf_pro_display_italic_temp_2)
 
 
 def test_get_used_font_by_style_otf_vs_ttf():

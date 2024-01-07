@@ -21,6 +21,8 @@ def test_load_additional_fonts():
         Path(os.path.join(font_directory, "font_without axis_value.ttf")),
         Path(os.path.join(font_directory, "opentype_font_collection.ttc")),
         Path(os.path.join(font_directory, "PENBOX.otf")),
+        Path(os.path.join(font_directory, "SFProDisplay-Bold.ttf")),
+        Path(os.path.join(font_directory, "SFProDisplay-BoldItalic.ttf")),
         Path(os.path.join(font_directory, "truetype_font_collection.ttc")),
     ]
 
