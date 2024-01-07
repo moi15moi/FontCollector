@@ -3,6 +3,8 @@ from ..exceptions import InvalidVariableFontFaceException
 from .cmap import CMap
 from .name import Name, NameID, PlatformID
 from ctypes import byref, c_uint, create_string_buffer
+from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
 from freetype import (
@@ -13,14 +15,10 @@ from freetype import (
 from freetype.ft_enums.ft_style_flags import FT_STYLE_FLAGS
 from itertools import product
 from langcodes import Language
-from struct import error as struct_error
-from typing import TypedDict, TYPE_CHECKING
+from pathlib import Path
 
-if TYPE_CHECKING:
-    from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
-    from fontTools.ttLib.tables._n_a_m_e import NameRecord
-    from pathlib import Path
-    from typing import Any, Dict, List, Optional, Set, Tuple
+from struct import error as struct_error
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class FontParser:
@@ -506,35 +504,16 @@ class FontParser:
         microsoft_cmaps: List[CMap] = []
         macintosh_cmaps: List[CMap] = []
 
-        try:
-            cmap_tables: List[CmapSubtable] = ttFont["cmap"].tables
+        cmap_tables: List[CmapSubtable] = ttFont["cmap"].tables
 
-            for table in cmap_tables:
-                encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
-                if encoding is not None:
-                    cmap = CMap(table.platformID, table.platEncID)
-                    if table.platformID == PlatformID.MICROSOFT:
-                        microsoft_cmaps.append(cmap)
-                    elif table.platformID == PlatformID.MACINTOSH:
-                        macintosh_cmaps.append(cmap)
-        except Exception:
-            # fontTools have multiple issue to decode cmap table.
-            #   - https://github.com/fonttools/fonttools/issues/3060
-            #   - https://github.com/fonttools/fonttools/issues/3256
-            # If it fails, fallback to freetype
-            face = Face(Path(font_path).open("rb"), font_index)
-            
-            for charmap in face.charmaps:
-                if charmap.cmap_format == -1:
-                    continue
-
-                encoding = FontParser.get_cmap_encoding(charmap.platform_id, charmap.encoding_id)
-                if encoding is not None:
-                    cmap = CMap(charmap.platform_id, charmap.encoding_id)
-                    if charmap.platform_id == PlatformID.MICROSOFT:
-                        microsoft_cmaps.append(cmap)
-                    elif charmap.platform_id == PlatformID.MACINTOSH:
-                        macintosh_cmaps.append(cmap)
+        for table in cmap_tables:
+            encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
+            if encoding is not None:
+                cmap = CMap(table.platformID, table.platEncID)
+                if table.platformID == PlatformID.MICROSOFT:
+                    microsoft_cmaps.append(cmap)
+                elif table.platformID == PlatformID.MACINTOSH:
+                    macintosh_cmaps.append(cmap)
         return macintosh_cmaps if len(microsoft_cmaps) == 0 else microsoft_cmaps
 
 
