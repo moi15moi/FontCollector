@@ -1,14 +1,12 @@
 from __future__ import annotations
 from .abc_ass_document import ABCAssDocument
+from ass import Document
 from ass import Dialogue, parse_file, parse_string
 from ass_tag_analyzer import WrapStyle
 from os.path import isfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Optional, Tuple, Type
 
-if TYPE_CHECKING:
-    from ass import Document
-    from typing import Optional, Tuple, Type
 
 __all__ = ["AssDocument"]
 

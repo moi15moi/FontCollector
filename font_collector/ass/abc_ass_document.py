@@ -26,10 +26,7 @@ from ass_tag_analyzer import (
     WrapStyle,
 )
 from copy import deepcopy
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 __all__ = ["ABCAssDocument"]

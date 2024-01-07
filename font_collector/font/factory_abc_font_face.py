@@ -7,13 +7,11 @@ from .font_parser import FontParser
 from .font_type import FontType
 from .name import NameID, PlatformID
 from .variable_font_face import VariableFontFace
+from pathlib import Path
 from fontTools.ttLib.ttFont import TTFont
 from os import linesep
-from typing import TYPE_CHECKING
+from typing import Any, Dict, List, Set, Tuple
 
-if TYPE_CHECKING:
-    from pathlib import Path
-    from typing import Any, Dict, List, Set, Tuple
 
 __all__ = ["FactoryABCFontFace"]
 

@@ -4,11 +4,10 @@ from collections import Counter
 from os.path import isfile, realpath
 from pathlib import Path
 from time import time
-from typing import TYPE_CHECKING
+from typing import List, Optional, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace
-    from typing import List, Optional, Type
 
 __all__ = ["FontFile"]
 

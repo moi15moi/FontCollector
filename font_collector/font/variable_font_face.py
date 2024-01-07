@@ -4,18 +4,18 @@ from .._version import __version__
 from .abc_font_face import ABCFontFace
 from .name import Name, NameID
 from .font_parser import FontParser
+from .font_type import FontType
 from datetime import date
 from fontTools.ttLib.ttCollection import TTCollection
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib import instancer
 from itertools import product
 from os.path import isfile
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import FontFile, FontType
-    from pathlib import Path
-    from typing import Any, Dict, List, Optional
+    from . import FontFile
 
 __all__ = ["VariableFontFace"]
 

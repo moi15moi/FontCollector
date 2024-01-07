@@ -8,10 +8,8 @@ from .font_file import FontFile
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import TYPE_CHECKING
+from typing import Iterable, List
 
-if TYPE_CHECKING:
-    from typing import Iterable, List
 
 _logger = logging.getLogger(__name__)
 

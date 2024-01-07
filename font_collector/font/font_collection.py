@@ -1,14 +1,16 @@
 from __future__ import annotations
 from collections import Counter
+from ..ass import AssStyle
+from .abc_font_face import ABCFontFace
+from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from os.path import getctime
-from typing import TYPE_CHECKING
+from typing import Any, Generator, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..ass import AssStyle
-    from . import ABCFontFace, FontFile
-    from typing import Any, Generator, List, Optional
+    from .abc_font_face import ABCFontFace
+    from .font_file import FontFile
 
 __all__ = ["FontCollection"]
 

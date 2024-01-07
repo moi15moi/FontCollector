@@ -1,10 +1,12 @@
 from __future__ import annotations
 from ctypes import byref
+from ..ass import AssStyle
 from ..exceptions import InvalidLanguageCode, OSNotSupported
 from ..system_lang import get_system_lang
 from .chinese_variant import ChineseVariant
 from .font_parser import FontParser
 from .font_type import FontType
+from .name import Name
 from abc import ABC, abstractmethod
 from freetype import (
     FT_Done_Face,
@@ -19,13 +21,12 @@ from freetype import (
     FT_Set_Charmap,
 )
 from langcodes import Language, tag_is_valid
-from typing import TYPE_CHECKING
+from typing import Iterable, List, Optional, Set, TYPE_CHECKING
+
 import logging
 
 if TYPE_CHECKING:
-    from ..ass import AssStyle
-    from . import Name, FontFile
-    from typing import List, Optional, Sequence, Set
+    from .font_file import FontFile
 
 __all__ = ["ABCFontFace"]
 

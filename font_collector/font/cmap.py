@@ -1,8 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from .name import PlatformID
 
-if TYPE_CHECKING:
-    from . import PlatformID
 
 class CMap:
     """

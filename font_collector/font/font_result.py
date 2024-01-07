@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from .abc_font_face import ABCFontFace
 
-if TYPE_CHECKING:
-    from .abc_font_face import ABCFontFace
+    
 
 __all__ = ["FontResult"]
 
