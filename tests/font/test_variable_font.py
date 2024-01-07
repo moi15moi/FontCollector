@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import pytest
 import string
-from font_collector import VariableFontFace, FontFile, FontType, NormalFontFace, InvalidLanguageCode, Name
+from font_collector import VariableFontFace, FontFile, FontLoader, FontCollection, FontType, NormalFontFace, InvalidVariableFontFaceException, Name
 from langcodes import Language
 from typing import Hashable
 
@@ -40,6 +40,22 @@ def test__init__():
     assert font.is_italic == is_italic
     assert font.named_instance_coordinates == named_instance_coordinates
     assert font.font_file == None
+
+
+    families_prefix = []
+    with pytest.raises(InvalidVariableFontFaceException) as exc_info:
+        font = VariableFontFace(
+            font_index,
+            families_prefix,
+            families_suffix,
+            exact_names_suffix,
+            weight,
+            is_italic,
+            font_type,
+            named_instance_coordinates
+        )
+    assert str(exc_info.value) == "The font does not contain an valid family prefix."
+
 
 
 def test_font_index_property():
@@ -168,6 +184,69 @@ def test_link_face_to_a_font_file():
     assert font_face_2.font_file == font_file
 
 
+def test_get_best_family_prefix_from_lang():
+    # This method is difficult to test since it depend on the OS language.
+    # In this test, we suppose that the OS language isn't fr-BE or fr. If it is, then, the test will fail
+    font_index = 0
+    families_suffix = []
+    exact_names_suffix = []
+    weight = 400
+    is_italic = True
+    font_type = FontType.TRUETYPE
+    named_instance_coordinates = {}
+
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
+
+    families_prefix = [name_1, name_2, name_3]
+
+    font = VariableFontFace(
+        font_index,
+        families_prefix,
+        families_suffix,
+        exact_names_suffix,
+        weight,
+        is_italic,
+        font_type,
+        named_instance_coordinates,
+    )
+
+    assert font.get_best_family_prefix_from_lang() == name_1
+
+
+def test_get_family_prefix_from_lang():
+    # This method is difficult to test since it depend on the OS language.
+    # In this test, we suppose that the OS language isn't fr-BE or fr. If it is, then, the test will fail
+    font_index = 0
+    families_suffix = []
+    exact_names_suffix = []
+    weight = 400
+    is_italic = True
+    font_type = FontType.TRUETYPE
+    named_instance_coordinates = {}
+
+    name_1 = Name("", Language.get("fr-CA")) 
+    name_2 = Name("", Language.get("fr-BE")) 
+    name_3 = Name("", Language.get("fr")) 
+
+    families_prefix = [name_1, name_2, name_3]
+
+    font = VariableFontFace(
+        font_index,
+        families_prefix,
+        families_suffix,
+        exact_names_suffix,
+        weight,
+        is_italic,
+        font_type,
+        named_instance_coordinates,
+    )
+
+    assert font.get_family_prefix_from_lang("fr-BE") == name_2
+
+
+
 def test_get_missing_glyphs():
     font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
     font_file = FontFile.from_font_path(font_path)
@@ -189,15 +268,19 @@ def test_variable_font_to_collection():
     assert isinstance(font_face, VariableFontFace)
 
     save_path = Path(os.path.join(dir_path, "Asap - Test.ttf"))
+    nbr_generated_font = len(FontLoader.load_generated_fonts())
     try:
-        font_face.variable_font_to_collection(save_path, False)
-        generated_fonts = FontFile.from_font_path(save_path)
+        generated_fonts = font_face.variable_font_to_collection(save_path, False)
+        font = FontFile.from_font_path(save_path)
     except Exception:
         pass
     finally:
         # Always delete the generated font. Even if there is an exception
         if os.path.isfile(save_path):
             os.remove(save_path)
+
+    assert generated_fonts == font
+    assert nbr_generated_font == len(FontLoader.load_generated_fonts())
 
     expected_fonts = [
         NormalFontFace(
@@ -294,6 +377,17 @@ def test_variable_font_to_collection():
                 break
         
         assert font_found
+
+    try:
+        font_face.variable_font_to_collection(save_path)
+    except Exception:
+        pass
+    finally:
+        assert nbr_generated_font + 1 == len(FontLoader.load_generated_fonts())
+
+        # Always delete the generated font. Even if there is an exception
+        if os.path.isfile(save_path):
+            os.remove(save_path)
 
 
 def test__eq__():
