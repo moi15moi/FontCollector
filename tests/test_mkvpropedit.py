@@ -1,6 +1,7 @@
 import collections
 import json
 import os
+from pathlib import Path
 import shutil
 import subprocess
 from time import time
@@ -14,7 +15,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_is_mkv():
-    assert Mkvpropedit.is_mkv(os.path.join(dir_path, "file", "test_video.mkv"))
+    assert Mkvpropedit.is_mkv(os.path.join(dir_path, "file", "test video.mkv"))
     assert not Mkvpropedit.is_mkv(os.path.join(dir_path, "file", "ass", "Style test.ass"))
     file_that_does_not_exist = os.path.join(dir_path, "file", "file that does not exist")
     with pytest.raises(FileNotFoundError) as exc_info:
@@ -26,10 +27,10 @@ def test_delete_fonts_of_mkv():
     if mkvmerge is None:
         assert False
 
-    original_mkv_file = os.path.join(dir_path, "file", "test_video.mkv")
-    temp_mkv_file = os.path.join(dir_path, "file", "test_video_temp.mkv")
+    original_mkv_file = Path(os.path.join(dir_path, "file", "test video.mkv"))
+    temp_mkv_file = Path(os.path.join(dir_path, "file", "test_video_temp.mkv"))
     shutil.copy(original_mkv_file, temp_mkv_file)
-    font_cmap_encoding_0 = os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = Path(os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF"))
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     # Get the video detail
@@ -44,7 +45,6 @@ def test_delete_fonts_of_mkv():
     mkvmerge_output_dict = json.loads(mkvmerge_output.stdout)
 
     if len(mkvmerge_output_dict["attachments"]) != 0:
-        print(mkvmerge_output_dict["attachments"])
         raise ValueError(f'The video "{original_mkv_file} need to have 0 attachments"')
 
     # Verify if the font have been merged
@@ -60,7 +60,7 @@ def test_delete_fonts_of_mkv():
     mkvmerge_output_dict = json.loads(mkvmerge_output.stdout)
 
     assert len(mkvmerge_output_dict["attachments"]) == 1
-    assert mkvmerge_output_dict["attachments"][0]["file_name"] == os.path.basename(font_file.filename)
+    assert mkvmerge_output_dict["attachments"][0]["file_name"] == font_file.filename.resolve().name
 
     # Verify if the font have been deleted
     Mkvpropedit.delete_fonts_of_mkv(temp_mkv_file)
@@ -83,10 +83,10 @@ def test_merge_fonts_into_mkv():
     if mkvmerge is None:
         assert False
 
-    original_mkv_file = os.path.join(dir_path, "file", "test_video.mkv")
-    temp_mkv_file = os.path.join(dir_path, "file", "test_video_temp_1.mkv")
+    original_mkv_file = Path(os.path.join(dir_path, "file", "test video.mkv"))
+    temp_mkv_file = Path(os.path.join(dir_path, "file", "test_video_temp_1.mkv"))
     shutil.copy(original_mkv_file, temp_mkv_file)
-    font_cmap_encoding_0 = os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = Path(os.path.join(dir_path, "file", "fonts", "font_cmap_encoding_0.TTF"))
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     # Get the video detail
@@ -116,6 +116,6 @@ def test_merge_fonts_into_mkv():
     mkvmerge_output_dict = json.loads(mkvmerge_output.stdout)
 
     assert len(mkvmerge_output_dict["attachments"]) == 1
-    assert mkvmerge_output_dict["attachments"][0]["file_name"] == os.path.basename(font_file.filename)
+    assert mkvmerge_output_dict["attachments"][0]["file_name"] == font_file.filename.resolve().name
 
     os.remove(temp_mkv_file)
