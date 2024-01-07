@@ -37,6 +37,20 @@ def test__init__():
     assert font.font_type == font_type
     assert font.font_file == None
 
+    family_names = []
+    with pytest.raises(InvalidNormalFontFaceException) as exc_info:
+        font = NormalFontFace(
+            font_index,
+            family_names,
+            exact_names,
+            weight,
+            is_italic,
+            is_glyph_emboldened,
+            font_type
+        )
+    assert str(exc_info.value) == "The font does not contain an valid family name."
+
+
 
 def test_font_index_property():
     font = NormalFontFace(0, [Name("test", Language.get("en"))], [], 400, False, False, FontType.TRUETYPE)
