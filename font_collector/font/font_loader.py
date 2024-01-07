@@ -8,7 +8,7 @@ from .font_file import FontFile
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Iterable, List
+from typing import Iterable, List, Set
 
 
 _logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ class FontLoader:
     @staticmethod
     def load_system_fonts() -> List[FontFile]:
         system_fonts: List[FontFile] = []
-        fonts_paths = get_system_fonts_filename()
+        fonts_paths: Set[Path] = {Path(font_path) for font_path in get_system_fonts_filename()}
         system_font_cache_file = FontLoader.get_system_font_cache_file_path()
 
         if os.path.isfile(system_font_cache_file):
