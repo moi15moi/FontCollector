@@ -67,10 +67,16 @@ class Mkvpropedit:
 
         if output.returncode == 2:
             raise OSError(
-                f"mkvpropedit reported an error when deleting the font in the mkv: {output.stdout}"
+                f"mkvpropedit reported an error when deleting the font in the mkv: {output.stdout}."
             )
+        elif output.returncode == 1:
+            _logger.warning(f"mkvpropedit reported an warning when deleting the font in the mkv '{output.stdout}'.")
+        elif output.returncode == 0:
+            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}.')
         else:
-            _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}')
+            raise OSError(
+                f"mkvpropedit reported the returncode \"{output.returncode}\" which isn't supported."
+            )
 
     @staticmethod
     def merge_fonts_into_mkv(
@@ -104,5 +110,11 @@ class Mkvpropedit:
             raise OSError(
                 f"mkvpropedit reported an error when merging font into an mkv: {output.stdout}"
             )
-        else:
+        elif output.returncode == 1:
+            _logger.warning(f'mkvpropedit reported an warning when merging font into an mkv "{mkv_filename}"')
+        elif output.returncode == 0:
             _logger.info(f'Successfully merged fonts into mkv "{mkv_filename}"')
+        else:
+            raise OSError(
+                f"mkvpropedit reported the returncode \"{output.returncode}\" which isn't supported."
+            )
