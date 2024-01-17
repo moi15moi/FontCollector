@@ -15,23 +15,22 @@ if TYPE_CHECKING:
 __all__ = ["FontCollection"]
 
 class FontCollection:
-    """Contains fonts. This class allows to query fonts.
+    """A collection of fonts. This class allows querying fonts.
 
     Attributes:
-        use_system_font (bool): If true, then the collection will contains the system font.
-        reload_system_font (bool): If true, then each time you will try to access the system_fonts,
-            it will reload it to see if any new font(s) have been installed or uninstalled. This can reduce performance.
-            If false, it will only load the system font 1 time and never reload it.
-        use_generated_fonts (bool): Use the cached font collection (.ttc file) that were been generated from an variable font.
-        system_fonts (Set[ABCFont]): If use_system_font is set to True, it will contain the system font. 
-            If false, it will be empty.
-        generated_fonts (Set[ABCFont]): It use_generated_fonts is set to True, it will contain the font collection (.ttc file) that were been generated from an variable font. 
-            If false, it will be empty.
-            Warning: All the FontCollection use the same generated_fonts.
-        additional_fonts (Set[ABCFont]): It contain the font you specified.
-        fonts (Set[ABCFont]): It contain the font(s) from system_fonts, generated_fonts and additional_fonts.
+        use_system_font: If True, then the collection will contain the system font.
+        reload_system_font: If True, each time you access the system_fonts,
+            it will reload to check for any newly installed or uninstalled fonts. This may impact performance.
+            If False, it will load the system font only once and never reload it.
+        use_generated_fonts: Use the cached font collection (.ttc file) generated from a variable font.
+        system_fonts: If use_system_font is set to True, it will contain the system font. 
+            If False, it will be empty.
+        generated_fonts: If use_generated_fonts is set to True, it will contain the font collection (.ttc file) generated from a variable font. 
+            If False, it will be empty.
+            Warning: All FontCollections use the same generated_fonts.
+        additional_fonts: Contains the specified additional fonts.
+        fonts: A list that contain `system_fonts`, `generated_fonts`, and `additional_fonts`.
     """
-
 
     def __init__(
         self: FontCollection, 
@@ -89,14 +88,12 @@ class FontCollection:
 
     def get_used_font_by_style(self: FontCollection, style: AssStyle) -> Optional[FontResult]:
         """
-        Parameters:
-            style (AssStyle): An AssStyle
+        Args:
+            style: An AssStyle
         Returns:
-            The best font that match an AssStyle.
-            The algorithm is based on GDI.
-            If no font are found, then it return None.
+            The best font that matches an AssStyle based on the GDI algorithm.
+            If no fonts are found, it returns None.
         """
-
         score_min = float('inf')
         selected_font_face: Optional[ABCFontFace] = None
         for font_file in self.fonts:

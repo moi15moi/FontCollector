@@ -22,10 +22,10 @@ class FactoryABCFontFace:
     @staticmethod
     def from_font_path(font_path: Path) -> List[ABCFontFace]:
         """
-        Parameters:
-            font_path (Path): Font path. The font can be a .ttf, .otf, .ttc or .otc file
+        Args:
+            font_path: Font path. The font can be a .ttf, .otf, .ttc or .otc file
         Returns:
-            An list of Font or VariableFont object that represent the file at the font_path
+            A list of NormalFontFace or VariableFontFace objects that represent the file at the font_path.
         """
         ttFonts: List[TTFont] = []
 
@@ -34,7 +34,7 @@ class FactoryABCFontFace:
 
         is_collection_font = False
 
-        # Handle TTC font
+        # Handle TTC/OTC font
         if hasattr(font.reader, "numFonts"):
             is_collection_font = True
             if font.reader.numFonts > 1:
@@ -70,13 +70,13 @@ class FactoryABCFontFace:
     @staticmethod
     def __create_font(ttFont: TTFont, font_path: Path, font_index: int, is_collection_font: bool) -> NormalFontFace:
         """
-        Parameters:
-            ttFont (TTFont): An fontTools object
-            font_path (Path): Font path.
-            font_index (int): Font index.
-            is_collection_font (bool): If true, then the file is from a collection font.
+        Args:
+            ttFont: An fontTools object
+            font_path: Font path.
+            font_index: Font index.
+            is_collection_font: True if the font is a collection font, otherwise, False.
         Returns:
-            An Font instance that represent the ttFont
+            An FontFace instance that represent the ttFont.
         """
         cmaps = FontParser.get_supported_cmaps(ttFont, font_path, font_index)
         if len(cmaps) == 0:
@@ -118,10 +118,10 @@ class FactoryABCFontFace:
 
     def __create_variable_fonts(ttFont: TTFont, font_index: int, is_collection_font: bool) -> List[VariableFontFace]:
         """
-        Parameters:
-            ttFont (TTFont): An fontTools object
-            font_index (int): Font index.
-            is_collection_font (bool): If true, then the file is from a collection font.
+        Args:
+            ttFont: An fontTools object
+            font_index: Font index.
+            is_collection_font: True if the font is a collection font, otherwise, False.
         Returns:
             An list of Font instance that represent the ttFont.
         """

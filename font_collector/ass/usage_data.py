@@ -4,9 +4,13 @@ from typing import Any, List, Set
 __all__ = ["UsageData"]
 
 class UsageData:
+    """Represent the characters used in a set of lines of a .ass file
 
-    characters_used: Set[str]
-    lines: Set[int]
+    Attributes:
+        characters_used: A set of characters used in the set of lines.
+        lines (set): A set containing the indices of lines in a .ass file.
+    """
+
 
     def __init__(
         self: UsageData,
@@ -19,6 +23,12 @@ class UsageData:
 
     @property
     def ordered_lines(self: UsageData) -> List[int]:
+        """
+        Returns:
+            A sorted list containing the indices of lines in a .ass file.
+            Each value represent a index of a .ass file line.
+
+        """
         lines = list(self.lines)
         lines.sort()
         return lines

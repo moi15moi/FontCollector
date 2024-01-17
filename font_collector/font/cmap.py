@@ -3,9 +3,12 @@ from .name import PlatformID
 
 
 class CMap:
-    """
-    Represent a CMap table. It doesn't contain all the information of a CMap.
+    """Represents a CMap table. It doesn't contain all the information of a CMap.
     https://learn.microsoft.com/en-us/typography/opentype/spec/cmap
+
+    Attributes:
+        platform_id: The platform ID of the CMap.
+        platform_enc_id: The platform encoding ID of the CMap.
     """
 
     def __init__(

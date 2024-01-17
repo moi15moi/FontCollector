@@ -12,6 +12,13 @@ if TYPE_CHECKING:
 __all__ = ["FontFile"]
 
 class FontFile:
+    """Represents a physical font file.
+
+    Attributes:
+        filename: The name of the font file.
+        font_faces: A list of FontFace objects associated with the font file.
+        last_loaded_time: The timestamp, in seconds since the Epoch, when the font file was last loaded.
+    """
 
     def __init__(
         self: FontFile,
@@ -19,13 +26,23 @@ class FontFile:
         font_faces: List[ABCFontFace],
         last_loaded_time: Optional[float] = None
     ) -> None:
+        """Initializes the FontFile instance.
+
+        It links the font faces to this newly created FontFile instance.
+
+        Args:
+            filename: The name of the font file.
+            font_faces: A list of FontFace objects associated with the font file.
+            last_loaded_time: The timestamp, in seconds since the Epoch, when the font file was last loaded.
+                If None, it will be set to the current time.
+        """
         if not isfile(filename):
             raise FileNotFoundError(f'The file "{filename}" doesn\'t exist.')
         if len(font_faces) == 0:
             raise ValueError(f"A FontFile need to contain at least 1 ABCFontFace.")
         self.__filename = filename
         self.__font_faces = font_faces
-        for font_face in self.__font_faces:
+        for font_face in self.font_faces:
             font_face.link_face_to_a_font_file(self)
 
         if last_loaded_time is None:
@@ -51,6 +68,9 @@ class FontFile:
         return cls(filename, font_faces)
 
     def reload_font_file(self: FontFile) -> None:
+        """
+        Reloads the font file to update the font faces.
+        """
         self.__font_faces = FactoryABCFontFace.from_font_path(self.filename)
         for font_face in self.__font_faces:
             font_face.link_face_to_a_font_file(self)

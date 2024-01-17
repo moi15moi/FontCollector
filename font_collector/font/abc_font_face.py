@@ -22,7 +22,6 @@ from freetype import (
 )
 from langcodes import Language, tag_is_valid
 from typing import Iterable, List, Optional, Set, TYPE_CHECKING
-
 import logging
 
 if TYPE_CHECKING:
@@ -35,6 +34,19 @@ _logger = logging.getLogger(__name__)
 
 
 class ABCFontFace(ABC):
+    """Represents a font face of a font file.
+
+    Attributes:
+        font_index: The index of the font face in the font file.
+        family_names: A list of family names associated with the font face.
+        exact_names: A list of exact names associated with the font face.
+        weight: The weight of the font face. Equivalent of: https://learn.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+        is_italic: True if the font face is italic, otherwise False.
+        is_glyph_emboldened: True if the font face has emboldened glyphs, otherwise False.
+        font_type: The type of font face.
+        font_file: The path to the font file.
+    """
+
     __font_index: int
     __family_names: List[Name]
     __exact_names: List[Name]
@@ -57,7 +69,6 @@ class ABCFontFace(ABC):
     @property
     @abstractmethod
     def exact_names(self: ABCFontFace) -> List[Name]:
-        # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
         pass
     
     @property
@@ -136,11 +147,11 @@ class ABCFontFace(ABC):
     @staticmethod
     def _get_best_names_from_lang(names: List[Name]) -> Name:
         """
-        Parameters:
-            names (Set[Name]): A set of Names. Can be the family_names or exact_names.
+        Args:
+            names: A list of Names. Can be the family_names or exact_names.
         Returns:
-            A list of the names where the language that is the best for the user.
-            Order:
+            The best names for the user. 
+            The optimal names for the user are determined based on the following priority order:
                 1. Match the system language (ex: "fr") AND system territory (ex: "CA")
                 2. Match the system language (ex: "fr")
                 3. Match the english language
@@ -169,14 +180,17 @@ class ABCFontFace(ABC):
     @staticmethod
     def _get_names_from_lang(names: List[Name], lang_code: str, exact_match: bool) -> Optional[Name]:
         """
-        Parameters:
-            names (Set[Name]): A set of Names. Can be the family_names or exact_names.
-            lang_code (str): An IETF BCP-47 tag (only language and territory. Ex: "en-UK", "en", "bs-Latn-BA")
+        Args:
+            names: A list of Names. Can be the family_names or exact_names.
+            lang_code (str): An IETF BCP-47 tag (only language, script and territory. Ex: "en", "en-UK", "bs-Latn-BA")
             exact_match (bool):
-                - If true, it will return all the names with the specified AND territory. Ex: "en-US" can only match with "en-US".
-                - If false, it will return search names with the specified language. Ex: "en-US" can match with "en-US", "en", "en-CA", etc...
+                - If true, it will return a name with the specified AND script AND territory if it is in the names.
+                    Ex: "en-US" can only match with "en-US".
+                - If false, it will return a name with the specified language if it is in the names.
+                    Ex: "en-US" can match with "en-US", "en", "en-CA", etc...
         Returns:
-            The best name that match with the specified language.
+            The best name that match with the lang_code.
+            If none of the names correspond to the lang_code, then it returns None.
             It respects what is written here: https://github.com/libass/libass/wiki/Fonts-across-platforms#createfontindirectselectobject-vsfilter
         """
         if not tag_is_valid(lang_code):
@@ -220,15 +234,21 @@ class ABCFontFace(ABC):
     
 
     def need_faux_bold(self: ABCFontFace, style_weight: int) -> bool:
+        """
+        Args:
+            style_weight: The weight of a .ass style
+        Returns:
+            True if the font face needs to have faux bold, otherwise, false.
+        """
         return style_weight > self.weight + 150 and not self.is_glyph_emboldened
 
 
     def get_similarity_score(self: ABCFontFace, style: AssStyle) -> float:
         """
-        Parameters:
-            style (AssStyle): An AssStyle
+        Args:
+            style: An AssStyle
         Returns:
-            A matching score - the lower the better. If if it return, it means it is a perfect match.
+            A matching score - the lower, the better. If it returns 0, it means it is a perfect match.
         """
         score = 0.0
 
@@ -259,15 +279,15 @@ class ABCFontFace(ABC):
         support_only_ascii_char_for_symbol_font: bool = False
     ) -> Set[str]:
         """
-        Parameters:
-            text (Sequence[str]): Text
+        Args:
+            text: An iterable of characters.
             support_only_ascii_char_for_symbol_font (bool):
-                Libass only support ascii character for symbol cmap, but VSFilter can support more character.
-                    If you wish to use libass, we recommand you to set this param to True.
-                    If you wish to use VSFilter, we recommand you to set this param to False.
-                For more detail, see the issue: https://github.com/libass/libass/issues/319
+                Libass only supports ASCII characters for symbol cmap, but VSFilter can support more characters.
+                    If you wish to use libass, we recommend you to set this parameter to True.
+                    If you wish to use VSFilter, we recommend you to set this parameter to False.
+                For more details, see the issue: https://github.com/libass/libass/issues/319
         Returns:
-            A set of all the character that the font cannot display.
+            A set of all the characters that the font doesn't support.
         """
         if self.font_file is None:
             raise ValueError("This font_face isn't linked to any FontFile.")
