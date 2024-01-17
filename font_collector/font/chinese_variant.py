@@ -10,10 +10,8 @@ class ChineseVariant(Enum):
 
     @classmethod
     def from_lang_code(cls: Type[ChineseVariant], lang_code: Language) -> ChineseVariant:
-        """
-        Parameters:
-            TODO
-        """
+        if lang_code.language != "zh":
+            raise ValueError(f"The language {lang_code} isn't chinese.")
 
         if lang_code.territory in ("TW", "HK", "MO") or lang_code.script == "Hant":
             return ChineseVariant.TRADITIONAL
