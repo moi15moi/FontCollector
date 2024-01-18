@@ -22,9 +22,12 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class FontParser:
+    """
+    A utility class providing static methods for proper font parsing.
+    """
+
     DEFAULT_WEIGHT = 400
     DEFAULT_ITALIC = False
-
     CMAP_ENCODING_MAP: Dict[PlatformID, Dict[int, str]] = {
         PlatformID.MACINTOSH: {
             0: "mac_roman",
@@ -45,8 +48,8 @@ class FontParser:
     @staticmethod
     def is_valid_variable_font(font: TTFont) -> bool:
         """
-        Parameters:
-            font (TTFont): An fontTools object
+        Args:
+            font: The font to be validated
         Returns:
             An boolean that indicate if the font is an variable font or not.
         """
@@ -76,12 +79,13 @@ class FontParser:
 
     @staticmethod
     def get_var_font_family_prefix(names: List[NameRecord], platform_id: PlatformID) -> List[Name]:
-        """
-        This method is inspired by how GDI parse Variable Fonts.
-        Parameters:
-            font (TTFont): An fontTools object
+        """Extracts variable font family prefix names based on the provided NameRecord list and platform ID.
+
+        Args:
+            names: A list of NameRecord objects.
+            platform_id: The platform ID specifying the target platform for family name extraction.
         Returns:
-            The family name prefix.
+            A list of Name objects representing variable font family prefix names.
         """
         family_prefix = FontParser.get_filtered_names(names, platformID=platform_id, nameID=NameID.TYPOGRAPHIC_FAMILY_NAME)
         
@@ -94,18 +98,19 @@ class FontParser:
     def get_distance_between_axis_value_and_coordinates(
         font: TTFont, coordinates: Dict[str, float], axis_value: Any, axis_format: int
     ) -> float:
-        """
-        This method is inspired by how GDI parse Variable Fonts.
-        You should call FontParser.is_valid_variable_font before calling this method.
+        """Calculate the distance between an axis value and coordinates of a NamedInstance in a variable font.
 
-        Parameters:
-            ttfont (TTFont): An fontTools object
-            coordinates (Dict[str, float]): The coordinates of an NamedInstance in the fvar table.
-            axis_value (Any): An AxisValue
-            axis_format (int): The AxisValue Format.
-                Since the AxisValue from AxisValueRecord of an AxisValue Format 4 doesn't contain an Format attribute, this parameter is needed.
+        This method is inspired by how GDI parses Variable Fonts. Ensure to call FontParser.is_valid_variable_font()
+        before using this method.
+
+        Args:
+            font: A fontTools object representing the font.
+            coordinates: The coordinates of a NamedInstance in the fvar table.
+            axis_value: An AxisValue object representing the font axis value. 
+                Even if the type is Any, it isn't. It is AxisValueRecord, but fontTools create this class dynamically.
+            axis_format (int): The AxisValue format.
         Returns:
-            The distance between_axis_value_and_coordinates
+            The calculated distance between the specified axis value and coordinates.
         """
         try:
             axis_tag = font["STAT"].table.DesignAxisRecord.Axis[axis_value.AxisIndex].AxisTag
@@ -138,23 +143,23 @@ class FontParser:
 
 
     @staticmethod
-    def get_axis_value_from_coordinates(ttfont: TTFont, coordinates: Dict[str, float]) -> List[Any]:
-        """
-        You should call FontParser.is_valid_variable_font before calling this method.
-
-        Parameters:
-            ttfont (TTFont): An fontTools object
-            coordinates (Dict[str, float]): The coordinates of an NamedInstance in the fvar table.
+    def get_axis_value_from_coordinates(font: TTFont, coordinates: Dict[str, float]) -> List[Any]:
+        """Retrieve AxisValue objects linked to the specified coordinates in the fvar table.
+        Ensure to call FontParser.is_valid_variable_font() before using this method.
+        
+        Args:
+            font: A fontTools object representing the font.
+            coordinates: The coordinates of a NamedInstance in the fvar table.
         Returns:
-            An list who contain all the AxisValue linked to the coordinates.
+            A list containing all the AxisValue objects that has the closest distance
+            to the provided coordinates.
         """
-
         distances_for_axis_values: List[Tuple[float, Any]] = []
 
-        if ttfont["STAT"].table.AxisValueArray is None:
+        if font["STAT"].table.AxisValueArray is None:
             return distances_for_axis_values
 
-        for axis_value in ttfont["STAT"].table.AxisValueArray.AxisValue:
+        for axis_value in font["STAT"].table.AxisValueArray.AxisValue:
 
             if axis_value.Format == 4:
                 distance = 0.0
@@ -162,7 +167,7 @@ class FontParser:
                 for axis_value_format_4 in axis_value.AxisValueRecord:
                     distance += (
                         FontParser.get_distance_between_axis_value_and_coordinates(
-                            ttfont, coordinates, axis_value_format_4, axis_value.Format
+                            font, coordinates, axis_value_format_4, axis_value.Format
                         )
                     )
 
@@ -170,7 +175,7 @@ class FontParser:
 
             else:
                 distance = FontParser.get_distance_between_axis_value_and_coordinates(
-                    ttfont, coordinates, axis_value, axis_value.Format
+                    font, coordinates, axis_value, axis_value.Format
                 )
                 distances_for_axis_values.append((distance, axis_value))
 
@@ -178,7 +183,7 @@ class FontParser:
         distances_for_axis_values.sort(key=lambda distance: distance[0])
 
         axis_values_coordinate_matches: List[Any] = []
-        is_axis_useds: List[bool] = [False] * len(ttfont["STAT"].table.DesignAxisRecord.Axis)
+        is_axis_useds: List[bool] = [False] * len(font["STAT"].table.DesignAxisRecord.Axis)
 
         for distance, axis_value in distances_for_axis_values:
             if axis_value.Format == 4:
@@ -205,33 +210,30 @@ class FontParser:
 
     @staticmethod
     def get_axis_value_table_property(
-        ttfont: TTFont, axis_values: List[Any]
+        font: TTFont, axis_values: List[Any]
     ) -> Tuple[List[Name], List[Name], float, bool]:
-        """
-        You should call FontParser.is_valid_variable_font before calling this method.
+        """Retrieve font properties such as family name, full name, weight, and italic based on axis values.
+        Ensure to call FontParser.is_valid_variable_font() before using this method.
 
-        Parameters:
-            ttfont (TTFont): An fontTools object
-            axis_values (List[Any]): An list of AxisValue.
-            family_name_prefix (Name): The variable family name prefix.
-                Ex: For the name "Alegreya Italic", "Alegreya" is the family name prefix.
+        Args:
+            font: A fontTools object representing the font.
+            axis_values: A list of AxisValue object representing the font axis value. 
         Returns:
-            An family_name, full_name, weight, italic that represent the axis_values.
+            A tuple containing the family name, the full name, the weight, and italic.
         """
-
         axis_values.sort(
-            key=lambda axis_value: ttfont["STAT"]
+            key=lambda axis_value: font["STAT"]
             .table.DesignAxisRecord.Axis[
                 min(
                     axis_value.AxisValueRecord,
-                    key=lambda axis_value_format_4: ttfont["STAT"]
+                    key=lambda axis_value_format_4: font["STAT"]
                     .table.DesignAxisRecord.Axis[axis_value_format_4.AxisIndex]
                     .AxisOrdering,
                 ).AxisIndex
             ]
             .AxisOrdering
             if axis_value.Format == 4
-            else ttfont["STAT"]
+            else font["STAT"]
             .table.DesignAxisRecord.Axis[axis_value.AxisIndex]
             .AxisOrdering
         )
@@ -246,7 +248,7 @@ class FontParser:
 
         for i, axis_value in enumerate(axis_values):
 
-            axis_value_name = FontParser.get_filtered_names(ttfont["name"].names, platformID=PlatformID.MICROSOFT, nameID=axis_value.ValueNameID)
+            axis_value_name = FontParser.get_filtered_names(font["name"].names, platformID=PlatformID.MICROSOFT, nameID=axis_value.ValueNameID)
             if not axis_value_name:
                 raise InvalidVariableFontFaceException("An axis value has an invalid ValueNameID")
             axis_values_names.append(axis_value_name)
@@ -267,18 +269,18 @@ class FontParser:
                     value = axis_value.AxisValueRecord[0].Value
                     axis_index = axis_value.AxisValueRecord[0].AxisIndex
 
-                if ttfont["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "wght":
+                if font["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "wght":
                     weight = value
-                elif ttfont["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "ital":
+                elif font["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "ital":
                     italic = value == 1
 
                 if not (axis_value.Flags & ELIDABLE_AXIS_VALUE_NAME):
                     fullname_axis_value_index[i] = True
 
                     use_in_family_name = True
-                    if ttfont["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "wght":
+                    if font["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "wght":
                         use_in_family_name = value not in (400, 700)
-                    elif ttfont["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "ital":
+                    elif font["STAT"].table.DesignAxisRecord.Axis[axis_index].AxisTag == "ital":
                         use_in_family_name = value not in (0, 1)
 
                     if use_in_family_name:
@@ -306,8 +308,8 @@ class FontParser:
 
         if all(not element for element in fullname_axis_value_index):
             # Fallback if all the element have the flag ELIDABLE_AXIS_VALUE_NAME
-            if hasattr(ttfont['STAT'].table, "ElidedFallbackNameID"):
-                elided_fallback_name = FontParser.get_filtered_names(ttfont['name'].names, platformID=PlatformID.MICROSOFT, nameID=ttfont['STAT'].table.ElidedFallbackNameID)
+            if hasattr(font['STAT'].table, "ElidedFallbackNameID"):
+                elided_fallback_name = FontParser.get_filtered_names(font['name'].names, platformID=PlatformID.MICROSOFT, nameID=font['STAT'].table.ElidedFallbackNameID)
             
                 if elided_fallback_name:
                     fullname = elided_fallback_name
@@ -334,15 +336,17 @@ class FontParser:
         nameID: Optional[NameID] = None, 
         langID: Optional[int] = None
     ) -> List[Name]:
-        """
-        Parameters:
-            names_record (List[NameRecord]): Naming table
-            platformID (Optional[int]): Filtered the names_record by platformID
-            platEncID (Optional[int]): Filtered the names_record by platEncID
-            nameID (Optional[int]): Filtered the names_record by nameID
-            langID (Optional[int]): Filtered the names_record by langID
+        """Retrieve and decode NameRecord objects based on specified filtering criteria.
+        Is it the same criteria has: https://learn.microsoft.com/en-us/typography/opentype/spec/name#name-records
+
+        Args:
+            names_record: A list of NameRecord objects representing the naming table.
+            platformID: Filter the names_record by platformID.
+            platEncID: Filter the names_record by platEncID.
+            nameID: Filter the names_record by nameID.
+            langID: Filter the names_record by langID.
         Returns:
-            A list of the decoded NameRecord
+            A list of the decoded NameRecord objects that have been filtered.
         """
         names: List[Name] = []
 
@@ -363,13 +367,12 @@ class FontParser:
         font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
-        Parameters:
-            font_path (Path): Font path.
-            font_index (int): Font index.
+        Args:
+            font_path: Font path.
+            font_index: Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
         """
-
         font = Face(font_path.open("rb"), font_index)
         is_italic = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_ITALIC"])
         is_glyphs_emboldened = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_BOLD"])
@@ -383,10 +386,10 @@ class FontParser:
         font: TTFont, font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
-        Parameters:
-            font (TTFont): An fontTools object
-            font_path (Path): Font path.
-            font_index (int): Font index.
+        Args:
+            font: An fontTools object
+            font_path: Font path.
+            font_index: Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
         """
@@ -431,10 +434,10 @@ class FontParser:
         font: TTFont, font_path: Path, font_index: int
     ) -> Tuple[bool, bool, int]:
         """
-        Parameters:
-            font (TTFont): An fontTools object
-            font_path (Path): Font path.
-            font_index (int): Font index.
+        Args:
+            font: An fontTools object
+            font_path: Font path.
+            font_index: Font index.
         Returns:
             is_italic, is_glyphs_emboldened, weight
         """
@@ -456,8 +459,8 @@ class FontParser:
     @staticmethod
     def get_symbol_cmap_encoding(face: FT_Face) -> Optional[str]:
         """
-        Parameters:
-            face (FT_Face): An Font face
+        Args:
+            face: An Font face
         Returns:
             The cmap ansi code page encoding.
             If it couldn't guess the encoding, it return None.
@@ -492,19 +495,22 @@ class FontParser:
 
 
     @staticmethod
-    def get_supported_cmaps(ttFont: TTFont, font_path: Path, font_index: int) -> List[CMap]:
+    def get_supported_cmaps(font: TTFont) -> List[CMap]:
         """
+        Retrieve supported CMaps from a TrueType font.
+
         Parameters:
-            font (TTFont): An fontTools object
-            font_path (Path): Font path.
-            font_index (int): Font index.
+            font: A fontTools object representing the font.
         Returns:
-            TODO
+            A list of supported CMaps.
+            - To determine which CMaps are supported, refer to FontParser.get_cmap_encoding().
+            - If any Microsoft CMaps are present, only those will be returned.
+            - If no Microsoft CMaps are found, the method will only Macintosh CMaps if they are present.
         """
         microsoft_cmaps: List[CMap] = []
         macintosh_cmaps: List[CMap] = []
 
-        cmap_tables: List[CmapSubtable] = ttFont["cmap"].tables
+        cmap_tables: List[CmapSubtable] = font["cmap"].tables
 
         for table in cmap_tables:
             encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
@@ -520,12 +526,15 @@ class FontParser:
     @staticmethod
     def get_cmap_encoding(platform_id: int, encoding_id: int) -> Optional[str]:
         """
-        Parameters:
-            platform_id (int): CMAP platform id
-            encoding_id (int): CMAP encoding id
+        Args:
+            platform_id: CMap platform id
+            encoding_id: CMap encoding id
         Returns:
-            The cmap codepoint encoding.
-            If GDI does not support the platform_id and/or platform_encoding_id, return None.
+            The cmap encoding.
+        Notes:
+            - If GDI does not support the platform_id and/or platform_encoding_id, return None.
+            - GDI only supports all encodings for the Microsoft CMap.
+            - For the Macintosh platform, it only supports the platform encoding 1.
         """
         if platform_id in FontParser.CMAP_ENCODING_MAP:
             return FontParser.CMAP_ENCODING_MAP[PlatformID(platform_id)].get(encoding_id, None)

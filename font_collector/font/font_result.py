@@ -6,6 +6,19 @@ from .abc_font_face import ABCFontFace
 __all__ = ["FontResult"]
 
 class FontResult:
+    """Represents the result of font analysis which include mismatch information
+    between the ABCFontFace and a AssStyle
+
+    Attributes:
+        font_face: The font face object.
+        mismatch_bold: Indicates if there is a mismatch in bold style.
+            Unlike faux_bold, it occurs when the weight is too different with
+                the AssStyle weight. 
+            For example, the AssStyle weight could be 400, but the ABCFontFace could be 700,
+                so there wouldn't need faux bold, but there is a weight mismatch.
+        need_faux_bold: Indicates if faux bolding is needed.
+        mismatch_italic: Indicates if there is a mismatch in italic style.
+    """
 
     def __init__(
         self: FontResult,
