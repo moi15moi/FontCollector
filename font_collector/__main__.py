@@ -7,7 +7,7 @@ import logging
 import os
 import shutil
 from .ass.ass_document import AssDocument
-from .font import FontCollection, FontFile, FontLoader, FontResult, VariableFontFace
+from .font import FontCollection, FontFile, FontLoader, FontResult, FontSelectionStrategyLibass, VariableFontFace
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from pathlib import Path
@@ -33,6 +33,7 @@ def main() -> None:
     additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
     additional_fonts.extend(FontLoader.load_additional_fonts(additional_fonts_recursive_path, True))
     font_collection = FontCollection(use_system_font=use_system_font, additional_fonts=additional_fonts)
+    font_strategy = FontSelectionStrategyLibass()
 
     for ass_path in ass_files_path:
         subtitle = AssDocument.from_file(ass_path)
@@ -43,7 +44,7 @@ def main() -> None:
 
         for style, usage_data in used_styles.items():
 
-            font_result = font_collection.get_used_font_by_style(style)
+            font_result = font_collection.get_used_font_by_style(style, font_strategy)
 
             # Did not found the font
             if font_result is None:

@@ -5,6 +5,7 @@ from .abc_font_face import ABCFontFace
 from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
+from .font_selection_strategy import FontSelectionStrategy
 from os.path import getctime
 from typing import Any, Generator, List, Optional, TYPE_CHECKING
 
@@ -86,10 +87,11 @@ class FontCollection:
         raise AttributeError("You cannot set the fonts. If you want to add font, set additional_fonts")
 
 
-    def get_used_font_by_style(self: FontCollection, style: AssStyle) -> Optional[FontResult]:
+    def get_used_font_by_style(self: FontCollection, style: AssStyle, strategy: FontSelectionStrategy) -> Optional[FontResult]:
         """
         Args:
             style: An AssStyle
+            strategy: The strategy used to select the best font face that corresponds to the style.
         Returns:
             The best font that matches an AssStyle based on the GDI algorithm.
             If no fonts are found, it returns None.
@@ -98,19 +100,9 @@ class FontCollection:
         selected_font_face: Optional[ABCFontFace] = None
         for font_file in self.fonts:
             for font_face in font_file.font_faces:
-                score = float('inf')
-                exact_name_match = False
+                score = strategy.get_similarity_score(font_face, style)
 
-                family_name_match = any(style.fontname.lower() == family_name.value.lower() for family_name in font_face.family_names)
-
-                if family_name_match:
-                    score = font_face.get_similarity_score(style)
-                else:
-                    exact_name_match = any(style.fontname.lower() == exact_name.value.lower() for exact_name in font_face.exact_names)
-                    if exact_name_match:
-                        score = font_face.get_similarity_score(style)
-                
-                if family_name_match or exact_name_match:
+                if score < float("inf"):
                     if selected_font_face is None:
                         score_min = score
                         selected_font_face = font_face
@@ -130,14 +122,13 @@ class FontCollection:
                         #   On Windows, if the user has called AddFontResourceW to install a font, the creation date of the file is not the same as when it has been installed.
                         #   On macOS, the same problem occurs with CTFontManagerRegisterFontsForURL.
                         # But, this use case is really rare, so it is almost impossible to happen and anyways, there is nothing we can do to avoid it.
-                        #if selected_font is None or getctime(font.filename) < getctime(selected_font.filename):
                         if getctime(font_face.font_file.filename) < getctime(selected_font_face.font_file.filename):
                             selected_font_face = font_face
 
         if selected_font_face is None:
             return None
 
-        need_faux_bold = selected_font_face.need_faux_bold(style.weight)
+        need_faux_bold = strategy.need_faux_bold(selected_font_face, style)
         mismatch_bold = abs(selected_font_face.weight - style.weight) >= 150
         mismatch_italic = selected_font_face.is_italic != style.italic
 

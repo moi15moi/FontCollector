@@ -231,46 +231,6 @@ class ABCFontFace(ABC):
                         match_level = MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT
 
         return best_name
-    
-
-    def need_faux_bold(self: ABCFontFace, style_weight: int) -> bool:
-        """
-        Args:
-            style_weight: The weight of a .ass style
-        Returns:
-            True if the font face needs to have faux bold, otherwise, false.
-        """
-        return style_weight > self.weight + 150 and not self.is_glyph_emboldened
-
-
-    def get_similarity_score(self: ABCFontFace, style: AssStyle) -> float:
-        """
-        Args:
-            style: An AssStyle
-        Returns:
-            A matching score - the lower, the better. If it returns 0, it means it is a perfect match.
-        """
-        score = 0.0
-
-        if style.italic and not self.is_italic:
-            score += 1
-        elif not style.italic and self.is_italic:
-            score += 4
-
-        weight_compare = self.weight
-        if self.need_faux_bold(style.weight):
-            weight_compare += 120
-
-        score += (73 * abs(weight_compare - style.weight)) // 256
-
-        if self.font_type not in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION):
-            score += 9000
-        
-        from .variable_font_face import VariableFontFace
-        if isinstance(self, VariableFontFace):
-            score += 0.5
-
-        return score
 
 
     def get_missing_glyphs(

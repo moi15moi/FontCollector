@@ -5,6 +5,8 @@ from .font_collection import *
 from .font_file import *
 from .font_loader import *
 from .font_result import *
+from .font_selection_strategy import *
+from .font_selection_strategy_libass import *
 from .font_type import *
 from .name import *
 from .variable_font_face import *
