@@ -5,7 +5,7 @@ from time import sleep
 from typing import Hashable
 from langcodes import Language
 import pytest
-from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType, FontResult, Name, NormalFontFace, VariableFontFace
+from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType, FontResult, FontSelectionStrategyLibass, Name, NormalFontFace, VariableFontFace
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -69,9 +69,10 @@ def test_get_used_font_by_style():
     additional_fonts = FontLoader.load_additional_fonts([fonts_path])            
 
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
+    strategy = FontSelectionStrategyLibass()
 
     ass_style = AssStyle("Raleway", 900, True)
-    font_result = font_collection.get_used_font_by_style(ass_style)
+    font_result = font_collection.get_used_font_by_style(ass_style, strategy)
 
     # VSFilter prefer to match to the weight then the italic.
     # If it would have prefer to match the italic, the weight would be 700 and italic would be true.
@@ -79,7 +80,7 @@ def test_get_used_font_by_style():
     assert font_result.font_face.is_italic == False
 
     ass_style = AssStyle("Font name that isn't in the FontCollection", 900, True)
-    font_result = font_collection.get_used_font_by_style(ass_style)
+    font_result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert font_result == None
 
     # Test if it match exact_names
@@ -88,7 +89,7 @@ def test_get_used_font_by_style():
     font_file = FontFile(font_mac_platform, font_faces)
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=[font_file])
     ass_style = AssStyle("exact", 900, True)
-    font_result = font_collection.get_used_font_by_style(ass_style)
+    font_result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert font_result == FontResult(font_faces[0], True, True, True)
 
     # FontFile with same attributes (except last_loaded_time). In this case, the algorithm will use the older font
@@ -105,7 +106,7 @@ def test_get_used_font_by_style():
     additional_fonts = [sf_pro_display_temp_font, sf_pro_display_italic_temp_font]            
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
     ass_style = AssStyle("SF Pro Display", 400, False)
-    result = font_collection.get_used_font_by_style(ass_style)
+    result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert result.font_face == sf_pro_display_temp_font.font_faces[0]
     
     os.remove(sf_pro_display_italic_temp)
@@ -122,7 +123,7 @@ def test_get_used_font_by_style():
     sf_pro_display_italic_temp_font_2 = FontFile.from_font_path(sf_pro_display_italic_temp_2)
     additional_fonts = [sf_pro_display_temp_font_2, sf_pro_display_italic_temp_font_2]            
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
-    result = font_collection.get_used_font_by_style(ass_style)
+    result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert result.font_face == sf_pro_display_italic_temp_font.font_faces[0]
 
     os.remove(sf_pro_display_temp_2)
@@ -151,9 +152,10 @@ def test_get_used_font_by_style_otf_vs_ttf():
 
     additional_fonts = FontLoader.load_additional_fonts([alivia_generated_font_path, alivia_otf_font_path])
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
+    strategy = FontSelectionStrategyLibass()
 
     ass_style = AssStyle("Alivia", 400, False)
-    font_result = font_collection.get_used_font_by_style(ass_style)
+    font_result = font_collection.get_used_font_by_style(ass_style, strategy)
 
     assert font_result.font_face.font_file.filename == alivia_generated_font_path
 
