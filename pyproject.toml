@@ -41,8 +41,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = { attr = "font_collector._version.__version__" }
 
-[tool.setuptools]
-packages = ["font_collector"]
+[tool.setuptools.packages.find]
+include = ["font_collector*"]
 
 [tool.mypy]
 warn_unused_configs = true
