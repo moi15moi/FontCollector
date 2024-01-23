@@ -1,4 +1,3 @@
-import os
 from font_collector import PlatformID
 from font_collector.font.cmap import CMap
 from typing import Hashable

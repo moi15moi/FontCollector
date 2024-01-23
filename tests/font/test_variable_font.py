@@ -1,9 +1,8 @@
-import collections
 import os
 from pathlib import Path
 import pytest
 import string
-from font_collector import VariableFontFace, FontFile, FontLoader, FontCollection, FontType, NormalFontFace, InvalidVariableFontFaceException, Name
+from font_collector import VariableFontFace, FontFile, FontLoader, FontType, NormalFontFace, InvalidVariableFontFaceException, Name
 from langcodes import Language
 from typing import Hashable
 

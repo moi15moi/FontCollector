@@ -1,7 +1,4 @@
-import collections
 import os
-import pytest
-import string
 from font_collector import FontResult, FontType, Name, NormalFontFace
 from langcodes import Language
 from typing import Hashable

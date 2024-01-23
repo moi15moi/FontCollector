@@ -1,10 +1,8 @@
 import ast
-from typing import Hashable
-
 import pytest
+import re
 from font_collector import UsageData
 
-import re
 def test__init__():
     characters_used = {'A'}
     lines = {1, 2}

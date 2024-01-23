@@ -1,6 +1,6 @@
 import pytest
-from langcodes import Language
 from font_collector.font.chinese_variant import ChineseVariant
+from langcodes import Language
 
 
 def test_from_lang_code():

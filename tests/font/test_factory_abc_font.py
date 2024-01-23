@@ -1,6 +1,5 @@
 import collections
 import os
-
 import pytest
 from font_collector import FactoryABCFontFace, FontType, Name, NormalFontFace, VariableFontFace, InvalidVariableFontFaceException
 from langcodes import Language

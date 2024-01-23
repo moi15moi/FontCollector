@@ -1,12 +1,10 @@
-import collections
 import os
-from pathlib import Path
-import shutil
-from time import time
 import pytest
-import string
+import shutil
 from font_collector import FontFile, FontType, Name, NormalFontFace, VariableFontFace
 from langcodes import Language
+from pathlib import Path
+from time import time
 from typing import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

@@ -1,15 +1,10 @@
-import collections
 import json
 import os
-from pathlib import Path
+import pytest
 import shutil
 import subprocess
-from time import time
-import pytest
-import string
+from pathlib import Path
 from font_collector import Mkvpropedit, FontFile
-from langcodes import Language
-from typing import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
