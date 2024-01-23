@@ -44,9 +44,9 @@ class ABCFontFace(ABC):
         is_italic: True if the font face is italic, otherwise False.
         is_glyph_emboldened: True if the font face has emboldened glyphs, otherwise False.
         font_type: The type of font face.
-        font_file: The path to the font file.
+        font_file: The font file associated with this font face
     """
-
+    # Make mypy happy
     __font_index: int
     __family_names: List[Name]
     __exact_names: List[Name]
@@ -99,7 +99,7 @@ class ABCFontFace(ABC):
     @abstractmethod
     def link_face_to_a_font_file(self: ABCFontFace, value: FontFile) -> None:
         # Since there is a circular reference between FontFile and this class, we need to be able to set the value
-        self._font_file = value
+        pass
 
     @abstractmethod
     def __eq__(self: ABCFontFace, other: object) -> bool:

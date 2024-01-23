@@ -27,8 +27,8 @@ _logger.addHandler(_handler)
 
 def set_loglevel(level: int) -> None:
     """
-    Parameters:
-        level (int): An level from logging module (For more detail, see: https://docs.python.org/3/library/logging.html#logging-levels)
+    Args:
+        level: An level from logging module (For more detail, see: https://docs.python.org/3/library/logging.html#logging-levels)
     """
     _logger.setLevel(level)
     _handler.setLevel(level)

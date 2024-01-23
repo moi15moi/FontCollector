@@ -20,6 +20,18 @@ if TYPE_CHECKING:
 __all__ = ["VariableFontFace"]
 
 class VariableFontFace(ABCFontFace):
+    """Represents a variable font face of a font file.
+    A variable font face is a face where the glyph can have variations along certain axes.
+    For more detail about variable font, see: https://learn.microsoft.com/en-us/typography/opentype/spec/otvaroverview
+
+    For the list of Attributes, see the doc of: ABCFontFace
+    But, this class also has some specific attribute:
+        families_prefix: This is the equivalent of family_names for NormalFontFace. ex: "Alegreya"
+        families_suffix: The family_names suffix. ex: "Medium"
+        exact_names_suffix: The exact_names suffix. ex: "Medium Italic"
+        named_instance_coordinates: The value of each AxisTag ex: {"wght": 800.0}
+            For more detail, see: https://learn.microsoft.com/en-us/typography/opentype/spec/fvar#instancerecord
+    """
 
     def __init__(
         self: VariableFontFace,
@@ -52,6 +64,9 @@ class VariableFontFace(ABCFontFace):
 
     @property
     def family_names(self: VariableFontFace) -> List[Name]:
+        """
+        Computed property that generates a list of family names based on families_prefix and families_suffix
+        """
         family_names: List[Name] = []
         if len(self.families_suffix) == 0:
             family_names = self.families_prefix
@@ -70,6 +85,9 @@ class VariableFontFace(ABCFontFace):
 
     @property
     def exact_names(self: VariableFontFace) -> List[Name]:
+        """
+        Computed property that generates a list of family names based on families_prefix and exact_names_suffix
+        """
         exact_names: List[Name] = []
         for item in product(*[self.families_prefix, self.exact_names_suffix]):
             value = " ".join(element.value for element in item).rstrip(" ")
@@ -133,14 +151,14 @@ class VariableFontFace(ABCFontFace):
         See the doc of _get_names_from_lang in abc_font
         """
         return self._get_names_from_lang(self.families_prefix, lang_code, exact_match)
-    
+
+
     def get_best_family_prefix_from_lang(self) -> Name:
         """
         See the doc of _get_best_names_from_lang
         """
         return self._get_best_names_from_lang(self.families_prefix)
 
-    
 
     def variable_font_to_collection(self: VariableFontFace, save_path: Path, cache_generated_font: bool = True) -> FontFile:
         """
@@ -226,6 +244,7 @@ class VariableFontFace(ABCFontFace):
             other.font_index, other.families_prefix, other.families_suffix, other.exact_names_suffix, other.weight, other.is_italic, other.font_type, other.named_instance_coordinates
         )
 
+
     def __hash__(self: VariableFontFace) -> int:
         return hash(
             (
@@ -239,6 +258,7 @@ class VariableFontFace(ABCFontFace):
                 frozenset(self.named_instance_coordinates.items())
             )
         )
+
 
     def __repr__(self: VariableFontFace) -> str:
         return f'{self.__class__.__name__}(Font index="{self.font_index}", Family names="{self.family_names}", Exact names="{self.exact_names}", Weight="{self.weight}", Italic="{self.is_italic}", Glyph emboldened="{self.is_glyph_emboldened}", Font type="{self.font_type.name}", Named instance coordinates="{self.named_instance_coordinates}")'

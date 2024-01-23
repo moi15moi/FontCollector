@@ -49,8 +49,13 @@ class NameID(IntEnum):
 
 
 class Name:
-    value: str
-    lang_code: Language
+    """Represents a font name with associated language information.
+
+    Attributes:
+        value: The actual name value
+        lang_code: The language code associated with the name.
+            In some very specific case, the lang_code can be "und" (undefined)
+    """
 
     def __init__(
         self: Name,
@@ -64,8 +69,8 @@ class Name:
     @classmethod
     def from_name_record(cls: Type[Name], name_record: NameRecord) -> Name:
         """
-        Parameters:
-            name_record (NameRecord): Name record from the naming table
+        Args:
+            name_record: Name record from the naming table
         Returns:
             An Name instance.
         """
@@ -78,8 +83,8 @@ class Name:
     @staticmethod
     def get_name_record_encoding(name: NameRecord) -> Optional[str]:
         """
-        Parameters:
-            names (NameRecord): Name record from the naming record
+        Args:
+            names: Name record from the naming table
         Returns:
             The NameRecord encoding name.
             If GDI does not support the NameRecord, it return None.
@@ -110,8 +115,8 @@ class Name:
     @staticmethod
     def get_decoded_name_record(name: NameRecord) -> str:
         """
-        Parameters:
-            names (NameRecord): Name record from the naming table
+        Args:
+            names: Name record from the naming table
         Returns:
             The decoded name
         """
@@ -134,8 +139,8 @@ class Name:
     @staticmethod
     def get_lang_code_of_namerecord(name: NameRecord) -> str:
         """
-        Parameters:
-            names (NameRecord): Name record from the naming table
+        Args:
+            names: Name record from the naming table
         Returns:
             The IETF BCP-47 code of the NameRecord. If the lang code isn't found, it return "und".
         """
@@ -145,9 +150,9 @@ class Name:
     @staticmethod
     def get_lang_code_from_platform_lang_id(platform_id: PlatformID, lang_id: int = -1) -> str:
         """
-        Parameters:
-            platform_id (PlatformID): An platform id.
-            lang_id (int): An language id of an platform. See: https://learn.microsoft.com/en-us/typography/opentype/spec/name
+        Args:
+            platform_id: An platform id.
+            lang_id: An language id of an platform. See: https://learn.microsoft.com/en-us/typography/opentype/spec/name
                 For the unicode platform, you don't need to give the lang_id
         Returns:
             The IETF BCP-47 code corresponding to the language id. If the lang code isn't found, it return "und".
@@ -162,9 +167,9 @@ class Name:
 
     def get_lang_code_platform_code(self: Name, platform_id: PlatformID, fallback_to_language: bool = False) -> int:
         """
-        Parameters:
-            platform_id (PlatformID): The platform id of which you wanna retrieve the lang_code
-            fallback_to_language (bool): If the platform doesn't support the language, try to only match the a language with a different regional (ex: en-US with en-GB)
+        Args:
+            platform_id: The platform id of which you wanna retrieve the lang_code
+            fallback_to_language: If the platform doesn't support the language, try to only match the a language with a different regional (ex: en-US with en-GB)
         Returns:
             The language code corresponding to the platform:
                 - https://learn.microsoft.com/en-us/typography/opentype/spec/name#macintosh-language-ids

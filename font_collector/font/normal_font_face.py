@@ -12,6 +12,12 @@ if TYPE_CHECKING:
 __all__ = ["NormalFontFace"]
 
 class NormalFontFace(ABCFontFace):
+    """Represents a normal font face of a font file.
+    A normal font face can also be called a static face.
+    The vast majority of font are this kind of type.
+
+    For the list of Attributes, see the doc of: ABCFontFace
+    """
 
     def __init__(
         self: NormalFontFace,

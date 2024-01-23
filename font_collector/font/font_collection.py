@@ -93,7 +93,7 @@ class FontCollection:
             style: An AssStyle
             strategy: The strategy used to select the best font face that corresponds to the style.
         Returns:
-            The best font that matches an AssStyle based on the GDI algorithm.
+            The best font that matches an AssStyle based on the strategy algorithm.
             If no fonts are found, it returns None.
         """
         score_min = float('inf')

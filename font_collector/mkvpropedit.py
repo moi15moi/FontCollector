@@ -12,13 +12,18 @@ _logger = logging.getLogger(__name__)
 
 
 class Mkvpropedit:
+    """
+    This class is a collection of static methods that will help
+    the user to interact with mkvpropedit.
+    """
+
     path: Optional[str] = which("mkvpropedit")
 
     @staticmethod
     def is_mkv(filename: Path) -> bool:
         """
-        Parameters:
-            filename (Path): The file name. Example: "example.mkv"
+        Args:
+            filename: The file name.
         Returns:
             True if the mkv is an mkv file, false in any others cases
         """
@@ -32,10 +37,10 @@ class Mkvpropedit:
 
     @staticmethod
     def delete_fonts_of_mkv(mkv_filename: Path) -> None:
-        """
-        Delete all mkv attached font
-        Parameters:
-            mkvFileName (Path): Path to mkvFile
+        """Delete all mkv attached font
+
+        Args:
+            mkv_filename: Path to mkv file.
         """
 
         if Mkvpropedit.path is None:
@@ -83,10 +88,11 @@ class Mkvpropedit:
         fonts_file: Iterable[FontFile],
         mkv_filename: Path,
     ) -> None:
-        """
-        Parameters:
-            font_collection (Sequence[Font]): All font file that will be merge to the mkv
-            mkv_filename (Path): Mkv file path
+        """Merge font file into the mkv.
+
+        Args:
+            fonts_file: All font file that will be merge to the mkv
+            mkv_filename: Path to mkv file.
         """
         if Mkvpropedit.path is None:
             raise FileNotFoundError(
