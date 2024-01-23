@@ -141,7 +141,7 @@ def test_get_filtered_names():
 
 
 def test_get_font_italic_bold_property_with_freetype():
-    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.ttf"))
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.TTF"))
     assert (False, False, 400) == FontParser.get_font_italic_bold_property_with_freetype(font_path, 0)
 
     # Invalid font_path
@@ -204,7 +204,7 @@ def test_get_symbol_cmap_encoding():
 
 def test_get_supported_cmaps():
     # This font contain 1 valid mac cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.ttf")
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
     font = TTFont(font_path)
     cmaps = FontParser.get_supported_cmaps(font)
     assert cmaps == [CMap(1, 0)]

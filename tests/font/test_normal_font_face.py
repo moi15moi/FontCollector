@@ -117,7 +117,7 @@ def test_link_face_to_a_font_file():
 
 
 def test_font_get_missing_glyphs_cmap_encoding_0():
-    font_cmap_encoding_0 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.TTF")
+    font_cmap_encoding_0 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf")
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
     assert len(font_file.font_faces) == 1
@@ -136,7 +136,7 @@ def test_font_get_missing_glyphs_cmap_encoding_0():
 
 
 def test_font_get_missing_glyphs_cmap_encoding_1():
-    font_cmap_encoding_1 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.TTF")
+    font_cmap_encoding_1 = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf")
     font_file = FontFile.from_font_path(font_cmap_encoding_1)
 
     assert len(font_file.font_faces) == 1
