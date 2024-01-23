@@ -4,6 +4,7 @@ import shutil
 from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType, FontResult, FontSelectionStrategyLibass, Name, NormalFontFace, VariableFontFace
 from langcodes import Language
 from pathlib import Path
+from time import sleep
 from typing import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -98,6 +99,7 @@ def test_get_used_font_by_style():
     sf_pro_display_italic_temp = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-BoldItalic - Temp.ttf"))
 
     shutil.copy2(sf_pro_display, sf_pro_display_temp)
+    sleep(1)
     shutil.copy2(sf_pro_display_italic, sf_pro_display_italic_temp)
 
     sf_pro_display_temp_font = FontFile.from_font_path(sf_pro_display_temp)
@@ -116,6 +118,7 @@ def test_get_used_font_by_style():
     sf_pro_display_italic_temp_2 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "SFProDisplay-BoldItalic - Temp 2.ttf"))
 
     shutil.copy2(sf_pro_display_italic, sf_pro_display_italic_temp_2)
+    sleep(1)
     shutil.copy2(sf_pro_display, sf_pro_display_temp_2)
 
     sf_pro_display_temp_font_2 = FontFile.from_font_path(sf_pro_display_temp_2)
