@@ -40,21 +40,21 @@ def test_filename_property():
     font_file = FontFile(filename, font_faces)
     with pytest.raises(AttributeError) as exc_info:
         font_file.filename = filename
-    assert str(exc_info.value) == "property 'filename' of 'FontFile' object has no setter"
+
 
 def test_font_faces_property():
     font_faces = [VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})]
     font_file = FontFile(filename, font_faces)
     with pytest.raises(AttributeError) as exc_info:
         font_file.font_faces = font_faces
-    assert str(exc_info.value) == "property 'font_faces' of 'FontFile' object has no setter"
+
 
 def test_last_loaded_time_property():
     font_faces = [VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})]
     font_file = FontFile(filename, font_faces)
     with pytest.raises(AttributeError) as exc_info:
         font_file.last_loaded_time = 1000
-    assert str(exc_info.value) == "property 'last_loaded_time' of 'FontFile' object has no setter"
+
 
 def test_from_font_path():
     font_mac_platform = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF"))

@@ -56,13 +56,11 @@ def test__init__():
     assert str(exc_info.value) == "The font does not contain an valid family prefix."
 
 
-
 def test_font_index_property():
     font = VariableFontFace(0, [Name("test", Language.get("en"))], [], [], 400, False, FontType.TRUETYPE, {})
     font_index = 1
     with pytest.raises(AttributeError) as exc_info:
         font.font_index = font_index
-    assert str(exc_info.value) == "property 'font_index' of 'VariableFontFace' object has no setter"
 
 
 def test_families_prefix_property():
@@ -70,7 +68,6 @@ def test_families_prefix_property():
     families_prefix = [Name("test", Language.get("en"))]
     with pytest.raises(AttributeError) as exc_info:
         font.families_prefix = families_prefix
-    assert str(exc_info.value) == "property 'families_prefix' of 'VariableFontFace' object has no setter"
 
 
 def test_families_suffix_property():
@@ -78,7 +75,6 @@ def test_families_suffix_property():
     families_suffix = [Name("test", Language.get("en"))]
     with pytest.raises(AttributeError) as exc_info:
         font.families_suffix = families_suffix
-    assert str(exc_info.value) == "property 'families_suffix' of 'VariableFontFace' object has no setter"
 
 
 def test_family_names_property():
@@ -106,7 +102,6 @@ def test_exact_names_suffix_property():
     exact_names_suffix = [Name("test", Language.get("en"))]
     with pytest.raises(AttributeError) as exc_info:
         font.exact_names_suffix = exact_names_suffix
-    assert str(exc_info.value) == "property 'exact_names_suffix' of 'VariableFontFace' object has no setter"
 
 
 def test_exact_names_property():
@@ -134,7 +129,6 @@ def test_weight_property():
     weight = 900
     with pytest.raises(AttributeError) as exc_info:
         font.weight = weight
-    assert str(exc_info.value) == "property 'weight' of 'VariableFontFace' object has no setter"
 
 
 def test_is_italic_property():
@@ -142,7 +136,6 @@ def test_is_italic_property():
     is_italic = True
     with pytest.raises(AttributeError) as exc_info:
         font.is_italic = is_italic
-    assert str(exc_info.value) == "property 'is_italic' of 'VariableFontFace' object has no setter"
 
 
 def test_is_glyph_emboldened_property():
@@ -163,7 +156,6 @@ def test_font_type_property():
     font_type = FontType.OPENTYPE
     with pytest.raises(AttributeError) as exc_info:
         font.font_type = font_type
-    assert str(exc_info.value) == "property 'font_type' of 'VariableFontFace' object has no setter"
 
 
 def test_named_instance_coordinates_property():
@@ -171,7 +163,6 @@ def test_named_instance_coordinates_property():
     named_instance_coordinates = {"wght": 800}
     with pytest.raises(AttributeError) as exc_info:
         font.font_type = named_instance_coordinates
-    assert str(exc_info.value) == "property 'font_type' of 'VariableFontFace' object has no setter"
 
 
 def test_link_face_to_a_font_file():

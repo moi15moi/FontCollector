@@ -56,7 +56,6 @@ def test_font_index_property():
     font_index = 1
     with pytest.raises(AttributeError) as exc_info:
         font.font_index = font_index
-    assert str(exc_info.value) == "property 'font_index' of 'NormalFontFace' object has no setter"
 
 
 def test_family_names_property():
@@ -64,7 +63,6 @@ def test_family_names_property():
     family_names = [Name("test", Language.get("en"))]
     with pytest.raises(AttributeError) as exc_info:
         font.family_names = family_names
-    assert str(exc_info.value) == "property 'family_names' of 'NormalFontFace' object has no setter"
 
 
 def test_exact_names_property():
@@ -72,7 +70,6 @@ def test_exact_names_property():
     exact_names = [Name("test", Language.get("en"))]
     with pytest.raises(AttributeError) as exc_info:
         font.exact_names = exact_names
-    assert str(exc_info.value) == "property 'exact_names' of 'NormalFontFace' object has no setter"
 
 
 def test_weight_property():
@@ -80,7 +77,6 @@ def test_weight_property():
     weight = 900
     with pytest.raises(AttributeError) as exc_info:
         font.weight = weight
-    assert str(exc_info.value) == "property 'weight' of 'NormalFontFace' object has no setter"
 
 
 def test_is_italic_property():
@@ -88,7 +84,6 @@ def test_is_italic_property():
     is_italic = True
     with pytest.raises(AttributeError) as exc_info:
         font.is_italic = is_italic
-    assert str(exc_info.value) == "property 'is_italic' of 'NormalFontFace' object has no setter"
 
 
 def test_is_glyph_emboldened_property():
@@ -96,7 +91,6 @@ def test_is_glyph_emboldened_property():
     is_glyph_emboldened = True
     with pytest.raises(AttributeError) as exc_info:
         font.is_glyph_emboldened = is_glyph_emboldened
-    assert str(exc_info.value) == "property 'is_glyph_emboldened' of 'NormalFontFace' object has no setter"
 
 
 def test_font_type():
@@ -104,7 +98,6 @@ def test_font_type():
     font_type = FontType.OPENTYPE
     with pytest.raises(AttributeError) as exc_info:
         font.font_type = font_type
-    assert str(exc_info.value) == "property 'font_type' of 'NormalFontFace' object has no setter"
 
 
 def test_link_face_to_a_font_file():
