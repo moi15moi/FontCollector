@@ -110,34 +110,11 @@ def test_get_var_font_family_prefix():
     assert FontParser.get_var_font_family_prefix([name_record_designer], platform_id=3) == []
 
 """
-def test_get_distance_between_axis_value_and_coordinates():
-    assert False
-
-def test_get_axis_value_from_coordinates():
-    font = TTFont(os.path.join(dir_path, "variable font tests", "Test #1", "AdventPro - Original.ttf"))
-
-    print(FontParser.get_axis_value_from_coordinates(font, font["fvar"].instances[0].coordinates))
-
-    result = FontParser.get_axis_value_from_coordinates(font, font["fvar"].instances[0].coordinates)
-
-    for axis_value in result:
-        print(axis_value.Value)
-        print(axis_value.AxisIndex)
-        
-
-    print(font["fvar"].instances[0].coordinates)
-
-    assert False
-
-def test_get_axis_value_table_property():
-    #font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "Test #11.ttf")
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #11", "AdventPro - Original.ttf")
-    font = TTFont(font_path)
-
-    
-    print(FontParser.get_axis_value_table_property(font, font["STAT"].table.AxisValueArray.AxisValue))
-    # Test font without ElidedFallbackNameID
-    assert False
+TODO
+Do test for
+    - get_distance_between_axis_value_and_coordinates
+    - get_axis_value_from_coordinates
+    - get_axis_value_table_property
 """
 
 def test_get_filtered_names():
