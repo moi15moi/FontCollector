@@ -24,10 +24,27 @@ jobs:
     - name: Install Python requirements
       run: pip install --upgrade --upgrade-strategy eager .
 
+    - name: Install platform-specific requirements (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install mkvtoolnix
+
+    - name: Install platform-specific requirements (macOS)
+      if: matrix.os == 'macos-latest'
+      run: brew install mkvtoolnix
+
+    - name: Install platform-specific requirements (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install mkvtoolnix
+        echo '##[set-output name=PATH;]${env:PATH};${env:ChocolateyInstall}\bin'
+
     - name: Install pytest
       run: |
         pip install pytest
 
     - name: Run tests
       run: |
+        mkvpropedit -h
         pytest
