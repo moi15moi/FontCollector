@@ -24,6 +24,28 @@ jobs:
     - name: Install Python requirements
       run: pip install --upgrade --upgrade-strategy eager .
 
+    - name: Install platform-specific requirements (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install mkvtoolnix
+
+    - name: Install platform-specific requirements (macOS)
+      if: runner.os == 'macOS'
+      run: brew install mkvtoolnix
+
+    - name: Install platform-specific requirements (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install mkvtoolnix --no-progress --yes
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+        refreshenv
+        $mkvmergePath = (Get-Command mkvmerge).Source
+        $mkvtoolnixPath = Split-Path -Path $mkvmergePath -Parent
+        echo $mkvtoolnixPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      # We need to conserve mkvtoolnix in the PATH env variable.
+      # From https://stackoverflow.com/a/73981698/15835974
+
     - name: Install pytest
       run: |
         pip install pytest
