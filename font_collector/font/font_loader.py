@@ -38,7 +38,7 @@ class FontLoader:
         Note: If the cache file is invalid, the file will be deleted
 
         Args:
-            cache_file (Path): The path to the font cache file.
+            cache_file: The path to the font cache file.
         Returns:
             A list of FontFile objects representing the cached fonts.
         """
