@@ -33,8 +33,8 @@ __all__ = ["ABCAssDocument"]
 
 class ABCAssDocument(ABC):
     """
-    You can extend this class.
-    You can inspire yourself from ass_document.
+    You can extend this class. For an example, see the ass_document.py file.
+    This class is used to parse an .ass file and get all the styles it uses.
     """
 
     @abstractmethod
