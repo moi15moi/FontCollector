@@ -1,14 +1,21 @@
 import logging
 import subprocess
 from .font.font_file import FontFile
+from enum import IntEnum
 from os import path
 from pathlib import Path
 from shutil import which
 from typing import Iterable, Optional
 
 __all__ = ["Mkvpropedit"]
-
 _logger = logging.getLogger(__name__)
+
+
+class MkvpropeditExitCode(IntEnum):
+    # From https://mkvtoolnix.download/doc/mkvpropedit.html#d4e1266
+    SUCCESS = 0
+    WARNING = 1
+    ERROR = 2
 
 
 class Mkvpropedit:
@@ -34,6 +41,7 @@ class Mkvpropedit:
         with open(filename, "rb") as f:
             # From https://en.wikipedia.org/wiki/List_of_file_signatures
             return f.read(4) == b"\x1a\x45\xdf\xa3"
+
 
     @staticmethod
     def delete_fonts_of_mkv(mkv_filename: Path) -> None:
@@ -69,19 +77,17 @@ class Mkvpropedit:
         ]
 
         output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
+        exit_code = MkvpropeditExitCode(output.returncode)
 
-        if output.returncode == 2:
+        if exit_code == MkvpropeditExitCode.ERROR:
             raise OSError(
                 f"mkvpropedit reported an error when deleting the font in the mkv: {output.stdout}."
             )
-        elif output.returncode == 1:
+        elif output.returncode == MkvpropeditExitCode.WARNING:
             _logger.warning(f"mkvpropedit reported an warning when deleting the font in the mkv '{output.stdout}'.")
-        elif output.returncode == 0:
+        elif output.returncode == MkvpropeditExitCode.SUCCESS:
             _logger.info(f'Successfully deleted fonts in mkv "{mkv_filename}.')
-        else:
-            raise OSError(
-                f"mkvpropedit reported the returncode \"{output.returncode}\" which isn't supported."
-            )
+
 
     @staticmethod
     def merge_fonts_into_mkv(
@@ -109,18 +115,15 @@ class Mkvpropedit:
 
         for font_file in fonts_file:
             mkvpropedit_args.extend(['--add-attachment', str(font_file.filename.resolve())])
-        
-        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
 
-        if output.returncode == 2:
+        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
+        exit_code = MkvpropeditExitCode(output.returncode)
+
+        if exit_code == MkvpropeditExitCode.ERROR:
             raise OSError(
                 f"mkvpropedit reported an error when merging font into an mkv: {output.stdout}"
             )
-        elif output.returncode == 1:
+        elif output.returncode == MkvpropeditExitCode.WARNING:
             _logger.warning(f'mkvpropedit reported an warning when merging font into an mkv "{mkv_filename}"')
-        elif output.returncode == 0:
+        elif output.returncode == MkvpropeditExitCode.SUCCESS:
             _logger.info(f'Successfully merged fonts into mkv "{mkv_filename}"')
-        else:
-            raise OSError(
-                f"mkvpropedit reported the returncode \"{output.returncode}\" which isn't supported."
-            )
