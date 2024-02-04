@@ -77,14 +77,15 @@ def main() -> None:
     fonts_file_found: Set[FontFile] = set()
 
     for font_result in font_results:
+        if font_result.font_face.font_file is None:
+            raise ValueError(f"This font_face \"{font_result.font_face}\" isn't linked to any FontFile.")
+
         if convert_variable_to_collection and isinstance(font_result.font_face, VariableFontFace):
             font_name = font_result.font_face.get_best_family_prefix_from_lang().value
             font_filename = Path(os.path.join(output_directory, f"{font_name}.ttc"))
             generated_font_file = font_result.font_face.variable_font_to_collection(font_filename)
             fonts_file_found.add(generated_font_file)
         else:
-            if font_result.font_face.font_file is None:
-                raise ValueError(f"This font_face \"{font_result.font_face.font_file}\" isn't linked to any FontFile.")
             fonts_file_found.add(font_result.font_face.font_file)
 
     if mkv_path is not None:
