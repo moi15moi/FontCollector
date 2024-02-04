@@ -5,7 +5,7 @@ from .abc_font_face import ABCFontFace
 from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
-from .font_selection_strategy import FontSelectionStrategy
+from .selection_strategy import FontSelectionStrategy
 from os.path import getctime
 from typing import Any, Generator, List, Optional, TYPE_CHECKING
 

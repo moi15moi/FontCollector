@@ -1,7 +1,19 @@
 import os
 import pytest
 import shutil
-from font_collector import AssStyle, FontFile, FontCollection, FontLoader, FontType, FontResult, FontSelectionStrategyLibass, Name, NormalFontFace, VariableFontFace
+from font_collector import (
+    AssStyle,
+    FontFile,
+    FontCollection,
+    FontLoader,
+    FontType,
+    FontResult,
+    FontSelectionStrategyLibass,
+    FontSelectionStrategyVSFilter,
+    Name,
+    NormalFontFace,
+    VariableFontFace
+)
 from langcodes import Language
 from pathlib import Path
 from time import sleep
@@ -148,13 +160,16 @@ def test_get_used_font_by_style_otf_vs_ttf():
     # Important, we create the otf file before the ttf file
     with open(alivia_otf_font_path, 'wb') as file:
         file.write(alivia_otf_content)
+    
+    # Be sure that the 2 fonts doesn't have exactly the same creation time
+    sleep(1)
 
     with open(alivia_generated_font_path, 'wb') as file:
         file.write(alivia_generated_content)
 
     additional_fonts = FontLoader.load_additional_fonts([alivia_generated_font_path, alivia_otf_font_path])
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
-    strategy = FontSelectionStrategyLibass()
+    strategy = FontSelectionStrategyVSFilter()
 
     ass_style = AssStyle("Alivia", 400, False)
     font_result = font_collection.get_used_font_by_style(ass_style, strategy)

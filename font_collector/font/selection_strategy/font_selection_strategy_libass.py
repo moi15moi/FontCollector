@@ -1,5 +1,5 @@
-from ..ass.ass_style import AssStyle
-from .abc_font_face import ABCFontFace
+from ...ass.ass_style import AssStyle
+from ..abc_font_face import ABCFontFace
 from .font_selection_strategy import FontSelectionStrategy
 
 
@@ -56,7 +56,7 @@ class FontSelectionStrategyLibass(FontSelectionStrategy):
 
         score += (73 * abs(weight_compare - style.weight)) // 256
         
-        from .variable_font_face import VariableFontFace
+        from ..variable_font_face import VariableFontFace
         if isinstance(font_face, VariableFontFace):
             score += 0.5
 

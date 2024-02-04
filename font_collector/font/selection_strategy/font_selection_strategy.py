@@ -1,5 +1,5 @@
-from ..ass.ass_style import AssStyle
-from .abc_font_face import ABCFontFace
+from ...ass.ass_style import AssStyle
+from ..abc_font_face import ABCFontFace
 from abc import ABC, abstractmethod
 
 __all__ = ["FontSelectionStrategy"]
