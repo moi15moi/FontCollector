@@ -176,9 +176,9 @@ def test_get_best_family_from_lang():
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
 
     family_names = [name_1, name_2, name_3]
     exact_names = []
@@ -204,9 +204,9 @@ def test_get_best_exact_name_from_lang():
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
 
     family_names = [Name("anything", Language.get("es"))]
     exact_names = [name_1, name_2, name_3]
@@ -231,9 +231,9 @@ def test_get_family_from_lang():
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
     name_4 = Name("", Language.get("zh-Hans")) # Simplified
     name_5 = Name("", Language.get("zh-Hant")) # Traditional
 
@@ -287,9 +287,9 @@ def test_get_exact_name_from_lang():
     is_glyph_emboldened = False
     font_type = FontType.TRUETYPE
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
     name_4 = Name("", Language.get("zh-Hans")) # Simplified
     name_5 = Name("", Language.get("zh-Hant")) # Traditional
 
@@ -429,7 +429,7 @@ def test__eq__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.OPENTYPE # different
     )
     assert font_1 != font_10
@@ -440,7 +440,7 @@ def test__eq__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     font_12 = NormalFontFace(
@@ -449,7 +449,7 @@ def test__eq__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     assert font_11 != font_12
@@ -460,7 +460,7 @@ def test__eq__():
         [Name("exact_names_1", Language.get("fr")), Name("exact_names_2", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     font_14 = NormalFontFace(
@@ -469,7 +469,7 @@ def test__eq__():
         [Name("exact_names_2", Language.get("fr")), Name("exact_names_1", Language.get("fr"))], # order different
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     assert font_13 != font_14
@@ -571,7 +571,7 @@ def test__hash__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.OPENTYPE # different
     )
     assert {font_1} != {font_10}
@@ -582,7 +582,7 @@ def test__hash__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     font_12 = NormalFontFace(
@@ -591,7 +591,7 @@ def test__hash__():
         [Name("exact_names", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     assert {font_11} != {font_12}
@@ -602,7 +602,7 @@ def test__hash__():
         [Name("exact_names_1", Language.get("fr")), Name("exact_names_2", Language.get("fr"))],
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     font_14 = NormalFontFace(
@@ -611,7 +611,7 @@ def test__hash__():
         [Name("exact_names_2", Language.get("fr")), Name("exact_names_1", Language.get("fr"))], # order different
         400,
         False,
-        False,  
+        False,
         FontType.TRUETYPE,
     )
     assert {font_13} != {font_14}

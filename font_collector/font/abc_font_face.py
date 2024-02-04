@@ -148,7 +148,7 @@ class ABCFontFace(ABC):
         Args:
             names: A list of Names. Can be the family_names or exact_names.
         Returns:
-            The best names for the user. 
+            The best names for the user.
             The optimal names for the user are determined based on the following priority order:
                 1. Match the system language (ex: "fr") AND system territory (ex: "CA")
                 2. Match the system language (ex: "fr")
@@ -282,7 +282,7 @@ class ABCFontFace(ABC):
 
                 cmap_encoding = FontParser.get_cmap_encoding(platform_id, encoding_id)
 
-                # cmap not supported 
+                # cmap not supported
                 if cmap_encoding is None:
                     continue
 
@@ -299,7 +299,7 @@ class ABCFontFace(ABC):
                                 # Fallback if guess fails
                                 cmap_encoding = "cp1252"
                         else:
-                            # cmap not supported 
+                            # cmap not supported
                             continue
 
                     try:

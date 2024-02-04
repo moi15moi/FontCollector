@@ -185,9 +185,9 @@ def test_get_best_family_prefix_from_lang():
     font_type = FontType.TRUETYPE
     named_instance_coordinates = {}
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
 
     families_prefix = [name_1, name_2, name_3]
 
@@ -216,9 +216,9 @@ def test_get_family_prefix_from_lang():
     font_type = FontType.TRUETYPE
     named_instance_coordinates = {}
 
-    name_1 = Name("", Language.get("fr-CA")) 
-    name_2 = Name("", Language.get("fr-BE")) 
-    name_3 = Name("", Language.get("fr")) 
+    name_1 = Name("", Language.get("fr-CA"))
+    name_2 = Name("", Language.get("fr-BE"))
+    name_3 = Name("", Language.get("fr"))
 
     families_prefix = [name_1, name_2, name_3]
 
@@ -442,7 +442,7 @@ def test__eq__():
     font_7 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix different", Language.get("fr"))], # different
         400,
         False,
@@ -454,7 +454,7 @@ def test__eq__():
     font_8 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
         401, # different
         False,
@@ -466,9 +466,9 @@ def test__eq__():
     font_9 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
+        400,
         True, # different
         FontType.TRUETYPE,
         {"ital": False}
@@ -478,10 +478,10 @@ def test__eq__():
     font_10 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.OPENTYPE, # different
         {"ital": False}
     )
@@ -490,11 +490,11 @@ def test__eq__():
     font_11 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
-        FontType.TRUETYPE, 
+        400,
+        False,
+        FontType.TRUETYPE,
         {"ital": True} # different
     )
     assert font_1 != font_11
@@ -502,11 +502,11 @@ def test__eq__():
     font_12 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
-        FontType.TRUETYPE, 
+        400,
+        False,
+        FontType.TRUETYPE,
         {"ital different": False} # different
     )
     assert font_1 != font_12
@@ -514,20 +514,20 @@ def test__eq__():
     font_13 = VariableFontFace(
         0,
         [Name("families_prefix_1", Language.get("fr")), Name("families_prefix_2", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
     font_14 = VariableFontFace(
         0,
         [Name("families_prefix_2", Language.get("fr")), Name("families_prefix_1", Language.get("fr"))], # order different
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -536,10 +536,10 @@ def test__eq__():
     font_15 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],  
+        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -548,8 +548,8 @@ def test__eq__():
         [Name("families_prefix", Language.get("fr"))],
         [Name("families_suffix_2", Language.get("fr")), Name("families_suffix_1", Language.get("fr"))], # order different
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -558,20 +558,20 @@ def test__eq__():
     font_17 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix_1", Language.get("fr")), Name("exact_names_suffix_2", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
     font_18 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix_2", Language.get("fr")), Name("exact_names_suffix_1", Language.get("fr"))], # order different
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -642,7 +642,7 @@ def test__hash__():
     font_7 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix different", Language.get("fr"))], # different
         400,
         False,
@@ -654,7 +654,7 @@ def test__hash__():
     font_8 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
         401, # different
         False,
@@ -666,9 +666,9 @@ def test__hash__():
     font_9 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
+        400,
         True, # different
         FontType.TRUETYPE,
         {"ital": False}
@@ -678,10 +678,10 @@ def test__hash__():
     font_10 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.OPENTYPE, # different
         {"ital": False}
     )
@@ -690,11 +690,11 @@ def test__hash__():
     font_11 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
-        FontType.TRUETYPE, 
+        400,
+        False,
+        FontType.TRUETYPE,
         {"ital": True} # different
     )
     assert {font_1} != {font_11}
@@ -702,11 +702,11 @@ def test__hash__():
     font_12 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
-        FontType.TRUETYPE, 
+        400,
+        False,
+        FontType.TRUETYPE,
         {"ital different": False} # different
     )
     assert {font_1} != {font_12}
@@ -714,20 +714,20 @@ def test__hash__():
     font_13 = VariableFontFace(
         0,
         [Name("families_prefix_1", Language.get("fr")), Name("families_prefix_2", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
     font_14 = VariableFontFace(
         0,
         [Name("families_prefix_2", Language.get("fr")), Name("families_prefix_1", Language.get("fr"))], # order different
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -736,10 +736,10 @@ def test__hash__():
     font_15 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],  
+        [Name("families_suffix_1", Language.get("fr")), Name("families_suffix_2", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -748,8 +748,8 @@ def test__hash__():
         [Name("families_prefix", Language.get("fr"))],
         [Name("families_suffix_2", Language.get("fr")), Name("families_suffix_1", Language.get("fr"))], # order different
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -758,20 +758,20 @@ def test__hash__():
     font_17 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix_1", Language.get("fr")), Name("exact_names_suffix_2", Language.get("fr"))],
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
     font_18 = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix_2", Language.get("fr")), Name("exact_names_suffix_1", Language.get("fr"))], # order different
-        400, 
-        False, 
+        400,
+        False,
         FontType.TRUETYPE,
         {"ital": False}
     )
@@ -783,11 +783,11 @@ def test__repr__():
     font = VariableFontFace(
         0,
         [Name("families_prefix", Language.get("fr"))],
-        [Name("families_suffix", Language.get("fr"))],  
+        [Name("families_suffix", Language.get("fr"))],
         [Name("exact_names_suffix", Language.get("fr"))],
-        400, 
-        False, 
-        FontType.TRUETYPE, 
+        400,
+        False,
+        FontType.TRUETYPE,
         {"ital": False}
     )
 

@@ -26,7 +26,7 @@ def test_ordered_lines_property():
 
 def test__eq__():
     usage_data_1 = UsageData(
-        {'A', 'B'}, 
+        {'A', 'B'},
         {1, 2}
     )
 

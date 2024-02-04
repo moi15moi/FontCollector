@@ -24,9 +24,9 @@ class FontCollection:
             it will reload to check for any newly installed or uninstalled fonts. This may impact performance.
             If False, it will load the system font only once and never reload it.
         use_generated_fonts: Use the cached font collection (.ttc file) generated from a variable font.
-        system_fonts: If use_system_font is set to True, it will contain the system font. 
+        system_fonts: If use_system_font is set to True, it will contain the system font.
             If False, it will be empty.
-        generated_fonts: If use_generated_fonts is set to True, it will contain the font collection (.ttc file) generated from a variable font. 
+        generated_fonts: If use_generated_fonts is set to True, it will contain the font collection (.ttc file) generated from a variable font.
             If False, it will be empty.
             Warning: All FontCollections use the same generated_fonts.
         additional_fonts: Contains the specified additional fonts.
@@ -34,11 +34,11 @@ class FontCollection:
     """
 
     def __init__(
-        self, 
+        self,
         use_system_font: bool = True,
         reload_system_font: bool = False,
         use_generated_fonts: bool = True,
-        additional_fonts: List[FontFile] = [], 
+        additional_fonts: List[FontFile] = [],
     ) -> None:
         self.use_system_font = use_system_font
         self.reload_system_font = reload_system_font
@@ -115,7 +115,7 @@ class FontCollection:
                         if selected_font_face.font_file is None:
                             raise ValueError(f"The selected_font_face \"{selected_font_face}\" isn't linked to any FontFile.")
                         # GDI prefers the oldest font when the score between 2 fonts is exactly the same.
-                        # However, for us, it is impossible to know when a font has been installed. 
+                        # However, for us, it is impossible to know when a font has been installed.
                         # GDI, DirectWrite, CoreText and Fontconfig don't offer a way to retrieve the installation date of a font.
                         # So, we get the creation date of the font, which should be the same as when it has been installed.
                         # But, there is an exception:

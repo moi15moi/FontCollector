@@ -37,8 +37,8 @@ def test_fontname_property():
 
 def test__eq__():
     ass_style_1 = AssStyle(
-        "Test", 
-        700, 
+        "Test",
+        700,
         False
     )
     ass_style_2 = AssStyle(
@@ -50,15 +50,15 @@ def test__eq__():
 
 
     ass_style_3 = AssStyle(
-        "Test", 
+        "Test",
         800, # Different
         False
     )
     assert ass_style_1 != ass_style_3
 
     ass_style_4 = AssStyle(
-        "Test", 
-        700, 
+        "Test",
+        700,
         True # Different
     )
 
@@ -69,8 +69,8 @@ def test__eq__():
 
 def test__hash__():
     ass_style_1 = AssStyle(
-        "Test", 
-        700, 
+        "Test",
+        700,
         False
     )
     ass_style_2 = AssStyle(
@@ -83,15 +83,15 @@ def test__hash__():
 
 
     ass_style_3 = AssStyle(
-        "Test", 
+        "Test",
         800, # Different
         False
     )
     assert {ass_style_1} != {ass_style_3}
 
     ass_style_4 = AssStyle(
-        "Test", 
-        700, 
+        "Test",
+        700,
         True # Different
     )
 

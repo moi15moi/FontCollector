@@ -97,7 +97,7 @@ def main() -> None:
             os.makedirs(output_directory)
 
         for font in fonts_file_found:
-                font_filename = Path(os.path.join(str(output_directory), font.filename.resolve().name))               
+                font_filename = Path(os.path.join(str(output_directory), font.filename.resolve().name))
                 # Don't overwrite fonts
                 if not font_filename.is_file():
                     shutil.copy(font.filename, font_filename)

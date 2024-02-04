@@ -3,12 +3,12 @@ import pytest
 from ctypes import byref
 from pathlib import Path
 from font_collector import (
-    InvalidVariableFontFaceException, 
+    InvalidVariableFontFaceException,
     PlatformID,
     Name,
     NameID,
 )
-from font_collector.font.font_parser import FontParser 
+from font_collector.font.font_parser import FontParser
 from font_collector.font.cmap import CMap
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib import TTFont, newTable

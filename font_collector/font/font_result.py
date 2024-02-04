@@ -13,7 +13,7 @@ class FontResult:
         font_face: The font face object.
         mismatch_bold: Indicates if there is a mismatch in bold style.
             Unlike faux_bold, it occurs when the weight is too different with
-                the AssStyle weight. 
+                the AssStyle weight.
             For example, the AssStyle weight could be 400, but the ABCFontFace could be 700,
                 so there wouldn't need faux bold, but there is a weight mismatch.
         need_faux_bold: Indicates if faux bolding is needed.

@@ -205,7 +205,7 @@ class VariableFontFace(ABCFontFace):
                     generated_font_face["name"].setName(
                         f"FontCollector v {__version__}:{exact_name.value}:{date.today()}",
                         NameID.UNIQUE_ID,
-                        cmap.platform_id, 
+                        cmap.platform_id,
                         cmap.platform_enc_id,
                         exact_name.get_lang_code_platform_code(cmap.platform_id),
                     )

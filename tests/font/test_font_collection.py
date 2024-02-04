@@ -16,9 +16,9 @@ def test__init__():
     use_generated_fonts = False
     additional_fonts = set()
     font_collection = FontCollection(
-        use_system_font, 
-        reload_system_font, 
-        use_generated_fonts, 
+        use_system_font,
+        reload_system_font,
+        use_generated_fonts,
         additional_fonts
     )
 
@@ -66,7 +66,7 @@ def test_fonts_property():
 
 def test_get_used_font_by_style():
     fonts_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway", "generated_fonts"))
-    additional_fonts = FontLoader.load_additional_fonts([fonts_path])            
+    additional_fonts = FontLoader.load_additional_fonts([fonts_path])
 
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
     strategy = FontSelectionStrategyLibass()
@@ -104,7 +104,7 @@ def test_get_used_font_by_style():
 
     sf_pro_display_temp_font = FontFile.from_font_path(sf_pro_display_temp)
     sf_pro_display_italic_temp_font = FontFile.from_font_path(sf_pro_display_italic_temp)
-    additional_fonts = [sf_pro_display_temp_font, sf_pro_display_italic_temp_font]            
+    additional_fonts = [sf_pro_display_temp_font, sf_pro_display_italic_temp_font]
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
     ass_style = AssStyle("SF Pro Display", 400, False)
     result = font_collection.get_used_font_by_style(ass_style, strategy)
@@ -123,7 +123,7 @@ def test_get_used_font_by_style():
 
     sf_pro_display_temp_font_2 = FontFile.from_font_path(sf_pro_display_temp_2)
     sf_pro_display_italic_temp_font_2 = FontFile.from_font_path(sf_pro_display_italic_temp_2)
-    additional_fonts = [sf_pro_display_temp_font_2, sf_pro_display_italic_temp_font_2]            
+    additional_fonts = [sf_pro_display_temp_font_2, sf_pro_display_italic_temp_font_2]
     font_collection = FontCollection(use_system_font=False, use_generated_fonts=False, additional_fonts=additional_fonts)
     result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert result.font_face == sf_pro_display_italic_temp_font.font_faces[0]

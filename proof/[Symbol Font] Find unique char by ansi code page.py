@@ -60,7 +60,7 @@ def generate_unique_adobe_glyph_name_by_code_page(unique_char_by_code_page: dict
 
 def main():
     code_pages = [
-        874, 
+        874,
         932,
         936,
         949,
