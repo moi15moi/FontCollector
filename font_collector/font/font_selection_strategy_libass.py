@@ -55,9 +55,6 @@ class FontSelectionStrategyLibass(FontSelectionStrategy):
             weight_compare += 120
 
         score += (73 * abs(weight_compare - style.weight)) // 256
-
-        if font_face.font_type not in (FontType.TRUETYPE, FontType.TRUETYPE_COLLECTION):
-            score += 9000
         
         from .variable_font_face import VariableFontFace
         if isinstance(font_face, VariableFontFace):
