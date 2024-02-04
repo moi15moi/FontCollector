@@ -74,9 +74,11 @@ class Mkvpropedit:
             "--delete-attachment", "mime-type:font/otf",
             "--delete-attachment", "mime-type:font/sfnt",
             "--delete-attachment", "mime-type:font/ttf",
+            "--command-line-charset", "UTF-8",
+            "--output-charset", "UTF-8",
         ]
 
-        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
+        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True, encoding="utf-8")
         exit_code = MkvpropeditExitCode(output.returncode)
 
         if exit_code == MkvpropeditExitCode.ERROR:
@@ -111,12 +113,14 @@ class Mkvpropedit:
         mkvpropedit_args = [
             Mkvpropedit.path,
             str(mkv_filename.resolve()),
+            "--command-line-charset", "UTF-8",
+            "--output-charset", "UTF-8",
         ]
 
         for font_file in fonts_file:
             mkvpropedit_args.extend(['--add-attachment', str(font_file.filename.resolve())])
 
-        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True)
+        output = subprocess.run(mkvpropedit_args, capture_output=True, text=True, encoding="utf-8")
         exit_code = MkvpropeditExitCode(output.returncode)
 
         if exit_code == MkvpropeditExitCode.ERROR:
