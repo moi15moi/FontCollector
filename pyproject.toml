@@ -13,6 +13,7 @@ dependencies = [
     "fontTools>=4.38.0",
     "freetype-py",
     "FindSystemFontsFilename>=0.1.2",
+    "langcodes",
 ]
 classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -40,5 +41,29 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = { attr = "font_collector._version.__version__" }
 
-[tool.setuptools]
-packages = ["font_collector"]
+[tool.setuptools.packages.find]
+include = ["font_collector*"]
+
+[tool.mypy]
+warn_unused_configs = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = "ass.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "ass_tag_analyzer.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "find_system_fonts_filename.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fontTools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "freetype.*"
+ignore_missing_imports = true
