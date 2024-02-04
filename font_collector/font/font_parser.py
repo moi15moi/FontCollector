@@ -512,7 +512,7 @@ class FontParser:
             A list of supported CMaps.
             - To determine which CMaps are supported, refer to FontParser.get_cmap_encoding().
             - If any Microsoft CMaps are present, only those will be returned.
-            - If no Microsoft CMaps are found, the method will only Macintosh CMaps if they are present.
+            - If no Microsoft CMaps are found, the method will only return Macintosh CMaps if they are present.
         """
         microsoft_cmaps: List[CMap] = []
         macintosh_cmaps: List[CMap] = []
