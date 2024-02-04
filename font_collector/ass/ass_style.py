@@ -6,6 +6,12 @@ class AssStyle:
     """
     AssStyle is an instance that does NOT only represent "[V4+ Styles]" section of an .ass script.
     It also consider the tags \\r, \\i, \\b and \\fn
+
+    Attributes:
+        fontname: The fontname used. Ex: "Arial".
+        weight: The weight requested.
+                For more information, see: https://learn.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
+        italic: True if italic, otherwhise, false.
     """
 
     __fontname: str
