@@ -8,7 +8,7 @@ class UsageData:
 
     Attributes:
         characters_used: A set of characters used in the set of lines.
-        lines (set): A set containing the indices of lines in a .ass file.
+        lines: A set containing the indices of lines in a .ass file.
     """
 
 
