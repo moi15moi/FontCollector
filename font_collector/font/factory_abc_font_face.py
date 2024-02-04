@@ -1,6 +1,6 @@
 from __future__ import annotations
 import logging
-from ..exceptions import InvalidNormalFontFaceException, InvalidVariableFontFaceException
+from ..exceptions import InvalidFontException, InvalidNormalFontFaceException, InvalidVariableFontFaceException
 from .abc_font_face import ABCFontFace
 from .normal_font_face import NormalFontFace
 from .font_parser import FontParser
@@ -14,7 +14,6 @@ from typing import Any, Dict, List, Set, Tuple
 
 
 __all__ = ["FactoryABCFontFace"]
-
 _logger = logging.getLogger(__name__)
 
 
@@ -57,7 +56,7 @@ class FactoryABCFontFace:
                 if not is_var_font:
                     font = FactoryABCFontFace.__create_font(ttFont, font_path, font_index, is_collection_font)
                     fonts.append(font)
-        except (InvalidNormalFontFaceException, InvalidVariableFontFaceException):
+        except InvalidFontException:
             _logger.error(f'The font "{font_path}" is invalid.{linesep}If you think it is an error, please open an issue on github, share the font and the following error message:')
             raise
         except Exception:
