@@ -300,11 +300,6 @@ class FontParser:
 
             family_name.extend([Name(family_name_str, lang) for lang in langs])
             fullname.extend([Name(fullname_str, lang) for lang in langs])
-        
-        # An element in the family_name haven't be found
-        #if not family_name:
-        #    family_name = [Name("", Language.get("en"))]
-
 
         if all(not element for element in fullname_axis_value_index):
             # Fallback if all the element have the flag ELIDABLE_AXIS_VALUE_NAME
