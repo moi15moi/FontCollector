@@ -20,7 +20,8 @@ def test_main():
         "fontcollector",
         "-i", os.path.join(dir_path, "file", "ass", "sample.ass"),
         "--additional-fonts", os.path.join(dir_path, "file", "fonts", "font_mac.TTF"),
-        "-o", output_dir
+        "-o", output_dir,
+        "--exclude-system-fonts"
     ]
 
     output = subprocess.run(cmd)
