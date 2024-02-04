@@ -35,8 +35,8 @@ class MacLang(ABCSystemLang):
     @staticmethod
     def __cfstring_to_string(cfstring: c_void_p) -> str:
         """
-        Parameters:
-            cfstring (c_void_p): An CFString instance.
+        Args:
+            cfstring: An CFString instance.
         Returns:
             The decoded CFString.
         """

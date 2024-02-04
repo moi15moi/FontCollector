@@ -15,9 +15,11 @@ class FontType(Enum):
     @classmethod
     def from_font(cls: Type[FontType], font: TTFont, is_collection_font: bool) -> FontType:
         """
-        Parameters:
-            font (TTFont): An fontTools object.
-            is_collection_font (bool): If true, then the file is from a collection font.
+        Args:
+            font: An fontTools object.
+            is_collection_font: If true, then the file is from a collection font (.ttc of .otc)
+        Returns:
+            The FontType of the specified font.
         """
 
         if 'glyf' in font:

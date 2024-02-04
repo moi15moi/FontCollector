@@ -56,8 +56,8 @@ class AssStyle:
         Inpired by:
             - https://github.com/libass/libass/blob/a2b39cde4ecb74d5e6fccab4a5f7d8ad52b2b1a4/libass/ass_parse.c#L101
 
-        Parameters:
-            font_name (str): The font name.
+        Args:
+            font_name: The font name.
         Returns:
             The font without an @ at the beginning
         """

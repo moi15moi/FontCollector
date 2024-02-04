@@ -78,8 +78,8 @@ class ABCAssDocument(ABC):
 
     def get_style(self, i: int) -> Tuple[str, str, bool, bool]:
         """
-        Parameters:
-            i (int): Index of the line.
+        Args:
+            i: Index of the line.
         Returns:
             An Tuple formatted like this: style_name, font_name, is_bold, is_italic
         """
@@ -107,8 +107,8 @@ class ABCAssDocument(ABC):
 
     def get_line_style_name(self, i: int) -> str:
         """
-        Parameters:
-            i (int): Index of the line.
+        Args:
+            i: Index of the line.
         Returns:
             The style name of the line.
         """
@@ -129,8 +129,8 @@ class ABCAssDocument(ABC):
 
     def get_line_text(self, i: int) -> str:
         """
-        Parameters:
-            i (int): Index of the line.
+        Args:
+            i: Index of the line.
         Returns:
             The text of the line.
         """
@@ -144,8 +144,8 @@ class ABCAssDocument(ABC):
 
     def is_line_dialogue(self, i: int) -> bool:
         """
-        Parameters:
-            i (int): Index of the line.
+        Args:
+            i: Index of the line.
         Returns:
             True if the line is an Dialogue. Else, return false.
         """
@@ -220,16 +220,16 @@ class ABCAssDocument(ABC):
         collect_draw_fonts: bool
     ) -> None:
         """
-        Parameters:
-            used_styles (Dict[AssStyle, UsageData]): This variable will be modified
-            tags (List[AssItem]): List of all tags
-            line_index (int): Position of the line in the subtitle
-            sub_styles (Dict[str, AssStyle]): Dict of the [V4+ Styles] sections
-            original_line_style (AssStyle): Style of the line
-            line_style (AssStyle): Style of the line. In general, it will be equal to original_line_style except it there is an \rXXX
-            current_style (AssStyle): Real style of the text. It exist since \fn, \b, \i can override the line_style.
-            current_wrap_style (WrapStyle): Since \q can override the subtitle WrapStyle, we need it.
-            collect_draw_fonts (bool): If true, then it will also collect the draw style, if false, it will ignore it.
+        Args:
+            used_styles: This variable will be modified
+            tags: List of all tags
+            line_index: Position of the line in the subtitle
+            sub_styles: Dict of the [V4+ Styles] sections
+            original_line_style: Style of the line
+            line_style: Style of the line. In general, it will be equal to original_line_style except it there is an \rXXX
+            current_style: Real style of the text. It exist since \fn, \b, \i can override the line_style.
+            current_wrap_style: Since \q can override the subtitle WrapStyle, we need it.
+            collect_draw_fonts: If true, then it will also collect the draw style, if false, it will ignore it.
         """
 
         for tag in tags:
@@ -320,8 +320,8 @@ class ABCAssDocument(ABC):
 
     def get_used_style(self, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
         """
-        Parameters:
-            collect_draw_fonts (bool): If true, then it will also collect the draw style, if false, it will ignore it.
+        Args:
+            collect_draw_fonts: If true, then it will also collect the draw style, if false, it will ignore them.
         Returns:
             An dictionnary which contain all the used AssStyle and it's UsageData.
         """
