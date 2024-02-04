@@ -182,8 +182,8 @@ class ABCFontFace(ABC):
         """
         Args:
             names: A list of Names. Can be the family_names or exact_names.
-            lang_code (str): An IETF BCP-47 tag (only language, script and territory. Ex: "en", "en-UK", "bs-Latn-BA")
-            exact_match (bool):
+            lang_code: An IETF BCP-47 tag (only language, script and territory. Ex: "en", "en-UK", "bs-Latn-BA")
+            exact_match:
                 - If true, it will return a name with the specified AND script AND territory if it is in the names.
                     Ex: "en-US" can only match with "en-US".
                 - If false, it will return a name with the specified language if it is in the names.
