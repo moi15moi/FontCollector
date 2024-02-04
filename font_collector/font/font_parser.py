@@ -538,8 +538,10 @@ class FontParser:
             encoding_id: CMap encoding id
         Returns:
             The cmap encoding.
+            If GDI does not support the platform_id and/or platform_encoding_id, return None.
+            Warning, if it return "unknown", it means that the cmap is from a symbol font.
+                Call get_symbol_cmap_encoding() to know what is the encoding.
         Notes:
-            - If GDI does not support the platform_id and/or platform_encoding_id, return None.
             - GDI only supports all encodings for the Microsoft CMap.
             - For the Macintosh platform, it only supports the platform encoding 1.
         """
