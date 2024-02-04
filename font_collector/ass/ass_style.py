@@ -13,7 +13,7 @@ class AssStyle:
     italic: bool
 
     def __init__(
-        self: AssStyle,
+        self,
         fontname: str,
         weight: int,
         italic: bool,
@@ -24,15 +24,15 @@ class AssStyle:
 
 
     @property
-    def fontname(self: AssStyle) -> str:
+    def fontname(self) -> str:
         return self.__fontname
 
     @fontname.setter
-    def fontname(self: AssStyle, value: str) -> None:
+    def fontname(self, value: str) -> None:
         self.__fontname = AssStyle.strip_fontname(value)
 
 
-    def __eq__(self: AssStyle, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, AssStyle):
             return False
         return (self.fontname.lower(), self.weight, self.italic) == (
@@ -42,11 +42,11 @@ class AssStyle:
         )
 
 
-    def __hash__(self: AssStyle) -> int:
+    def __hash__(self) -> int:
         return hash((self.fontname.lower(), self.weight, self.italic))
 
 
-    def __repr__(self: AssStyle) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Font name="{self.fontname}", Weight="{self.weight}", Italic="{self.italic}")'
 
 

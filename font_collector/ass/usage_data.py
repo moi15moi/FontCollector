@@ -13,7 +13,7 @@ class UsageData:
 
 
     def __init__(
-        self: UsageData,
+        self,
         characters_used: Set[str],
         lines: Set[int],
     ) -> None:
@@ -22,7 +22,7 @@ class UsageData:
 
 
     @property
-    def ordered_lines(self: UsageData) -> List[int]:
+    def ordered_lines(self) -> List[int]:
         """
         Returns:
             A sorted list containing the indices of lines in a .ass file.
@@ -35,11 +35,11 @@ class UsageData:
 
 
     @ordered_lines.setter
-    def ordered_lines(self: UsageData, value: Any) -> None:
+    def ordered_lines(self, value: Any) -> None:
         raise AttributeError("You cannot set the ordered lines property. If you want to add an lines, set lines")
 
 
-    def __eq__(self: UsageData, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, UsageData):
             return False
         return (self.characters_used, self.lines) == (
@@ -48,5 +48,5 @@ class UsageData:
         )
 
 
-    def __repr__(self: UsageData) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Characters used="{self.characters_used}", Lines="{self.ordered_lines}")'

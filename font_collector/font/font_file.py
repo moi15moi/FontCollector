@@ -21,7 +21,7 @@ class FontFile:
     """
 
     def __init__(
-        self: FontFile,
+        self,
         filename: Path,
         font_faces: List[ABCFontFace],
         last_loaded_time: Optional[float] = None
@@ -51,15 +51,15 @@ class FontFile:
             self.__last_loaded_time = last_loaded_time
 
     @property
-    def filename(self: FontFile) -> Path:
+    def filename(self) -> Path:
         return self.__filename
 
     @property
-    def font_faces(self: FontFile) -> List[ABCFontFace]:
+    def font_faces(self) -> List[ABCFontFace]:
         return self.__font_faces
 
     @property
-    def last_loaded_time(self: FontFile) -> float:
+    def last_loaded_time(self) -> float:
         return self.__last_loaded_time
 
     @classmethod
@@ -67,7 +67,7 @@ class FontFile:
         font_faces = FactoryABCFontFace.from_font_path(filename)
         return cls(filename, font_faces)
 
-    def reload_font_file(self: FontFile) -> None:
+    def reload_font_file(self) -> None:
         """
         Reloads the font file to update the font faces.
         """
@@ -76,12 +76,12 @@ class FontFile:
             font_face.link_face_to_a_font_file(self)
         self.__last_loaded_time = time()
 
-    def __eq__(self: FontFile, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, FontFile):
             return False
         return self.filename == other.filename and Counter(self.font_faces) == Counter(other.font_faces)
 
-    def __hash__(self: FontFile) -> int:
+    def __hash__(self) -> int:
         return hash(
             (
                 self.filename,
@@ -89,5 +89,5 @@ class FontFile:
             )
         )
 
-    def __repr__(self: FontFile) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Filename="{self.filename}", Font faces="{self.font_faces}", Last loaded time="{self.last_loaded_time}")'

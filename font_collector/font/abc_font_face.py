@@ -28,8 +28,6 @@ if TYPE_CHECKING:
     from .font_file import FontFile
 
 __all__ = ["ABCFontFace"]
-
-
 _logger = logging.getLogger(__name__)
 
 
@@ -58,86 +56,86 @@ class ABCFontFace(ABC):
 
     @property
     @abstractmethod
-    def font_index(self: ABCFontFace) -> int:
+    def font_index(self) -> int:
         pass
 
     @property
     @abstractmethod
-    def family_names(self: ABCFontFace) -> List[Name]:
+    def family_names(self) -> List[Name]:
         pass
 
     @property
     @abstractmethod
-    def exact_names(self: ABCFontFace) -> List[Name]:
+    def exact_names(self) -> List[Name]:
         pass
     
     @property
     @abstractmethod
-    def weight(self: ABCFontFace) -> int:
+    def weight(self) -> int:
         pass
 
     @property
     @abstractmethod
-    def is_italic(self: ABCFontFace) -> bool:
+    def is_italic(self) -> bool:
         pass
     
     @property
     @abstractmethod
-    def is_glyph_emboldened(self: ABCFontFace) -> bool:
+    def is_glyph_emboldened(self) -> bool:
         pass
     
     @property
     @abstractmethod
-    def font_type(self: ABCFontFace) -> FontType:
+    def font_type(self) -> FontType:
         pass
 
     @property
     @abstractmethod
-    def font_file(self: ABCFontFace) -> Optional[FontFile]:
+    def font_file(self) -> Optional[FontFile]:
         pass
 
     @abstractmethod
-    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile) -> None:
+    def link_face_to_a_font_file(self, value: FontFile) -> None:
         # Since there is a circular reference between FontFile and this class, we need to be able to set the value
         pass
 
     @abstractmethod
-    def __eq__(self: ABCFontFace, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         pass
 
 
     @abstractmethod
-    def __hash__(self: ABCFontFace) -> int:
+    def __hash__(self) -> int:
         pass
     
 
     @abstractmethod
-    def __repr__(self: ABCFontFace) -> str:
+    def __repr__(self) -> str:
         pass
 
 
-    def get_family_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> Optional[Name]:
+    def get_family_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
         """
         See the doc of _get_names_from_lang
         """
         return self._get_names_from_lang(self.family_names, lang_code, exact_match)
     
 
-    def get_best_family_from_lang(self: ABCFontFace) -> Name:
+    def get_best_family_from_lang(self) -> Name:
         """
         See the doc of _get_best_names_from_lang
         """
         return self._get_best_names_from_lang(self.family_names)
 
 
-    def get_exact_name_from_lang(self: ABCFontFace, lang_code: str, exact_match: bool = False) -> Optional[Name]:
+    def get_exact_name_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
         """
         See the doc of _get_names_from_lang
         """
         return self._get_names_from_lang(self.exact_names, lang_code, exact_match)
     
 
-    def get_best_exact_name_from_lang(self: ABCFontFace) -> Name:
+    def get_best_exact_name_from_lang(self) -> Name:
         """
         See the doc of _get_best_names_from_lang
         """

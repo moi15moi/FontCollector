@@ -12,7 +12,7 @@ class CMap:
     """
 
     def __init__(
-        self: CMap,
+        self,
         platform_id: PlatformID,
         platform_enc_id: int,
     ) -> None:
@@ -20,15 +20,15 @@ class CMap:
         self.platform_enc_id = platform_enc_id
 
 
-    def __eq__(self: CMap, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, CMap):
             return False
         return (self.platform_id, self.platform_enc_id) == (other.platform_id, other.platform_enc_id)
 
 
-    def __hash__(self: CMap) -> int:
+    def __hash__(self) -> int:
         return hash((self.platform_id, self.platform_enc_id))
 
 
-    def __repr__(self: CMap) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Platform ID="{self.platform_id}", Platform encoding ID="{self.platform_enc_id}")'

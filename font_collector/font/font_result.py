@@ -21,7 +21,7 @@ class FontResult:
     """
 
     def __init__(
-        self: FontResult,
+        self,
         font_face: ABCFontFace,
         mismatch_bold: bool,
         need_faux_bold: bool,
@@ -52,5 +52,5 @@ class FontResult:
         )
 
 
-    def __repr__(self: FontResult) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Font face="{self.font_face}", Mismatch bold="{self.mismatch_bold}", Need faux bold="{self.need_faux_bold}", Mismatch italic="{self.mismatch_italic}")'

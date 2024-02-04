@@ -38,7 +38,7 @@ class ABCAssDocument(ABC):
     """
 
     @abstractmethod
-    def _get_sub_wrap_style(self: ABCAssDocument) -> Optional[WrapStyle]:
+    def _get_sub_wrap_style(self) -> Optional[WrapStyle]:
         """
         Returns:
             The subtitle WrapStyle.
@@ -46,7 +46,7 @@ class ABCAssDocument(ABC):
         """
         pass
 
-    def get_sub_wrap_style(self: ABCAssDocument) -> WrapStyle:
+    def get_sub_wrap_style(self) -> WrapStyle:
         """
         Returns:
             The subtitle WrapStyle.
@@ -59,7 +59,7 @@ class ABCAssDocument(ABC):
 
 
     @abstractmethod
-    def get_nbr_style(self: ABCAssDocument) -> int:
+    def get_nbr_style(self) -> int:
         """
         Returns:
             The number of styles.
@@ -67,16 +67,16 @@ class ABCAssDocument(ABC):
         pass
 
 
-    def __verify_if_style_exist(self: ABCAssDocument, i: int) -> None:
+    def __verify_if_style_exist(self, i: int) -> None:
         if i >= self.get_nbr_style():
             raise ValueError(f"There isn't any style at the index {i}. There is only {self.get_nbr_style()} style(s)")
 
 
     @abstractmethod
-    def _get_style(self: ABCAssDocument, i: int) -> Tuple[str, str, bool, bool]:
+    def _get_style(self, i: int) -> Tuple[str, str, bool, bool]:
         pass
 
-    def get_style(self: ABCAssDocument, i: int) -> Tuple[str, str, bool, bool]:
+    def get_style(self, i: int) -> Tuple[str, str, bool, bool]:
         """
         Parameters:
             i (int): Index of the line.
@@ -88,7 +88,7 @@ class ABCAssDocument(ABC):
 
 
     @abstractmethod
-    def get_nbr_line(self: ABCAssDocument) -> int:
+    def get_nbr_line(self) -> int:
         """
         Returns:
             The number of lines.
@@ -96,16 +96,16 @@ class ABCAssDocument(ABC):
         pass
 
 
-    def __verify_if_line_exist(self: ABCAssDocument, i: int) -> None:
+    def __verify_if_line_exist(self, i: int) -> None:
         if i >= self.get_nbr_line():
             raise ValueError(f"There isn't any line at the index {i}. There is only {self.get_nbr_line()} line(s)")
 
 
     @abstractmethod
-    def _get_line_style_name(self: ABCAssDocument, i: int) -> str:
+    def _get_line_style_name(self, i: int) -> str:
         pass
 
-    def get_line_style_name(self: ABCAssDocument, i: int) -> str:
+    def get_line_style_name(self, i: int) -> str:
         """
         Parameters:
             i (int): Index of the line.
@@ -124,10 +124,10 @@ class ABCAssDocument(ABC):
 
 
     @abstractmethod
-    def _get_line_text(self: ABCAssDocument, i: int) -> str:
+    def _get_line_text(self, i: int) -> str:
         pass
 
-    def get_line_text(self: ABCAssDocument, i: int) -> str:
+    def get_line_text(self, i: int) -> str:
         """
         Parameters:
             i (int): Index of the line.
@@ -139,10 +139,10 @@ class ABCAssDocument(ABC):
     
 
     @abstractmethod
-    def _is_line_dialogue(self: ABCAssDocument, i: int) -> bool:
+    def _is_line_dialogue(self, i: int) -> bool:
         pass
 
-    def is_line_dialogue(self: ABCAssDocument, i: int) -> bool:
+    def is_line_dialogue(self, i: int) -> bool:
         """
         Parameters:
             i (int): Index of the line.
@@ -153,7 +153,7 @@ class ABCAssDocument(ABC):
         return self._is_line_dialogue(i)
     
     
-    def get_sub_styles(self: ABCAssDocument) -> Dict[str, AssStyle]:
+    def get_sub_styles(self) -> Dict[str, AssStyle]:
         """
         Returns:
             An Dict that represent the section [V4+ Styles] of an .ass file:
@@ -208,7 +208,7 @@ class ABCAssDocument(ABC):
     
 
     def __set_used_styles(
-        self: ABCAssDocument,
+        self,
         used_styles: Dict[AssStyle, UsageData],
         tags: List[AssItem],
         line_index: int,
@@ -318,7 +318,7 @@ class ABCAssDocument(ABC):
                 current_style = deepcopy(current_style)
 
 
-    def get_used_style(self: ABCAssDocument, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
+    def get_used_style(self, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
         """
         Parameters:
             collect_draw_fonts (bool): If true, then it will also collect the draw style, if false, it will ignore it.

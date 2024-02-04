@@ -58,7 +58,7 @@ class Name:
     """
 
     def __init__(
-        self: Name,
+        self,
         value: str,
         lang_code: Language
     ) -> None:
@@ -165,7 +165,7 @@ class Name:
             return "und"
 
 
-    def get_lang_code_platform_code(self: Name, platform_id: PlatformID, fallback_to_language: bool = False) -> int:
+    def get_lang_code_platform_code(self, platform_id: PlatformID, fallback_to_language: bool = False) -> int:
         """
         Args:
             platform_id: The platform id of which you wanna retrieve the lang_code
@@ -189,15 +189,15 @@ class Name:
         raise ValueError(f"You cannot specify the platform id {platform_id}. You can only specify the microsoft or the macintosh id")
 
 
-    def __eq__(self: Name, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Name):
             return False
         return (self.value, self.lang_code) == (other.value, other.lang_code)
 
 
-    def __hash__(self: Name) -> int:
+    def __hash__(self) -> int:
         return hash((self.value, self.lang_code))
 
 
-    def __repr__(self: Name) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(value="{self.value}", lang_code="{self.lang_code}")'

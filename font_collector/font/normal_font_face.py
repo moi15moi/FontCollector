@@ -20,7 +20,7 @@ class NormalFontFace(ABCFontFace):
     """
 
     def __init__(
-        self: NormalFontFace,
+        self,
         font_index: int,
         family_names: List[Name],
         exact_names: List[Name],
@@ -42,44 +42,44 @@ class NormalFontFace(ABCFontFace):
         self.__font_file = None
 
     @property
-    def font_index(self: ABCFontFace) -> int:
+    def font_index(self) -> int:
         return self.__font_index
 
     @property
-    def family_names(self: ABCFontFace) -> List[Name]:
+    def family_names(self) -> List[Name]:
         return self.__family_names
 
     @property
-    def exact_names(self: ABCFontFace) -> List[Name]:
+    def exact_names(self) -> List[Name]:
         # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
         return self.__exact_names
     
     @property
-    def weight(self: ABCFontFace) -> int:
+    def weight(self) -> int:
         return self.__weight
 
     @property
-    def is_italic(self: ABCFontFace) -> bool:
+    def is_italic(self) -> bool:
         return self.__is_italic
     
     @property
-    def is_glyph_emboldened(self: ABCFontFace) -> bool:
+    def is_glyph_emboldened(self) -> bool:
         return self.__is_glyph_emboldened
     
     @property
-    def font_type(self: ABCFontFace) -> FontType:
+    def font_type(self) -> FontType:
         return self.__font_type
 
     @property
-    def font_file(self: ABCFontFace) -> Optional[FontFile]:
+    def font_file(self) -> Optional[FontFile]:
         return self.__font_file
 
-    def link_face_to_a_font_file(self: ABCFontFace, value: FontFile) -> None:
+    def link_face_to_a_font_file(self, value: FontFile) -> None:
         # Since there is a circular reference between FontFile and this class, we need to be able to set the value
         self.__font_file = value
 
     
-    def __eq__(self: NormalFontFace, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, NormalFontFace):
             return False
         return (self.font_index, self.family_names, self.exact_names, self.weight, self.is_italic, self.is_glyph_emboldened, self.font_type) == (
@@ -87,7 +87,7 @@ class NormalFontFace(ABCFontFace):
         )
 
 
-    def __hash__(self: NormalFontFace) -> int:
+    def __hash__(self) -> int:
         return hash(
             (
                 self.font_index,
@@ -101,5 +101,5 @@ class NormalFontFace(ABCFontFace):
         )
 
 
-    def __repr__(self: NormalFontFace) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Font index="{self.font_index}", Family names="{self.family_names}", Exact names="{self.exact_names}", Weight="{self.weight}", Italic="{self.is_italic}", Glyph emboldened="{self.is_glyph_emboldened}", Font type="{self.font_type.name}")'

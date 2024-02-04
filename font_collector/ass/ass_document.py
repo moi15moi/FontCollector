@@ -12,7 +12,7 @@ __all__ = ["AssDocument"]
 
 class AssDocument(ABCAssDocument):
 
-    def __init__(self: AssDocument, subtitle: Document) -> None:
+    def __init__(self, subtitle: Document) -> None:
         self.subtitle = subtitle
 
 
@@ -32,7 +32,7 @@ class AssDocument(ABCAssDocument):
         return cls(subtitle)
 
 
-    def _get_sub_wrap_style(self: AssDocument) -> Optional[WrapStyle]:
+    def _get_sub_wrap_style(self) -> Optional[WrapStyle]:
         try:
             sub_wrap_style = WrapStyle(self.subtitle.wrap_style)
         except KeyError:
@@ -41,13 +41,13 @@ class AssDocument(ABCAssDocument):
         return sub_wrap_style
 
 
-    def get_nbr_style(self: AssDocument) -> int:
+    def get_nbr_style(self) -> int:
         nbr_style = len(self.subtitle.styles)
 
         return nbr_style
 
 
-    def _get_style(self: AssDocument, i: int) -> Tuple[str, str, bool, bool]:
+    def _get_style(self, i: int) -> Tuple[str, str, bool, bool]:
         style_name = self.subtitle.styles[i].name
         font_name = self.subtitle.styles[i].fontname
         is_bold = self.subtitle.styles[i].bold
@@ -56,20 +56,20 @@ class AssDocument(ABCAssDocument):
         return style_name, font_name, is_bold, is_italic
 
 
-    def get_nbr_line(self: AssDocument) -> int:
+    def get_nbr_line(self) -> int:
         nbr_line = len(self.subtitle.events)
         return nbr_line
 
 
-    def _get_line_style_name(self: AssDocument, i: int) -> str:
+    def _get_line_style_name(self, i: int) -> str:
         style: str = self.subtitle.events[i].style
         return style
 
 
-    def _get_line_text(self: AssDocument, i: int) -> str:
+    def _get_line_text(self, i: int) -> str:
         text: str = self.subtitle.events[i].text
         return text
     
 
-    def _is_line_dialogue(self: AssDocument, i: int) -> bool:
+    def _is_line_dialogue(self, i: int) -> bool:
         return isinstance(self.subtitle.events[i], Dialogue)

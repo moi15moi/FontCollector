@@ -34,7 +34,7 @@ class FontCollection:
     """
 
     def __init__(
-        self: FontCollection, 
+        self, 
         use_system_font: bool = True,
         reload_system_font: bool = False,
         use_generated_fonts: bool = True,
@@ -46,13 +46,13 @@ class FontCollection:
         self.additional_fonts = additional_fonts
 
     
-    def __iter__(self: FontCollection) -> Generator[FontFile, None, None]:
+    def __iter__(self) -> Generator[FontFile, None, None]:
         for font in self.fonts:
             yield font
 
 
     @property
-    def system_fonts(self: FontCollection) -> List[FontFile]:
+    def system_fonts(self) -> List[FontFile]:
         if self.use_system_font:
             if self.reload_system_font:
                 return FontLoader.load_system_fonts()
@@ -63,31 +63,31 @@ class FontCollection:
         return []
 
     @system_fonts.setter
-    def system_fonts(self: FontCollection, value: Any) -> None:
+    def system_fonts(self, value: Any) -> None:
         raise AttributeError("You cannot set system_fonts, but you can set use_system_font")
 
 
     @property
-    def generated_fonts(self: FontCollection) -> List[FontFile]:
+    def generated_fonts(self) -> List[FontFile]:
         if self.use_generated_fonts:
             return FontLoader.load_generated_fonts()
         return []
 
     @generated_fonts.setter
-    def generated_fonts(self: FontCollection, value: Any) -> None:
+    def generated_fonts(self, value: Any) -> None:
         raise AttributeError("You cannot set generated_fonts, but you can set use_generated_fonts")
 
 
     @property
-    def fonts(self: FontCollection) -> List[FontFile]:
+    def fonts(self) -> List[FontFile]:
         return self.system_fonts + self.generated_fonts + self.additional_fonts
 
     @fonts.setter
-    def fonts(self: FontCollection, value: Any) -> None:
+    def fonts(self, value: Any) -> None:
         raise AttributeError("You cannot set the fonts. If you want to add font, set additional_fonts")
 
 
-    def get_used_font_by_style(self: FontCollection, style: AssStyle, strategy: FontSelectionStrategy) -> Optional[FontResult]:
+    def get_used_font_by_style(self, style: AssStyle, strategy: FontSelectionStrategy) -> Optional[FontResult]:
         """
         Args:
             style: An AssStyle
@@ -136,7 +136,7 @@ class FontCollection:
         return font_result
     
 
-    def __eq__(self: FontCollection, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, FontCollection):
             return False
         return (self.use_system_font, self.reload_system_font, self.use_generated_fonts) == (
@@ -144,7 +144,7 @@ class FontCollection:
         ) and Counter(self.additional_fonts) == Counter(other.additional_fonts)
 
 
-    def __hash__(self: FontCollection) -> int:
+    def __hash__(self) -> int:
         return hash(
             (
                 self.use_system_font,
@@ -154,5 +154,5 @@ class FontCollection:
             )
         )
 
-    def __repr__(self: FontCollection) -> str:
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(Use system font="{self.use_system_font}", Reload system font="{self.reload_system_font}", Use generated fonts="{self.use_generated_fonts}", Additional fonts="{self.additional_fonts}")'
