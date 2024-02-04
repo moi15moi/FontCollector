@@ -506,7 +506,7 @@ class FontParser:
         """
         Retrieve supported CMaps from a TrueType font.
 
-        Parameters:
+        Args:
             font: A fontTools object representing the font.
         Returns:
             A list of supported CMaps.

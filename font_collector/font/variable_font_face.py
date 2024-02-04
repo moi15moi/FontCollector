@@ -162,9 +162,9 @@ class VariableFontFace(ABCFontFace):
 
     def variable_font_to_collection(self, save_path: Path, cache_generated_font: bool = True) -> FontFile:
         """
-        Parameters:
-            save_path (Path): Path where to save the generated font
-            cache_generated_font (bool):  Converting an variable font into an collection font is a slow process. Caching the result boost the performance.
+        Args:
+            save_path: Path where to save the generated font
+            cache_generated_font: Converting an variable font into an collection font is a slow process. Caching the result boost the performance.
                 If true, then the generated font will be cached.
                 If false, then the generated font won't be cached.
         Returns:
