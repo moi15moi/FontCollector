@@ -1,6 +1,7 @@
 from __future__ import annotations
 from ctypes import byref
 from ..ass import AssStyle
+from .cmap import CMap
 from ..exceptions import InvalidLanguageCode, OSNotSupported
 from ..system_lang import get_system_lang
 from .chinese_variant import ChineseVariant
@@ -20,6 +21,7 @@ from freetype import (
     FT_New_Memory_Face,
     FT_Set_Charmap,
 )
+from fontTools.ttLib.ttFont import TTFont
 from langcodes import Language, tag_is_valid
 from typing import Iterable, List, Optional, Set, TYPE_CHECKING
 import logging
@@ -264,11 +266,24 @@ class ABCFontFace(ABC):
         error = FT_New_Memory_Face(library, filebody, len(filebody), self.font_index, byref(face))
         if error: raise FT_Exception(error)
 
-        supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if FT_Get_CMap_Format(face.contents.charmaps[i]) != -1 and face.contents.charmaps[i].contents.platform_id == 3]
+        ttFont = TTFont(self.font_file.filename, fontNumber=self.font_index)
+        supported_cmaps = FontParser.get_supported_cmaps(ttFont)
+        supported_charmaps = []
+        for i in range(face.contents.num_charmaps):
+            charmap = face.contents.charmaps[i]
+            # Ignore the CMap created by freetype.
+            # See: https://freetype.org/freetype2/docs/reference/ft2-truetype_tables.html#ft_get_cmap_format
+            if FT_Get_CMap_Format(charmap) == -1:
+                continue
 
-        # GDI seems to take apple cmap if there isn't any microsoft cmap: https://github.com/libass/libass/issues/679
-        if len(supported_charmaps) == 0:
-            supported_charmaps = [face.contents.charmaps[i] for i in range(face.contents.num_charmaps) if FT_Get_CMap_Format(face.contents.charmaps[i]) != -1 and face.contents.charmaps[i].contents.platform_id == 1 and face.contents.charmaps[i].contents.encoding_id == 0]
+            platform_id = charmap.contents.platform_id
+            encoding_id = charmap.contents.encoding_id
+
+            cmap = CMap(platform_id, encoding_id)
+            if cmap not in supported_cmaps:
+                continue
+
+            supported_charmaps.append(charmap)
 
         for char in text:
             char_found = False
@@ -307,7 +322,8 @@ class ABCFontFace(ABC):
                     except UnicodeEncodeError:
                         continue
 
-                # GDI/Libass modify the codepoint for microsoft symbol cmap: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
+                # GDI/Libass modify the codepoint for microsoft symbol cmap.
+                # See: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
                 if platform_id == 3 and encoding_id == 0:
                     codepoint = 0xF000 | codepoint
 
