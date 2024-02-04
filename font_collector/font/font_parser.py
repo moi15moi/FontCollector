@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..exceptions import InvalidVariableFontFaceException
+from ..exceptions import InvalidNameRecord, InvalidVariableFontFaceException
 from .cmap import CMap
 from .name import Name, NameID, PlatformID
 from ctypes import byref, c_uint, create_string_buffer
@@ -334,7 +334,8 @@ class FontParser:
         platformID: Optional[PlatformID] = None, 
         platEncID: Optional[int] = None, 
         nameID: Optional[NameID] = None, 
-        langID: Optional[int] = None
+        langID: Optional[int] = None,
+        skip_unsupported_name_record: bool = True
     ) -> List[Name]:
         """Retrieve and decode NameRecord objects based on specified filtering criteria.
         Is it the same criteria has: https://learn.microsoft.com/en-us/typography/opentype/spec/name#name-records
@@ -345,6 +346,8 @@ class FontParser:
             platEncID: Filter the names_record by platEncID.
             nameID: Filter the names_record by nameID.
             langID: Filter the names_record by langID.
+            skip_unsupported_name_record: When trying to decode NameRecord, the exception InvalidNameRecord can be raised.
+                If this argument is true, then it will ignore the exception and discard the NameRecord.
         Returns:
             A list of the decoded NameRecord objects that have been filtered.
         """
@@ -357,7 +360,11 @@ class FontParser:
                 (nameID is None or name_record.nameID == nameID) and 
                 (langID is None or name_record.langID == langID)
             ):
-                names.append(Name.from_name_record(name_record))
+                try:
+                    names.append(Name.from_name_record(name_record))
+                except InvalidNameRecord:
+                    if not skip_unsupported_name_record:
+                        raise
 
         return names
 
