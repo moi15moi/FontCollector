@@ -12,7 +12,6 @@ from fontTools.ttLib.ttFont import TTFont
 from os import linesep
 from typing import Any, Dict, List, Set, Tuple
 
-
 __all__ = ["FactoryABCFontFace"]
 _logger = logging.getLogger(__name__)
 

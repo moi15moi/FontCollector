@@ -10,10 +10,8 @@ from pathlib import Path
 from tempfile import gettempdir
 from typing import Iterable, List, Set
 
-
-_logger = logging.getLogger(__name__)
-
 __all__ = ["FontLoader"]
+_logger = logging.getLogger(__name__)
 
 
 class CacheFileContent:
