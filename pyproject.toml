@@ -43,3 +43,27 @@ version = { attr = "font_collector._version.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["font_collector*"]
+
+[tool.mypy]
+warn_unused_configs = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = "ass.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "ass_tag_analyzer.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "find_system_fonts_filename.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fontTools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "freetype.*"
+ignore_missing_imports = true
