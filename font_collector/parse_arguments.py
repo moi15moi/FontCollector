@@ -1,28 +1,23 @@
 import os
-from .font import Font
-from .font_loader import FontLoader
 from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import List, Set, Tuple, Union
+from typing import Iterable, List, Tuple, Union
 
 
-def _parse_input_file(ass_input: List[Path]) -> List[Path]:
-
-    if len(ass_input) == 0:
-        return [Path(file) for file in os.listdir(os.getcwd()) if file.endswith(".ass")]
+def __parse_input_file(ass_input: List[Path]) -> List[Path]:
 
     ass_files_path = []
     for input in ass_input:
-        if os.path.isfile(input):
-            if input.name.endswith(".ass"):
-                ass_files_path.append(Path(input))
+        if input.is_file():
+            if input.suffix.casefold() == ".ass":
+                ass_files_path.append(input)
             else:
                 raise FileExistsError("Error: The input file is not an .ass file.")
-        elif os.path.isdir(input):
-            for file in os.listdir(input):
-                if file.endswith(".ass"):
-                    ass_files_path.append(Path(os.path.join(input, file)))
+        elif input.is_dir():
+            for file in input.iterdir():
+                if file.suffix.casefold() == ".ass":
+                    ass_files_path.append(file)
         else:
             raise FileNotFoundError(
                 f"Error: The input file/folder {input.name} does not exist."
@@ -36,8 +31,9 @@ def parse_arguments() -> Tuple[
     Path,
     Union[Path, None],
     bool,
-    Set[Path],
-    Set[Path],
+    Iterable[Path],
+    Iterable[Path],
+    bool,
     bool,
     bool
 ]:
@@ -55,7 +51,7 @@ def parse_arguments() -> Tuple[
         type=Path,
         required=True,
         help="""
-    Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path. If no argument is specified, it will take all the font in the current path.
+    Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
     """,
     )
     parser.add_argument(
@@ -93,6 +89,7 @@ def parse_arguments() -> Tuple[
         "--additional-fonts",
         "-add-fonts",
         nargs="+",
+        default=set(),
         type=Path,
         help="""
     May be a directory containing font files or a single font file. You can specify more than one additional-fonts.
@@ -103,6 +100,7 @@ def parse_arguments() -> Tuple[
         "--additional-fonts-recursive",
         "-add-fonts-rec",
         nargs="+",
+        default=set(),
         type=Path,
         help="""
     Path to font directory, which will be recursively searched for fonts.
@@ -122,33 +120,35 @@ def parse_arguments() -> Tuple[
     If specified, FontCollector will collect the font used by the draw. For more detail when this is usefull, see: https://github.com/libass/libass/issues/617
     """,
     )
+    parser.add_argument(
+        "--dont-convert-variable-to-collection",
+        action="store_false",
+        help="""
+    If specified, FontCollector won't convert variable font to a font collection. see: https://github.com/libass/libass/issues/386
+    """,
+    )
 
     args = parser.parse_args()
 
     # Parse args
-    ass_files_path = _parse_input_file(args.input)
+    ass_files_path = __parse_input_file(args.input)
+
+    if len(ass_files_path) == 0:
+        raise RuntimeError("The specified file(s)/folder(s) doesn't exist or the folder(s) doesn't contains any .ass file.")
 
     output_directory = args.output
-
     mkv_path = args.mkv
-    if mkv_path:
-        if args.mkvpropedit is not None:
-            Mkvpropedit.path = args.mkvpropedit
-
     delete_fonts = args.delete_fonts
-
-    if args.additional_fonts is not None:
-        additional_fonts = args.additional_fonts
-    else:
-        additional_fonts = set()
-
-    if args.additional_fonts_recursive is not None:
-        additional_fonts_recursive = args.additional_fonts_recursive
-    else:
-        additional_fonts_recursive = set()
-
+    additional_fonts = args.additional_fonts
+    additional_fonts_recursive = args.additional_fonts_recursive
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
+    convert_variable_to_collection = args.dont_convert_variable_to_collection
+
+    if args.mkvpropedit:
+        if not mkv_path:
+            raise RuntimeError("-mkvpropedit requires --mkv option.")
+        Mkvpropedit.path = args.mkvpropedit
 
     return (
         ass_files_path,
@@ -158,5 +158,6 @@ def parse_arguments() -> Tuple[
         additional_fonts,
         additional_fonts_recursive,
         use_system_fonts,
-        collect_draw_fonts
+        collect_draw_fonts,
+        convert_variable_to_collection
     )

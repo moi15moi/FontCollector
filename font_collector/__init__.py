@@ -1,18 +1,16 @@
 import logging
-from .ass_document import AssDocument
-from .ass_style import AssStyle
-from .exceptions import InvalidFontException, NameNotFoundException
-from .font_loader import FontLoader
-from .font_result import FontResult
-from .font import Font
-from .helpers import Helpers
-from .mkvpropedit import Mkvpropedit
-from .usage_data import UsageData
-from ._version import __version__
 
+# Packages
+from .ass import *
+from .font import *
+from .system_lang import *
+# Files
+from .exceptions import *
+from .mkvpropedit import *
+from ._version import __version__
 from fontTools.misc.loggingTools import configLogger
 
-configLogger(level="ERROR")
+configLogger(level="CRITICAL")
 
 # Set our default logger
 _logger = logging.getLogger(__name__)
@@ -27,10 +25,10 @@ _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 
 
-def set_loglevel(level: int):
+def set_loglevel(level: int) -> None:
     """
-    Parameters:
-        level (int): An level from logging module (For more detail, see: https://docs.python.org/3/library/logging.html#logging-levels)
+    Args:
+        level: An level from logging module (For more detail, see: https://docs.python.org/3/library/logging.html#logging-levels)
     """
     _logger.setLevel(level)
     _handler.setLevel(level)
