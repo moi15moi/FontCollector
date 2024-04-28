@@ -48,7 +48,7 @@ def generate_unique_adobe_glyph_name_by_code_page(unique_char_by_code_page: dict
             for legacy_adobe_glyph_name, adobe_codepoints in LEGACY_AGL2UV.items():
                 for adobe_codepoint in adobe_codepoints:
                     if adobe_codepoint == ord(char):
-                        unique_adobe_glyph_name_by_code_page[codepoint].add(legacy_adobe_glyph_name.lower())
+                        unique_adobe_glyph_name_by_code_page[codepoint].add(legacy_adobe_glyph_name.casefold())
                         found = True
             
             if not found:
@@ -60,7 +60,7 @@ def generate_unique_adobe_glyph_name_by_code_page(unique_char_by_code_page: dict
 
 def main():
     code_pages = [
-        874, 
+        874,
         932,
         936,
         949,

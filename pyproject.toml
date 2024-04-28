@@ -13,6 +13,7 @@ dependencies = [
     "fontTools>=4.38.0",
     "freetype-py",
     "FindSystemFontsFilename>=0.1.2",
+    "langcodes",
 ]
 classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -40,5 +41,5 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = { attr = "font_collector._version.__version__" }
 
-[tool.setuptools]
-packages = ["font_collector"]
+[tool.setuptools.packages.find]
+include = ["font_collector*"]
