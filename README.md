@@ -1,4 +1,6 @@
 # FontCollector
+[![codecov](https://codecov.io/github/moi15moi/FontCollector/graph/badge.svg)](https://codecov.io/github/moi15moi/FontCollector)
+
 FontCollector for Advanced SubStation Alpha file.
 This tool allows to recover and/or mux the fonts necessary in an mkv.
 ## Installation
