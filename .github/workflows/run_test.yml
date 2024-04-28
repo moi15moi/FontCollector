@@ -46,10 +46,22 @@ jobs:
       # We need to conserve mkvtoolnix in the PATH env variable.
       # From https://stackoverflow.com/a/73981698/15835974
 
-    - name: Install pytest
+    - name: Install pytest and coverage
       run: |
         pip install pytest
+        pip install coverage
 
     - name: Run tests
       run: |
         pytest
+
+    - name: Generate coverage report
+      run: |
+        coverage run -m pytest
+        coverage xml
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}

@@ -67,3 +67,12 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "freetype.*"
 ignore_missing_imports = true
+
+[tool.coverage.report]
+include = [
+    "font_collector/*",
+    ]
+exclude_also = [
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+    ]
