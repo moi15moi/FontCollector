@@ -15,7 +15,6 @@ class MacLang(ABCSystemLang):
 
         if MacLang.__core_foundation is None:
             MacLang.__load__core_foundation()
-
         assert MacLang.__core_foundation is not None # just to make mypy happy
 
         languages = MacLang.__core_foundation.CFLocaleCopyPreferredLanguages()

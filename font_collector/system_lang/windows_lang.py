@@ -1,6 +1,6 @@
 from ..font.name import Name, PlatformID
 from .abc_system_lang import ABCSystemLang
-from ctypes import windll, wintypes
+from ctypes import windll, wintypes # type: ignore
 
 
 class WindowsLang(ABCSystemLang):

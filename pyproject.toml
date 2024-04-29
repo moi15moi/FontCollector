@@ -50,7 +50,12 @@ include = ["font_collector*"]
 
 [tool.mypy]
 warn_unused_configs = true
+warn_unused_ignores = false
 strict = true
+files = [
+    # TODO Add the tests folder
+    "font_collector"
+]
 
 [[tool.mypy.overrides]]
 module = "ass.*"
