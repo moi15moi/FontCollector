@@ -496,12 +496,16 @@ class FontParser:
 
 
     @staticmethod
-    def get_supported_cmaps(font: TTFont) -> List[CMap]:
+    def get_supported_cmaps(
+        font: TTFont, font_path: Path, font_index: int
+    ) -> List[CMap]:
         """
         Retrieve supported CMaps from a TrueType font.
 
         Args:
             font: A fontTools object representing the font.
+            font_path: Font path.
+            font_index: Font index.
         Returns:
             A list of supported CMaps.
             - To determine which CMaps are supported, refer to FontParser.get_cmap_encoding().
@@ -511,16 +515,29 @@ class FontParser:
         microsoft_cmaps: List[CMap] = []
         macintosh_cmaps: List[CMap] = []
 
-        cmap_tables: List[CmapSubtable] = font["cmap"].tables
+        try:
+            cmap_tables: List[CmapSubtable] = font["cmap"].tables
 
-        for table in cmap_tables:
-            encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
-            if encoding is not None:
-                cmap = CMap(table.platformID, table.platEncID)
-                if table.platformID == PlatformID.MICROSOFT:
-                    microsoft_cmaps.append(cmap)
-                elif table.platformID == PlatformID.MACINTOSH:
-                    macintosh_cmaps.append(cmap)
+            for table in cmap_tables:
+                encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
+                if encoding is not None:
+                    cmap = CMap(table.platformID, table.platEncID)
+                    if table.platformID == PlatformID.MICROSOFT:
+                        microsoft_cmaps.append(cmap)
+                    elif table.platformID == PlatformID.MACINTOSH:
+                        macintosh_cmaps.append(cmap)
+        except Exception:
+            with font_path.open("rb") as f:
+                face = Face(f, font_index)
+
+            for charmap in face.charmaps:
+                encoding = FontParser.get_cmap_encoding(charmap.platform_id, charmap.encoding_id)
+                if encoding is not None:
+                    cmap = CMap(charmap.platform_id, charmap.encoding_id)
+                    if charmap.platform_id == PlatformID.MICROSOFT:
+                        microsoft_cmaps.append(cmap)
+                    elif charmap.platform_id == PlatformID.MACINTOSH:
+                        macintosh_cmaps.append(cmap)
         return macintosh_cmaps if len(microsoft_cmaps) == 0 else microsoft_cmaps
 
 

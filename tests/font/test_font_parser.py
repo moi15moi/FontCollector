@@ -204,22 +204,28 @@ def test_get_symbol_cmap_encoding():
 
 def test_get_supported_cmaps():
     # This font contain 1 valid mac cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF")
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF"))
     font = TTFont(font_path)
-    cmaps = FontParser.get_supported_cmaps(font)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(1, 0)]
 
     # This font contain unicode cmap and multiple microsoft cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf")
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf"))
     font = TTFont(font_path)
-    cmaps = FontParser.get_supported_cmaps(font)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(3, 1), CMap(3, 10)]
 
     # This font contain 1 microsoft cmap, 1 valid mac cmap and 1 unicode cmap
-    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf")
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf"))
     font = TTFont(font_path)
-    cmaps = FontParser.get_supported_cmaps(font)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
     assert cmaps == [CMap(3, 0)]
+
+    # This font contain a "invalid" cmap. fontTools raise a exception, so we fallback to freetype which doesn't raise an exception
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "invalid_cmap.ttf"))
+    font = TTFont(font_path)
+    cmaps = FontParser.get_supported_cmaps(font, font_path, 0)
+    assert cmaps == [CMap(3, 1)]
 
 
 def test_get_cmap_encoding():

@@ -187,7 +187,7 @@ class VariableFontFace(ABCFontFace):
         if len(fonts_face) == 0:
             raise ValueError(f"There is no valid font at the index {self.font_index}")
 
-        cmaps = FontParser.get_supported_cmaps(ttFont)
+        cmaps = FontParser.get_supported_cmaps(ttFont, self.font_file.filename, self.font_index)
 
         for font_face in fonts_face:
             generated_font_face = instancer.instantiateVariableFont(ttFont, font_face.named_instance_coordinates)

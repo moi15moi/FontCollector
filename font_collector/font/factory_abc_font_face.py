@@ -75,7 +75,7 @@ class FactoryABCFontFace:
         Returns:
             An FontFace instance that represent the ttFont.
         """
-        cmaps = FontParser.get_supported_cmaps(ttFont)
+        cmaps = FontParser.get_supported_cmaps(ttFont, font_path, font_index)
         if len(cmaps) == 0:
              raise InvalidNormalFontFaceException(f"The font doesn't contain any valid cmap.")
 
