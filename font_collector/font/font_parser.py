@@ -374,9 +374,10 @@ class FontParser:
         Returns:
             is_italic, is_glyphs_emboldened, weight
         """
-        font = Face(font_path.open("rb"), font_index)
-        is_italic = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_ITALIC"])
-        is_glyphs_emboldened = bool(font.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_BOLD"])
+        with font_path.open("rb") as f:
+            face = Face(f, font_index)
+        is_italic = bool(face.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_ITALIC"])
+        is_glyphs_emboldened = bool(face.style_flags & FT_STYLE_FLAGS["FT_STYLE_FLAG_BOLD"])
         weight = 700 if is_glyphs_emboldened else 400
 
         return is_italic, is_glyphs_emboldened, weight
