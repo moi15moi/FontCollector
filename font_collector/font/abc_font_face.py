@@ -266,7 +266,7 @@ class ABCFontFace(ABC):
         if error: raise FT_Exception(error)
 
         ttFont = TTFont(self.font_file.filename, fontNumber=self.font_index)
-        supported_cmaps = FontParser.get_supported_cmaps(ttFont)
+        supported_cmaps = FontParser.get_supported_cmaps(ttFont, self.font_file.filename, self.font_index)
         supported_charmaps = []
         for i in range(face.contents.num_charmaps):
             charmap = face.contents.charmaps[i]
