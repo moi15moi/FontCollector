@@ -53,7 +53,7 @@ fontCollector -i "file1.ass" "file2.ass"
 ```
 Take all the .ass files from the current folder and save the font in the current folder
 ```
-fontCollector -i
+fontCollector -i .
 ```
 Mux font from .ass file into an mkv
 ```
