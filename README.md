@@ -1,6 +1,9 @@
 # FontCollector
-[![FontCollector test code coverage](https://img.shields.io/codecov/c/github/moi15moi/FontCollector)](https://app.codecov.io/github/moi15moi/FontCollector)
-[![FontCollector mypy verification](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/moi15moi/FontCollector/actions?query=branch:main)
+[![FontCollector - Version](https://img.shields.io/pypi/v/fontcollector.svg)](https://pypi.org/project/FontCollector)
+[![FontCollector - Python Version](https://img.shields.io/pypi/pyversions/fontcollector.svg)](https://pypi.org/project/FontCollector)
+[![FontCollector - Downloads](https://img.shields.io/pypi/dm/fontcollector.svg)](https://pypistats.org/packages/fontcollector)
+[![FontCollector - Coverage](https://img.shields.io/codecov/c/github/moi15moi/FontCollector)](https://app.codecov.io/github/moi15moi/FontCollector)
+[![FontCollector - mypy](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/moi15moi/FontCollector/actions?query=branch:main)
 
 FontCollector for Advanced SubStation Alpha file.
 This tool allows to recover and/or mux the fonts necessary in an mkv.
