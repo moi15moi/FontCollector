@@ -12,7 +12,7 @@ dependencies = [
     "ass-tag-analyzer",
     "fontTools>=4.38.0",
     "freetype-py",
-    "FindSystemFontsFilename>=0.1.2",
+    "FindSystemFontsFilename>=0.3.0",
     "langcodes",
 ]
 classifiers=[
