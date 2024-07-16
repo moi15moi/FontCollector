@@ -62,6 +62,9 @@ class FontParser:
         if font["STAT"].table.DesignAxisRecord is None:
             raise InvalidVariableFontFaceException("The font has a stat table, but it doesn't have any DesignAxisRecord")
 
+        if not font["fvar"].instances:
+            return False
+
         for axe in font["fvar"].axes:
             if not (axe.minValue <= axe.defaultValue <= axe.maxValue):
                 return False
