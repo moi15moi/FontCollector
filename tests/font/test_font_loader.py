@@ -29,6 +29,7 @@ def test_load_additional_fonts():
         Path(os.path.join(font_directory, "font_mac.TTF")),
         Path(os.path.join(font_directory, "font_with_invalid_os2_table.ttf")),
         Path(os.path.join(font_directory, "font_without axis_value.ttf")),
+        Path(os.path.join(font_directory, "fvar_with_0_instance.ttf")),
         Path(os.path.join(font_directory, "invalid_cmap.ttf")),
         Path(os.path.join(font_directory, "opentype_font_collection.ttc")),
         Path(os.path.join(font_directory, "PENBOX.otf")),
