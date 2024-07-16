@@ -134,6 +134,22 @@ def test_variable_font_with_invalid_fvar_defaultValue():
     assert is_collection_font == expected_is_collection_font
     assert fonts == expected_font
 
+def test_variable_font_with_0_instance_fvar():
+    font_path = os.path.join(os.path.dirname(dir_path), "file", "fonts", "fvar_with_0_instance.ttf")
+    fonts, is_collection_font = FactoryABCFontFace.from_font_path(font_path)
+    expected_is_collection_font = False
+    expected_font = [NormalFontFace(
+        0,
+        [Name("Signika Medium", Language.get("en-US"))],
+        [Name("Signika Medium", Language.get("en-US"))],
+        500,
+        False,
+        False,
+        FontType.TRUETYPE,
+    )]
+
+    assert is_collection_font == expected_is_collection_font
+    assert fonts == expected_font
 
 def test_variable_font_with_empty_axis_value_array():
     font_path = os.path.join(os.path.dirname(dir_path), "file", "variable font tests", "Test #2", "Test #2.ttf")
