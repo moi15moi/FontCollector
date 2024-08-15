@@ -43,6 +43,7 @@ class FontCollection:
         self.reload_system_font = reload_system_font
         self.use_generated_fonts = use_generated_fonts
         self.additional_fonts = additional_fonts
+        self.__system_fonts: Optional[List[FontFile]] = None
 
 
     def __iter__(self) -> Generator[FontFile, None, None]:
@@ -56,7 +57,7 @@ class FontCollection:
             if self.reload_system_font:
                 return FontLoader.load_system_fonts()
 
-            if not hasattr(self, '__system_fonts'):
+            if self.__system_fonts is None:
                 self.__system_fonts = FontLoader.load_system_fonts()
             return self.__system_fonts
         return []
