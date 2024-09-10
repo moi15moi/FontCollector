@@ -32,7 +32,7 @@ jobs:
 
     - name: Install platform-specific requirements (macOS)
       if: runner.os == 'macOS'
-      run: brew install mkvtoolnix
+      run: brew install --cask mkvtoolnix
 
     - name: Install platform-specific requirements (Windows)
       if: runner.os == 'Windows'
