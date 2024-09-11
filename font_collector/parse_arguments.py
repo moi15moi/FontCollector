@@ -47,7 +47,7 @@ def parse_arguments() -> Tuple[
     parser.add_argument(
         "--input",
         "-i",
-        nargs="*",
+        nargs="+",
         type=Path,
         required=True,
         help="""
