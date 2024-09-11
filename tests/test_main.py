@@ -4,7 +4,7 @@ import pytest
 import shutil
 import subprocess
 from pathlib import Path
-from font_collector import Mkvpropedit, FontFile
+from font_collector import MKVPropedit, FontFile
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

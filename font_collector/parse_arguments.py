@@ -1,5 +1,5 @@
 import os
-from .mkvpropedit import Mkvpropedit
+from .mkvtoolnix.mkvpropedit import MKVPropedit
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Iterable, List, Tuple, Union
@@ -148,7 +148,7 @@ def parse_arguments() -> Tuple[
     if args.mkvpropedit:
         if not mkv_path:
             raise RuntimeError("-mkvpropedit requires --mkv option.")
-        Mkvpropedit.path = args.mkvpropedit
+        MKVPropedit.path = args.mkvpropedit
 
     return (
         ass_files_path,

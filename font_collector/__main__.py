@@ -2,7 +2,7 @@ import logging
 import shutil
 from .ass.ass_document import AssDocument
 from .font import FontCollection, FontFile, FontLoader, FontResult, FontSelectionStrategyLibass, VariableFontFace
-from .mkvpropedit import Mkvpropedit
+from .mkvtoolnix.mkvpropedit import MKVPropedit
 from .parse_arguments import parse_arguments
 from pathlib import Path
 from typing import List, Set
@@ -84,8 +84,8 @@ def main() -> None:
 
     if mkv_path is not None:
         if delete_fonts:
-            Mkvpropedit.delete_fonts_of_mkv(mkv_path)
-        Mkvpropedit.merge_fonts_into_mkv(fonts_file_found, mkv_path)
+            MKVPropedit.delete_fonts_of_mkv(mkv_path)
+        MKVPropedit.merge_fonts_into_mkv(fonts_file_found, mkv_path)
     else:
         if not output_directory.is_dir():
             output_directory.mkdir()

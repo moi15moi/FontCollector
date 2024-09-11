@@ -6,7 +6,7 @@ from .font import *
 from .system_lang import *
 # Files
 from .exceptions import *
-from .mkvpropedit import *
+from .mkvtoolnix.mkvpropedit import *
 from ._version import __version__
 from fontTools.misc.loggingTools import configLogger
 

@@ -4,17 +4,17 @@ import pytest
 import shutil
 import subprocess
 from pathlib import Path
-from font_collector import Mkvpropedit, FontFile
+from font_collector import MKVPropedit, FontFile
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_is_mkv():
-    assert Mkvpropedit.is_mkv(Path(os.path.join(dir_path, "file", "test video.mkv")))
-    assert not Mkvpropedit.is_mkv(Path(os.path.join(dir_path, "file", "ass", "Style test.ass")))
+    assert MKVPropedit.is_mkv(Path(os.path.join(dir_path, "file", "test video.mkv")))
+    assert not MKVPropedit.is_mkv(Path(os.path.join(dir_path, "file", "ass", "Style test.ass")))
     file_that_does_not_exist = Path(os.path.join(dir_path, "file", "file that does not exist"))
     with pytest.raises(FileNotFoundError) as exc_info:
-        Mkvpropedit.is_mkv(file_that_does_not_exist)
+        MKVPropedit.is_mkv(file_that_does_not_exist)
     assert str(exc_info.value) == f'The file "{file_that_does_not_exist}" does not exist.'
 
 def test_delete_fonts_of_mkv():
@@ -43,7 +43,7 @@ def test_delete_fonts_of_mkv():
         raise ValueError(f'The video "{original_mkv_file} need to have 0 attachments"')
 
     # Verify if the font have been merged
-    Mkvpropedit.merge_fonts_into_mkv([font_file], temp_mkv_file)
+    MKVPropedit.merge_fonts_into_mkv([font_file], temp_mkv_file)
     cmd = [
         "mkvmerge",
         temp_mkv_file,
@@ -58,7 +58,7 @@ def test_delete_fonts_of_mkv():
     assert mkvmerge_output_dict["attachments"][0]["file_name"] == font_file.filename.resolve().name
 
     # Verify if the font have been deleted
-    Mkvpropedit.delete_fonts_of_mkv(temp_mkv_file)
+    MKVPropedit.delete_fonts_of_mkv(temp_mkv_file)
     cmd = [
         "mkvmerge",
         temp_mkv_file,
@@ -99,7 +99,7 @@ def test_merge_fonts_into_mkv():
         raise ValueError(f'The video "{original_mkv_file} need to have 0 attachments"')
 
     # Verify if the font have been merged
-    Mkvpropedit.merge_fonts_into_mkv([font_file], temp_mkv_file)
+    MKVPropedit.merge_fonts_into_mkv([font_file], temp_mkv_file)
     cmd = [
         "mkvmerge",
         temp_mkv_file,
