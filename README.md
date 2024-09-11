@@ -26,7 +26,6 @@ options:
   -h, --help            show this help message and exit
   --input [INPUT ...], -i [INPUT ...]
                         Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
-                        If no argument is specified, it will take all the font in the current path.
   -mkv MKV
                         Video where the fonts will be merge. Must be a Matroska file.
   --output OUTPUT, -o OUTPUT
