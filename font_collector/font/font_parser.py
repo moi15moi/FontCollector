@@ -293,9 +293,9 @@ class FontParser:
 
         # Generate family_name an fullname
         for item in product(*axis_values_names):
-            langs: Set[Language] = set()
+            langs: List[Language] = []
             for element in item:
-                langs.add(element.lang_code)
+                langs.append(element.lang_code)
 
             family_name_str = " ".join([element.value for i, element in enumerate(item) if family_name_axis_value_index[i]])
             fullname_str = " ".join([element.value for i, element in enumerate(item) if fullname_axis_value_index[i]])
