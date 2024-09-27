@@ -227,9 +227,9 @@ class ABCAssDocument(ABC):
             line_index: Position of the line in the subtitle
             sub_styles: Dict of the [V4+ Styles] sections
             original_line_style: Style of the line
-            line_style: Style of the line. In general, it will be equal to original_line_style except it there is an \rXXX
-            current_style: Real style of the text. It exist since \fn, \b, \i can override the line_style.
-            current_wrap_style: Since \q can override the subtitle WrapStyle, we need it.
+            line_style: Style of the line. In general, it will be equal to original_line_style except it there is an \\rXXX
+            current_style: Real style of the text. It exist since \\fn, \\b, \\i can override the line_style.
+            current_wrap_style: Since \\q can override the subtitle WrapStyle, we need it.
             collect_draw_fonts: If true, then it will also collect the draw style, if false, it will ignore it.
         """
 
