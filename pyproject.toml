@@ -8,11 +8,11 @@ license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    "ass",
-    "ass-tag-analyzer",
-    "fontTools>=4.38.0",
-    "freetype-py",
-    "FindSystemFontsFilename>=0.3.0",
+    "ass < 1",
+    "ass-tag-analyzer < 1",
+    "fontTools>=4.38.0, < 5",
+    "freetype-py>2, < 3",
+    "FindSystemFontsFilename>=0.3.0, < 1",
     "langcodes>=3.4.1, < 4",
 ]
 classifiers=[
