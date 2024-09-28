@@ -1,8 +1,9 @@
 import os
 from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 
 def __parse_input_file(ass_input: List[Path]) -> List[Path]:
@@ -35,12 +36,17 @@ def parse_arguments() -> Tuple[
     Iterable[Path],
     bool,
     bool,
-    bool
+    bool,
+    Optional[Path]
 ]:
     """
     Returns:
         ass_files_path, output_directory, mkv_path, delete_fonts, additional_fonts, use_system_fonts
     """
+
+    start_time = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+    default_log_path = Path.cwd().joinpath(f"{start_time}_font_collector.log")
+
     parser = ArgumentParser(
         description="FontCollector for Advanced SubStation Alpha file."
     )
@@ -127,6 +133,17 @@ def parse_arguments() -> Tuple[
     If specified, FontCollector won't convert variable font to a font collection. see: https://github.com/libass/libass/issues/386
     """,
     )
+    parser.add_argument(
+        "--logging",
+        "-log",
+        type=Path,
+        nargs="?",
+        const=default_log_path,
+        default=None,
+        help="""
+    Destination path of log. If it isn't specified, it will be YYYY-MM-DD--HH-MM-SS_font_collector.log.
+    """,
+    )
 
     args = parser.parse_args()
 
@@ -144,6 +161,7 @@ def parse_arguments() -> Tuple[
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
     convert_variable_to_collection = args.dont_convert_variable_to_collection
+    logging_file_path = args.logging
 
     if args.mkvpropedit:
         if not mkv_path:
@@ -159,5 +177,6 @@ def parse_arguments() -> Tuple[
         additional_fonts_recursive,
         use_system_fonts,
         collect_draw_fonts,
-        convert_variable_to_collection
+        convert_variable_to_collection,
+        logging_file_path
     )
