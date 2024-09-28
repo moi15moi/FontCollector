@@ -17,8 +17,9 @@ pip install FontCollector
 ## Usage
 ```console
 $ fontcollector --help
-usage: fontcollector [-h] --input [INPUT ...] [-mkv MKV] [--output OUTPUT] [-mkvpropedit MKVPROPEDIT] [--delete-fonts]
-                     [--additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]] [--exclude-system-fonts]
+usage: fontcollector [-h] --input [INPUT ...] [-mkv MKV] [--output OUTPUT] [-mkvpropedit MKVPROPEDIT] [--delete-fonts] [--additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]]
+                     [--additional-fonts-recursive ADDITIONAL_FONTS_RECURSIVE [ADDITIONAL_FONTS_RECURSIVE ...]] [--exclude-system-fonts] [--collect-draw-fonts] [--dont-convert-variable-to-collection]
+                     [--logging [LOGGING]]
 
 FontCollector for Advanced SubStation Alpha file.
 
@@ -47,6 +48,10 @@ options:
   --collect-draw-fonts
                         If specified, FontCollector will collect the font used by the draw. For more detail when this
                         is usefull, see: https://github.com/libass/libass/issues/617
+  --dont-convert-variable-to-collection
+                        If specified, FontCollector won't convert variable font to a font collection. see: https://github.com/libass/libass/issues/386
+  --logging [LOGGING], -log [LOGGING]
+                        Destination path of log. If it isn't specified, it will be YYYY-MM-DD--HH-MM-SS_font_collector.log.
 ```
 ## Examples
 Recover fonts from 2 .ass files and save them in the current folder

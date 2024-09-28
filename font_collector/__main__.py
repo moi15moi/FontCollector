@@ -1,10 +1,12 @@
 import logging
 import shutil
+from . import _handler
 from .ass.ass_document import AssDocument
 from .font import FontCollection, FontFile, FontLoader, FontResult, FontSelectionStrategyLibass, VariableFontFace
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from pathlib import Path
+from sys import argv
 from typing import List, Set
 
 
@@ -21,8 +23,17 @@ def main() -> None:
         additional_fonts_recursive_path,
         use_system_font,
         collect_draw_fonts,
-        convert_variable_to_collection
+        convert_variable_to_collection,
+        logging_file_path
     ) = parse_arguments()
+
+    if logging_file_path:
+        file_handler = logging.FileHandler(logging_file_path, mode="a", encoding="utf-8")
+        file_handler.setLevel(_handler.level)
+        file_handler.setFormatter(_handler.formatter)
+        _logger.addHandler(file_handler)
+        _logger.info(f"{Path.cwd()}>{' '.join(argv)}")
+
     font_results: List[FontResult] = []
     additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
     additional_fonts.extend(FontLoader.load_additional_fonts(additional_fonts_recursive_path, True))
