@@ -114,7 +114,7 @@ class FontLoader:
                     for root, dirs, files in os.walk(font_path):
                         for name in files:
                             file_path = Path(os.path.join(root, name))
-                            if is_file_font(Path(file_path)):
+                            if is_file_font(file_path):
                                 try:
                                     additional_fonts.append(FontFile.from_font_path(file_path))
                                 except InvalidFontException as e:
