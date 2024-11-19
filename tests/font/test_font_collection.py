@@ -227,10 +227,11 @@ def test__repr__():
 
 @pytest.mark.skipif(system() != "Darwin", reason="Test runs only on Darwin")
 def test_BM_Kirang_Haerang():
+    # This is just a temporary test to try what XMX says here: https://discord.com/channels/131816223523602432/710562732973490238/1308566022122377328s
     font_collection = FontCollection(use_system_font=True)
     strategy = FontSelectionStrategyLibass()
 
-    ass_style = AssStyle("BM Kirang Haerang", 400, False)
+    ass_style = AssStyle("BMKIRANGHAERANG-OTF", 400, False)
     font_result = font_collection.get_used_font_by_style(ass_style, strategy)
     assert font_result != None
     assert font_result.font_face.font_file.filename.is_file()
