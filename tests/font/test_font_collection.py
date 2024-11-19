@@ -1,4 +1,5 @@
 import os
+from platform import system
 import pytest
 import shutil
 from font_collector import (
@@ -222,3 +223,14 @@ def test__repr__():
     )
 
     assert repr(font_collection) == 'FontCollection(Use system font="False", Reload system font="False", Use generated fonts="False", Additional fonts="set()")'
+
+
+@pytest.mark.skipif(system() != "Darwin", reason="Test runs only on Darwin")
+def test_BM_Kirang_Haerang():
+    font_collection = FontCollection(use_system_font=True)
+    strategy = FontSelectionStrategyLibass()
+
+    ass_style = AssStyle("BM Kirang Haerang", 400, False)
+    font_result = font_collection.get_used_font_by_style(ass_style, strategy)
+    assert font_result != None
+    assert font_result.font_face.font_file.filename.is_file()
