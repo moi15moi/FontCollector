@@ -10,7 +10,7 @@ from .variable_font_face import VariableFontFace
 from pathlib import Path
 from fontTools.ttLib.ttFont import TTFont
 from os import linesep
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any
 
 _logger = logging.getLogger(__name__)
 

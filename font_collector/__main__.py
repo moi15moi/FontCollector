@@ -7,7 +7,6 @@ from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
 from pathlib import Path
 from sys import argv
-from typing import List, Set
 
 
 _logger = logging.getLogger(__name__)

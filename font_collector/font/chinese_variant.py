@@ -1,7 +1,6 @@
 from __future__ import annotations
 from enum import auto, Enum
 from langcodes import Language
-from typing import Type
 
 
 class ChineseVariant(Enum):

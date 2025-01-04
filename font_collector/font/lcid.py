@@ -1,6 +1,5 @@
 # From https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/70feba9f-294e-491e-b6eb-56532684c37f
 # Specifically from protocol 15.0 (in the future, the link may not be the 15.0) : https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-LCID/[MS-LCID].pdf
-from typing import Dict
 
 
 WINDOWS_LCID_CODE_TO_LANGUAGES: dict[int, str] = {

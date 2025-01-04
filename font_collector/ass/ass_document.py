@@ -4,7 +4,7 @@ from ass import Document
 from ass import Dialogue, parse_file, parse_string
 from ass_tag_analyzer import WrapStyle
 from pathlib import Path
-from typing import Optional, Tuple, Type
+from typing import Optional
 
 
 __all__ = ["AssDocument"]

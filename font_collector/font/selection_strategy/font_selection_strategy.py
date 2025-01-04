@@ -21,7 +21,6 @@ class FontSelectionStrategy(ABC):
         Returns:
             True if the style_font_name match with the font_face. Otherwise, False.
         """
-        pass
 
 
     @abstractmethod
@@ -33,7 +32,6 @@ class FontSelectionStrategy(ABC):
         Returns:
             True if the font face needs to have faux bold to display like the AssStyle, otherwise, false.
         """
-        pass
 
 
     @abstractmethod
@@ -47,4 +45,3 @@ class FontSelectionStrategy(ABC):
             The lower, the better. If it returns 0, it means it is a perfect match.
             If it returns infinity, then the font name between the style and the font face doesn't match.
         """
-        pass

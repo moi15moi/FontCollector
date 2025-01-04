@@ -11,4 +11,3 @@ class ABCSystemLang(ABC):
             The system language code, formatted as BCP 47. Ex: "en"
             If the system language couldn't be found, it will fallback to "en"
         """
-        pass

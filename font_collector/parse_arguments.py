@@ -3,7 +3,7 @@ from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from collections.abc import Iterable
 
