@@ -1,6 +1,7 @@
+import os
+
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
-import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

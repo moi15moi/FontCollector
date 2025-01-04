@@ -1,7 +1,9 @@
 from __future__ import annotations
-from .ass_style import AssStyle
-from .usage_data import UsageData
+
 from abc import ABC, abstractmethod
+from copy import deepcopy
+from typing import Optional
+
 from ass_tag_analyzer import (
     AssDraw,
     AssInvalidTagBold,
@@ -22,12 +24,12 @@ from ass_tag_analyzer import (
     AssValidTagItalic,
     AssValidTagResetStyle,
     AssValidTagWrapStyle,
-    parse_line,
     WrapStyle,
+    parse_line
 )
-from copy import deepcopy
-from typing import Optional
 
+from .ass_style import AssStyle
+from .usage_data import UsageData
 
 __all__ = ["ABCAssDocument"]
 

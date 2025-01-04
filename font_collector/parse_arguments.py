@@ -1,11 +1,11 @@
 import os
-from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-from collections.abc import Iterable
+from .mkvpropedit import Mkvpropedit
 
 
 def __parse_input_file(ass_input: list[Path]) -> list[Path]:

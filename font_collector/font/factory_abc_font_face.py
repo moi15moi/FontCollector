@@ -1,16 +1,23 @@
 from __future__ import annotations
+
 import logging
-from ..exceptions import InvalidFontException, InvalidNormalFontFaceException, InvalidVariableFontFaceException
+from os import linesep
+from pathlib import Path
+from typing import Any
+
+from fontTools.ttLib.ttFont import TTFont
+
+from ..exceptions import (
+    InvalidFontException,
+    InvalidNormalFontFaceException,
+    InvalidVariableFontFaceException
+)
 from .abc_font_face import ABCFontFace
-from .normal_font_face import NormalFontFace
 from .font_parser import FontParser
 from .font_type import FontType
 from .name import NameID, PlatformID
+from .normal_font_face import NormalFontFace
 from .variable_font_face import VariableFontFace
-from pathlib import Path
-from fontTools.ttLib.ttFont import TTFont
-from os import linesep
-from typing import Any
 
 _logger = logging.getLogger(__name__)
 

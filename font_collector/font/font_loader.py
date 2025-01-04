@@ -1,15 +1,17 @@
 from __future__ import annotations
+
 import logging
 import os
 import pickle
-from ..exceptions import InvalidFontException
-from .._version import __version__
-from .font_file import FontFile
-from find_system_fonts_filename import get_system_fonts_filename
+from collections.abc import Iterable
 from pathlib import Path
 from tempfile import gettempdir
 
-from collections.abc import Iterable
+from find_system_fonts_filename import get_system_fonts_filename
+
+from .._version import __version__
+from ..exceptions import InvalidFontException
+from .font_file import FontFile
 
 __all__ = ["FontLoader"]
 _logger = logging.getLogger(__name__)

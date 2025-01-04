@@ -1,5 +1,7 @@
 from __future__ import annotations
-from enum import auto, Enum
+
+from enum import Enum, auto
+
 from fontTools.ttLib.ttFont import TTFont
 
 __all__ = ["FontType"]

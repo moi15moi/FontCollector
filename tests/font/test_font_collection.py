@@ -1,22 +1,24 @@
 import os
-import pytest
 import shutil
+from collections.abc import Hashable
+from pathlib import Path
+from time import sleep
+
+import pytest
+from langcodes import Language
+
 from font_collector import (
     AssStyle,
-    FontFile,
     FontCollection,
+    FontFile,
     FontLoader,
-    FontType,
     FontResult,
     FontSelectionStrategyLibass,
+    FontType,
     Name,
     NormalFontFace,
     VariableFontFace
 )
-from langcodes import Language
-from pathlib import Path
-from time import sleep
-from collections.abc import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

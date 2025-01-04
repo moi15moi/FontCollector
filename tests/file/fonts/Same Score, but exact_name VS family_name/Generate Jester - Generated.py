@@ -1,5 +1,6 @@
-from fontTools.ttLib.ttFont import TTFont
 import os
+
+from fontTools.ttLib.ttFont import TTFont
 
 # Test if GDI perfer exact_name match over family_name when same score is the same
 # Conclusion: It prefer first installed font

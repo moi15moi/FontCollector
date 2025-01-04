@@ -1,10 +1,12 @@
 import os
+from collections.abc import Hashable
+
 import pytest
+from fontTools.ttLib.tables._n_a_m_e import _MAC_LANGUAGES, NameRecord
+from langcodes import Language
+
 from font_collector import InvalidNameRecord, Name, PlatformID
 from font_collector.font.lcid import WINDOWS_LCID_CODE_TO_LANGUAGES
-from fontTools.ttLib.tables._n_a_m_e import NameRecord, _MAC_LANGUAGES
-from langcodes import Language
-from collections.abc import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

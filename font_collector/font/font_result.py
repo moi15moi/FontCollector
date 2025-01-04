@@ -1,6 +1,6 @@
 from __future__ import annotations
-from .abc_font_face import ABCFontFace
 
+from .abc_font_face import ABCFontFace
 
 __all__ = ["FontResult"]
 

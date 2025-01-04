@@ -1,11 +1,12 @@
 from __future__ import annotations
-from .abc_ass_document import ABCAssDocument
-from ass import Document
-from ass import Dialogue, parse_file, parse_string
-from ass_tag_analyzer import WrapStyle
+
 from pathlib import Path
 from typing import Optional
 
+from ass import Dialogue, Document, parse_file, parse_string
+from ass_tag_analyzer import WrapStyle
+
+from .abc_ass_document import ABCAssDocument
 
 __all__ = ["AssDocument"]
 

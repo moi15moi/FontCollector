@@ -1,13 +1,20 @@
 import logging
 import shutil
-from . import _handler
-from .ass.ass_document import AssDocument
-from .font import FontCollection, FontFile, FontLoader, FontResult, FontSelectionStrategyLibass, VariableFontFace
-from .mkvpropedit import Mkvpropedit
-from .parse_arguments import parse_arguments
 from pathlib import Path
 from sys import argv
 
+from . import _handler
+from .ass.ass_document import AssDocument
+from .font import (
+    FontCollection,
+    FontFile,
+    FontLoader,
+    FontResult,
+    FontSelectionStrategyLibass,
+    VariableFontFace
+)
+from .mkvpropedit import Mkvpropedit
+from .parse_arguments import parse_arguments
 
 _logger = logging.getLogger(__name__)
 

@@ -1,6 +1,9 @@
-from font_collector import Name, NormalFontFace, FontType
-from font_collector.font.selection_strategy.font_selection_strategy_libass import FontSelectionStrategyLibass
 from langcodes import Language
+
+from font_collector import FontType, Name, NormalFontFace
+from font_collector.font.selection_strategy.font_selection_strategy_libass import (
+    FontSelectionStrategyLibass
+)
 
 
 def test_is_font_name_match_trunc_string():

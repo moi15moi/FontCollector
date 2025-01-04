@@ -1,9 +1,11 @@
 from __future__ import annotations
-from .factory_abc_font_face import FactoryABCFontFace
+
 from collections import Counter
 from pathlib import Path
 from time import time
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+from .factory_abc_font_face import FactoryABCFontFace
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace

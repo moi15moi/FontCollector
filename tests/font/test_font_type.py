@@ -1,6 +1,8 @@
 import os
-from font_collector import FontType
+
 from fontTools.ttLib.ttFont import TTFont
+
+from font_collector import FontType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

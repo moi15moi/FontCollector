@@ -1,5 +1,7 @@
-from .abc_system_lang import ABCSystemLang
 from locale import getlocale
+
+from .abc_system_lang import ABCSystemLang
+
 
 class LinuxLang(ABCSystemLang):
 

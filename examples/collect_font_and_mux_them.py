@@ -1,5 +1,7 @@
 import logging
 import sys
+from pathlib import Path
+
 from font_collector import (
     AssDocument,
     FontCollection,
@@ -7,9 +9,8 @@ from font_collector import (
     FontLoader,
     FontSelectionStrategyLibass,
     Mkvpropedit,
-    set_loglevel,
+    set_loglevel
 )
-from pathlib import Path
 
 # If you don't want to get any log, set the loglevel to logging.CRITICAL
 set_loglevel(logging.CRITICAL)

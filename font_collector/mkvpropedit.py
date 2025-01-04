@@ -1,12 +1,12 @@
 import logging
 import subprocess
-from .font.font_file import FontFile
+from collections.abc import Iterable
 from enum import IntEnum
 from pathlib import Path
 from shutil import which
 from typing import Optional
 
-from collections.abc import Iterable
+from .font.font_file import FontFile
 
 __all__ = ["Mkvpropedit"]
 _logger = logging.getLogger(__name__)
