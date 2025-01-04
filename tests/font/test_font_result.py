@@ -1,7 +1,9 @@
 import os
-from font_collector import FontResult, FontType, Name, NormalFontFace
-from langcodes import Language
 from collections.abc import Hashable
+
+from langcodes import Language
+
+from font_collector import FontResult, FontType, Name, NormalFontFace
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

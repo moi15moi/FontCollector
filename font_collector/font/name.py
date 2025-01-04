@@ -1,10 +1,20 @@
 from __future__ import annotations
-from ..exceptions import InvalidNameRecord
-from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
+
 from enum import IntEnum
-from fontTools.ttLib.tables._n_a_m_e import _MAC_LANGUAGES, _MAC_LANGUAGE_CODES, NameRecord
-from langcodes import closest_supported_match, Language
 from typing import Optional
+
+from fontTools.ttLib.tables._n_a_m_e import (
+    _MAC_LANGUAGE_CODES,
+    _MAC_LANGUAGES,
+    NameRecord
+)
+from langcodes import Language, closest_supported_match
+
+from ..exceptions import InvalidNameRecord
+from .lcid import (
+    WINDOWS_LANGUAGES_TO_LCID_CODE,
+    WINDOWS_LCID_CODE_TO_LANGUAGES
+)
 
 MAC_LCID_CODE_TO_LANGUAGES: dict[int, str] = _MAC_LANGUAGES
 MAC_LANGUAGES_TO_LCID_CODE: dict[str, int] = _MAC_LANGUAGE_CODES

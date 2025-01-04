@@ -1,18 +1,11 @@
 import os
-import pytest
 from ctypes import byref
 from pathlib import Path
-from font_collector import (
-    InvalidVariableFontFaceException,
-    PlatformID,
-    Name,
-    NameID,
-)
-from font_collector.font.font_parser import FontParser
-from font_collector.font.cmap import CMap
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
+
+import pytest
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from freetype import (
     FT_Done_Face,
     FT_Done_FreeType,
@@ -20,10 +13,18 @@ from freetype import (
     FT_Face,
     FT_Init_FreeType,
     FT_Library,
-    FT_New_Memory_Face,
+    FT_New_Memory_Face
 )
 from langcodes import Language
 
+from font_collector import (
+    InvalidVariableFontFaceException,
+    Name,
+    NameID,
+    PlatformID
+)
+from font_collector.font.cmap import CMap
+from font_collector.font.font_parser import FontParser
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

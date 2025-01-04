@@ -1,11 +1,19 @@
 import os
-import pytest
 import shutil
-from font_collector import FontFile, FontType, Name, NormalFontFace, VariableFontFace
-from langcodes import Language
+from collections.abc import Hashable
 from pathlib import Path
 from time import time
-from collections.abc import Hashable
+
+import pytest
+from langcodes import Language
+
+from font_collector import (
+    FontFile,
+    FontType,
+    Name,
+    NormalFontFace,
+    VariableFontFace
+)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 filename = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf"))

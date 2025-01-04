@@ -1,6 +1,7 @@
-from fontTools.ttLib.ttFont import TTFont
-from fontTools.ttLib.ttCollection import TTCollection
 import os
+
+from fontTools.ttLib.ttCollection import TTCollection
+from fontTools.ttLib.ttFont import TTFont
 
 # Test if GDI perfer TTF VS TTC file when family, weight and italic is the same
 # Conclusion: It prefer first installed font

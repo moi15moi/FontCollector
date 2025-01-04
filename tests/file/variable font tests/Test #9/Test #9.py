@@ -1,7 +1,7 @@
-from fontTools.ttLib.ttFont import TTFont
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
-
 import os
+
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
+from fontTools.ttLib.ttFont import TTFont
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

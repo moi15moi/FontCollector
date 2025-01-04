@@ -1,6 +1,7 @@
 import os
-from font_collector import FontLoader
 from pathlib import Path
+
+from font_collector import FontLoader
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

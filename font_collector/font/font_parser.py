@@ -1,23 +1,22 @@
 from __future__ import annotations
-from ..exceptions import InvalidNameRecord, InvalidVariableFontFaceException
-from .cmap import CMap
-from .name import Name, NameID, PlatformID
+
 from ctypes import byref, c_uint, create_string_buffer
+from itertools import product
+from pathlib import Path
+from struct import error as struct_error
+from typing import Any, Optional
+
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
-from freetype import (
-    Face,
-    FT_Face,
-    FT_Get_Glyph_Name,
-)
+from freetype import Face, FT_Face, FT_Get_Glyph_Name
 from freetype.ft_enums.ft_style_flags import FT_STYLE_FLAGS
-from itertools import product
 from langcodes import Language
-from pathlib import Path
-from struct import error as struct_error
-from typing import Any, Optional
+
+from ..exceptions import InvalidNameRecord, InvalidVariableFontFaceException
+from .cmap import CMap
+from .name import Name, NameID, PlatformID
 
 
 class FontParser:

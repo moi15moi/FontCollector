@@ -1,7 +1,10 @@
 import ast
-import pytest
 import re
+
+import pytest
+
 from font_collector import UsageData
+
 
 def test__init__():
     characters_used = {'A'}

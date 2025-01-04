@@ -1,6 +1,7 @@
-from fontTools.ttLib.ttFont import TTFont
-from fontTools.ttLib.tables import otTables
 import os
+
+from fontTools.ttLib.tables import otTables
+from fontTools.ttLib.ttFont import TTFont
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

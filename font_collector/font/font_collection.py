@@ -1,14 +1,15 @@
 from __future__ import annotations
+
 from collections import Counter
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Optional
+
 from ..ass import AssStyle
 from .abc_font_face import ABCFontFace
 from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .selection_strategy import FontSelectionStrategy
-from typing import Any, Optional, TYPE_CHECKING
-
-from collections.abc import Generator
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace

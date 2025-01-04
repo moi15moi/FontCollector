@@ -1,5 +1,6 @@
-from ..exceptions import OSNotSupported
 from platform import system
+
+from ..exceptions import OSNotSupported
 
 __all__ = ["get_system_lang"]
 

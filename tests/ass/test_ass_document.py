@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
+
 import pytest
 from ass import Comment, Dialogue, Document, Style
 from ass_tag_analyzer import WrapStyle
-from pathlib import Path
-from font_collector import AssDocument, AssStyle, UsageData
 
+from font_collector import AssDocument, AssStyle, UsageData
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 test_ass_file_dir_path = os.path.join(os.path.dirname(dir_path), "file", "ass")

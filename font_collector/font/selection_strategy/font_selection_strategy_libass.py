@@ -2,7 +2,6 @@ from ...ass.ass_style import AssStyle
 from ..abc_font_face import ABCFontFace
 from .font_selection_strategy import FontSelectionStrategy
 
-
 __all__ = ["FontSelectionStrategyLibass"]
 
 class FontSelectionStrategyLibass(FontSelectionStrategy):

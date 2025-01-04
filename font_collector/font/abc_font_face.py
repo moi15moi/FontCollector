@@ -1,13 +1,12 @@
 from __future__ import annotations
-from ..exceptions import InvalidLanguageCode, OSNotSupported
-from ..system_lang import get_system_lang
-from .chinese_variant import ChineseVariant
-from .cmap import CMap
-from .font_parser import FontParser
-from .font_type import FontType
-from .name import Name
+
+import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from ctypes import byref
+from typing import TYPE_CHECKING, Optional
+
+from fontTools.ttLib.ttFont import TTFont
 from freetype import (
     FT_Done_Face,
     FT_Done_FreeType,
@@ -18,14 +17,17 @@ from freetype import (
     FT_Init_FreeType,
     FT_Library,
     FT_New_Memory_Face,
-    FT_Set_Charmap,
+    FT_Set_Charmap
 )
-from fontTools.ttLib.ttFont import TTFont
 from langcodes import Language, tag_is_valid
-from typing import Optional, TYPE_CHECKING
 
-from collections.abc import Iterable
-import logging
+from ..exceptions import InvalidLanguageCode, OSNotSupported
+from ..system_lang import get_system_lang
+from .chinese_variant import ChineseVariant
+from .cmap import CMap
+from .font_parser import FontParser
+from .font_type import FontType
+from .name import Name
 
 if TYPE_CHECKING:
     from .font_file import FontFile

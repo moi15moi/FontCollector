@@ -1,11 +1,20 @@
 import os
-from pathlib import Path
-import pytest
 import string
-from font_collector import VariableFontFace, FontFile, FontLoader, FontType, NormalFontFace, InvalidVariableFontFaceException, Name
-from langcodes import Language
 from collections.abc import Hashable
+from pathlib import Path
 
+import pytest
+from langcodes import Language
+
+from font_collector import (
+    FontFile,
+    FontLoader,
+    FontType,
+    InvalidVariableFontFaceException,
+    Name,
+    NormalFontFace,
+    VariableFontFace
+)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

@@ -1,17 +1,20 @@
 from __future__ import annotations
-from ..exceptions import InvalidVariableFontFaceException
-from .._version import __version__
-from .abc_font_face import ABCFontFace
-from .name import Name, NameID
-from .font_parser import FontParser
-from .font_type import FontType
+
 from datetime import date
+from itertools import product
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Optional
+
 from fontTools.ttLib.ttCollection import TTCollection
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib import instancer
-from itertools import product
-from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING
+
+from .._version import __version__
+from ..exceptions import InvalidVariableFontFaceException
+from .abc_font_face import ABCFontFace
+from .font_parser import FontParser
+from .font_type import FontType
+from .name import Name, NameID
 
 if TYPE_CHECKING:
     from . import FontFile

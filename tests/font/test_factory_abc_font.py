@@ -1,10 +1,17 @@
 import collections
 import os
+
 import pytest
-from font_collector.font.factory_abc_font_face import FactoryABCFontFace
-from font_collector import FontType, Name, NormalFontFace, VariableFontFace, InvalidVariableFontFaceException
 from langcodes import Language
 
+from font_collector import (
+    FontType,
+    InvalidVariableFontFaceException,
+    Name,
+    NormalFontFace,
+    VariableFontFace
+)
+from font_collector.font.factory_abc_font_face import FactoryABCFontFace
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
