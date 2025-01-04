@@ -6,7 +6,9 @@ from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .selection_strategy import FontSelectionStrategy
-from typing import Any, Generator, List, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
+
+from collections.abc import Generator
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace
@@ -37,22 +39,21 @@ class FontCollection:
         use_system_font: bool = True,
         reload_system_font: bool = False,
         use_generated_fonts: bool = True,
-        additional_fonts: List[FontFile] = [],
+        additional_fonts: list[FontFile] = [],
     ) -> None:
         self.use_system_font = use_system_font
         self.reload_system_font = reload_system_font
         self.use_generated_fonts = use_generated_fonts
         self.additional_fonts = additional_fonts
-        self.__system_fonts: Optional[List[FontFile]] = None
+        self.__system_fonts: Optional[list[FontFile]] = None
 
 
     def __iter__(self) -> Generator[FontFile, None, None]:
-        for font in self.fonts:
-            yield font
+        yield from self.fonts
 
 
     @property
-    def system_fonts(self) -> List[FontFile]:
+    def system_fonts(self) -> list[FontFile]:
         if self.use_system_font:
             if self.reload_system_font:
                 return FontLoader.load_system_fonts()
@@ -68,7 +69,7 @@ class FontCollection:
 
 
     @property
-    def generated_fonts(self) -> List[FontFile]:
+    def generated_fonts(self) -> list[FontFile]:
         if self.use_generated_fonts:
             return FontLoader.load_generated_fonts()
         return []
@@ -79,7 +80,7 @@ class FontCollection:
 
 
     @property
-    def fonts(self) -> List[FontFile]:
+    def fonts(self) -> list[FontFile]:
         return self.system_fonts + self.generated_fonts + self.additional_fonts
 
     @fonts.setter

@@ -4,7 +4,9 @@ from .font.font_file import FontFile
 from enum import IntEnum
 from pathlib import Path
 from shutil import which
-from typing import Iterable, Optional
+from typing import Optional
+
+from collections.abc import Iterable
 
 __all__ = ["Mkvpropedit"]
 _logger = logging.getLogger(__name__)

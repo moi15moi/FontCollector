@@ -73,10 +73,10 @@ class ABCAssDocument(ABC):
 
 
     @abstractmethod
-    def _get_style(self, i: int) -> Tuple[str, str, bool, bool]:
+    def _get_style(self, i: int) -> tuple[str, str, bool, bool]:
         pass
 
-    def get_style(self, i: int) -> Tuple[str, str, bool, bool]:
+    def get_style(self, i: int) -> tuple[str, str, bool, bool]:
         """
         Args:
             i: Index of the line.
@@ -154,7 +154,7 @@ class ABCAssDocument(ABC):
         return self._is_line_dialogue(i)
 
 
-    def get_sub_styles(self) -> Dict[str, AssStyle]:
+    def get_sub_styles(self) -> dict[str, AssStyle]:
         """
         Returns:
             An Dict that represent the section [V4+ Styles] of an .ass file:
@@ -164,7 +164,7 @@ class ABCAssDocument(ABC):
         def is_ascii_digit(s: str) -> bool:
             return all(ord('0') <= ord(char) <= ord('9') for char in s)
 
-        sub_styles: Dict[str, AssStyle] = {}
+        sub_styles: dict[str, AssStyle] = {}
 
         for i in range(self.get_nbr_style()):
             style_name, font_name, is_bold, is_italic = self.get_style(i)
@@ -210,10 +210,10 @@ class ABCAssDocument(ABC):
 
     def __set_used_styles(
         self,
-        used_styles: Dict[AssStyle, UsageData],
-        tags: List[AssItem],
+        used_styles: dict[AssStyle, UsageData],
+        tags: list[AssItem],
         line_index: int,
-        sub_styles: Dict[str, AssStyle],
+        sub_styles: dict[str, AssStyle],
         original_line_style: AssStyle,
         line_style: AssStyle,
         current_style: AssStyle,
@@ -299,7 +299,7 @@ class ABCAssDocument(ABC):
                 # Update or create the usage_data
                 usage_data = used_styles.get(current_style, None)
                 if usage_data is None:
-                    usage_data = UsageData(set(text), set([line_index]))
+                    usage_data = UsageData(set(text), {line_index})
                     used_styles[current_style] = usage_data
                 else:
                     usage_data.characters_used.update(set(text))
@@ -310,7 +310,7 @@ class ABCAssDocument(ABC):
             elif collect_draw_fonts and isinstance(tag, AssDraw) and len(tag.text) > 0:
                 usage_data = used_styles.get(current_style, None)
                 if usage_data is None:
-                    usage_data = UsageData(set(), set([line_index]))
+                    usage_data = UsageData(set(), {line_index})
                     used_styles[current_style] = usage_data
                 else:
                     usage_data.lines.add(line_index)
@@ -319,15 +319,15 @@ class ABCAssDocument(ABC):
                 current_style = deepcopy(current_style)
 
 
-    def get_used_style(self, collect_draw_fonts: bool = False) -> Dict[AssStyle, UsageData]:
+    def get_used_style(self, collect_draw_fonts: bool = False) -> dict[AssStyle, UsageData]:
         """
         Args:
             collect_draw_fonts: If true, then it will also collect the draw style, if false, it will ignore them.
         Returns:
             An dictionnary which contain all the used AssStyle and it's UsageData.
         """
-        used_styles: Dict[AssStyle, UsageData] = {}
-        sub_styles: Dict[str, AssStyle] = self.get_sub_styles()
+        used_styles: dict[AssStyle, UsageData] = {}
+        sub_styles: dict[str, AssStyle] = self.get_sub_styles()
         sub_wrap_style = self.get_sub_wrap_style()
 
         for i in range(self.get_nbr_line()):

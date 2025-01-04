@@ -6,8 +6,8 @@ from fontTools.ttLib.tables._n_a_m_e import _MAC_LANGUAGES, _MAC_LANGUAGE_CODES,
 from langcodes import closest_supported_match, Language
 from typing import Dict, Optional, Type
 
-MAC_LCID_CODE_TO_LANGUAGES: Dict[int, str] = _MAC_LANGUAGES
-MAC_LANGUAGES_TO_LCID_CODE: Dict[str, int] = _MAC_LANGUAGE_CODES
+MAC_LCID_CODE_TO_LANGUAGES: dict[int, str] = _MAC_LANGUAGES
+MAC_LANGUAGES_TO_LCID_CODE: dict[str, int] = _MAC_LANGUAGE_CODES
 
 
 __all__ = ["Name", "NameID", "PlatformID"]
@@ -67,7 +67,7 @@ class Name:
 
 
     @classmethod
-    def from_name_record(cls: Type[Name], name_record: NameRecord) -> Name:
+    def from_name_record(cls: type[Name], name_record: NameRecord) -> Name:
         """
         Args:
             name_record: Name record from the naming table

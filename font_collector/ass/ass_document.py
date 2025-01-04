@@ -16,12 +16,12 @@ class AssDocument(ABCAssDocument):
 
 
     @classmethod
-    def from_string(cls: Type[AssDocument], file_text: str) -> AssDocument:
+    def from_string(cls: type[AssDocument], file_text: str) -> AssDocument:
         return cls(parse_string(file_text))
 
 
     @classmethod
-    def from_file(cls: Type[AssDocument], filename: Path, encoding: str = "utf_8_sig") -> AssDocument:
+    def from_file(cls: type[AssDocument], filename: Path, encoding: str = "utf_8_sig") -> AssDocument:
         if not filename.is_file():
             raise FileNotFoundError(f"The file {filename} is not reachable")
 
@@ -46,7 +46,7 @@ class AssDocument(ABCAssDocument):
         return nbr_style
 
 
-    def _get_style(self, i: int) -> Tuple[str, str, bool, bool]:
+    def _get_style(self, i: int) -> tuple[str, str, bool, bool]:
         style_name = self.subtitle.styles[i].name
         font_name = self.subtitle.styles[i].fontname
         is_bold = self.subtitle.styles[i].bold

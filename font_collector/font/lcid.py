@@ -3,7 +3,7 @@
 from typing import Dict
 
 
-WINDOWS_LCID_CODE_TO_LANGUAGES: Dict[int, str] = {
+WINDOWS_LCID_CODE_TO_LANGUAGES: dict[int, str] = {
     0x0001: "ar",
     0x0002: "bg",
     0x0003: "ca",
@@ -461,6 +461,6 @@ WINDOWS_LCID_CODE_TO_LANGUAGES: Dict[int, str] = {
 }
 
 
-WINDOWS_LANGUAGES_TO_LCID_CODE: Dict[str, int] = {
+WINDOWS_LANGUAGES_TO_LCID_CODE: dict[str, int] = {
     lang: code for code, lang in WINDOWS_LCID_CODE_TO_LANGUAGES.items()
 }

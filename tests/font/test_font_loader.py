@@ -9,7 +9,7 @@ def test_load_additional_fonts():
     # Test 1
     font_file = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf")
     fonts_result = FontLoader.load_additional_fonts([Path(font_file)])
-    result = list(set([font.filename for font in fonts_result]))
+    result = list({font.filename for font in fonts_result})
     expected_result = [
         Path(font_file),
     ]
@@ -19,7 +19,7 @@ def test_load_additional_fonts():
     # Test 2
     font_directory = os.path.join(os.path.dirname(dir_path), "file", "fonts")
     fonts_result = FontLoader.load_additional_fonts([Path(font_directory)])
-    result = list(set([font.filename for font in fonts_result]))
+    result = list({font.filename for font in fonts_result})
     expected_result = [
         Path(os.path.join(font_directory, "Asap-VariableFont_wdth,wght.ttf")),
         Path(os.path.join(font_directory, "Cabin VF Beta Regular.ttf")),
@@ -42,7 +42,7 @@ def test_load_additional_fonts():
     # Test 3
     font_directory_sub_dir = os.path.join(os.path.dirname(dir_path), "file", "fonts", "Raleway")
     fonts_result = FontLoader.load_additional_fonts([Path(font_directory_sub_dir)], scan_subdirs=True)
-    result = list(set([font.filename for font in fonts_result]))
+    result = list({font.filename for font in fonts_result})
     expected_result = [
         Path(os.path.join(font_directory_sub_dir, "Raleway-Black.ttf")),
         Path(os.path.join(font_directory_sub_dir, "Raleway-Bold.ttf")),

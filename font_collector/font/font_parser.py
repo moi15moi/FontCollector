@@ -27,7 +27,7 @@ class FontParser:
 
     DEFAULT_WEIGHT = 400
     DEFAULT_ITALIC = False
-    CMAP_ENCODING_MAP: Dict[PlatformID, Dict[int, str]] = {
+    CMAP_ENCODING_MAP: dict[PlatformID, dict[int, str]] = {
         PlatformID.MACINTOSH: {
             0: "mac_roman",
         },
@@ -80,7 +80,7 @@ class FontParser:
         return True
 
     @staticmethod
-    def get_var_font_family_prefix(names: List[NameRecord], platform_id: PlatformID) -> List[Name]:
+    def get_var_font_family_prefix(names: list[NameRecord], platform_id: PlatformID) -> list[Name]:
         """Extracts variable font family prefix names based on the provided NameRecord list and platform ID.
 
         Args:
@@ -98,7 +98,7 @@ class FontParser:
 
     @staticmethod
     def get_distance_between_axis_value_and_coordinates(
-        font: TTFont, coordinates: Dict[str, float], axis_value: Any, axis_format: int
+        font: TTFont, coordinates: dict[str, float], axis_value: Any, axis_format: int
     ) -> float:
         """Calculate the distance between an axis value and coordinates of a NamedInstance in a variable font.
 
@@ -145,7 +145,7 @@ class FontParser:
 
 
     @staticmethod
-    def get_axis_value_from_coordinates(font: TTFont, coordinates: Dict[str, float]) -> List[Any]:
+    def get_axis_value_from_coordinates(font: TTFont, coordinates: dict[str, float]) -> list[Any]:
         """Retrieve AxisValue objects linked to the specified coordinates in the fvar table.
         Ensure to call FontParser.is_valid_variable_font() before using this method.
 
@@ -156,7 +156,7 @@ class FontParser:
             A list containing all the AxisValue objects that has the closest distance
             to the provided coordinates.
         """
-        distances_for_axis_values: List[Tuple[float, Any]] = []
+        distances_for_axis_values: list[tuple[float, Any]] = []
 
         if font["STAT"].table.AxisValueArray is None:
             return distances_for_axis_values
@@ -184,8 +184,8 @@ class FontParser:
         # Sort by ASC
         distances_for_axis_values.sort(key=lambda distance: distance[0])
 
-        axis_values_coordinate_matches: List[Any] = []
-        is_axis_useds: List[bool] = [False] * len(font["STAT"].table.DesignAxisRecord.Axis)
+        axis_values_coordinate_matches: list[Any] = []
+        is_axis_useds: list[bool] = [False] * len(font["STAT"].table.DesignAxisRecord.Axis)
 
         for distance, axis_value in distances_for_axis_values:
             if axis_value.Format == 4:
@@ -212,8 +212,8 @@ class FontParser:
 
     @staticmethod
     def get_axis_value_table_property(
-        font: TTFont, axis_values: List[Any]
-    ) -> Tuple[List[Name], List[Name], float, bool]:
+        font: TTFont, axis_values: list[Any]
+    ) -> tuple[list[Name], list[Name], float, bool]:
         """Retrieve font properties such as family name, full name, weight, and italic based on axis values.
         Ensure to call FontParser.is_valid_variable_font() before using this method.
 
@@ -243,9 +243,9 @@ class FontParser:
         weight = FontParser.DEFAULT_WEIGHT
         italic = FontParser.DEFAULT_ITALIC
 
-        axis_values_names: List[List[Name]] = []
-        family_name_axis_value_index: List[bool] = [False] * len(axis_values)
-        fullname_axis_value_index: List[bool] = [False] * len(axis_values)
+        axis_values_names: list[list[Name]] = []
+        family_name_axis_value_index: list[bool] = [False] * len(axis_values)
+        fullname_axis_value_index: list[bool] = [False] * len(axis_values)
 
 
         for i, axis_value in enumerate(axis_values):
@@ -288,12 +288,12 @@ class FontParser:
                     if use_in_family_name:
                         family_name_axis_value_index[i] = True
 
-        family_name: List[Name] = []
-        fullname: List[Name] = []
+        family_name: list[Name] = []
+        fullname: list[Name] = []
 
         # Generate family_name an fullname
         for item in product(*axis_values_names):
-            langs: List[Language] = []
+            langs: list[Language] = []
             for element in item:
                 langs.append(element.lang_code)
 
@@ -327,13 +327,13 @@ class FontParser:
 
     @staticmethod
     def get_filtered_names(
-        names_record: List[NameRecord],
+        names_record: list[NameRecord],
         platformID: Optional[PlatformID] = None,
         platEncID: Optional[int] = None,
         nameID: Optional[NameID] = None,
         langID: Optional[int] = None,
         skip_unsupported_name_record: bool = True
-    ) -> List[Name]:
+    ) -> list[Name]:
         """Retrieve and decode NameRecord objects based on specified filtering criteria.
         Is it the same criteria has: https://learn.microsoft.com/en-us/typography/opentype/spec/name#name-records
 
@@ -348,7 +348,7 @@ class FontParser:
         Returns:
             A list of the decoded NameRecord objects that have been filtered.
         """
-        names: List[Name] = []
+        names: list[Name] = []
 
         for name_record in names_record:
             if (
@@ -369,7 +369,7 @@ class FontParser:
     @staticmethod
     def get_font_italic_bold_property_with_freetype(
         font_path: Path, font_index: int
-    ) -> Tuple[bool, bool, int]:
+    ) -> tuple[bool, bool, int]:
         """
         Args:
             font_path: Font path.
@@ -389,7 +389,7 @@ class FontParser:
     @staticmethod
     def get_font_italic_bold_property_microsoft_platform(
         font: TTFont, font_path: Path, font_index: int
-    ) -> Tuple[bool, bool, int]:
+    ) -> tuple[bool, bool, int]:
         """
         Args:
             font: An fontTools object
@@ -437,7 +437,7 @@ class FontParser:
     @staticmethod
     def get_font_italic_bold_property_mac_platform(
         font: TTFont, font_path: Path, font_index: int
-    ) -> Tuple[bool, bool, int]:
+    ) -> tuple[bool, bool, int]:
         """
         Args:
             font: An fontTools object
@@ -475,7 +475,7 @@ class FontParser:
             Libass currently has an issue about this problem: https://github.com/libass/libass/issues/319
             When Libass will add the logic with the track language, this method will be deprecated.
         """
-        font_glyph_names: Set[str] = set()
+        font_glyph_names: set[str] = set()
         # This is a limit set by adobe: http://adobe-type-tools.github.io/afdko/OpenTypeFeatureFileSpecification.html#2fi-glyph-name
         buffer_max = 64
         for i in range(face.contents.num_glyphs):
@@ -486,7 +486,7 @@ class FontParser:
                 continue
             font_glyph_names.add(buffer.value.decode("ascii").casefold())
 
-        count_codepage: Dict[str, int] = {}
+        count_codepage: dict[str, int] = {}
         for code_page, glyph_names in UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE.items():
             count = sum(1 for font_glyph_name in font_glyph_names if font_glyph_name in glyph_names)
             count_codepage[code_page] = count
@@ -502,7 +502,7 @@ class FontParser:
     @staticmethod
     def get_supported_cmaps(
         font: TTFont, font_path: Path, font_index: int
-    ) -> List[CMap]:
+    ) -> list[CMap]:
         """
         Retrieve supported CMaps from a TrueType font.
 
@@ -516,11 +516,11 @@ class FontParser:
             - If any Microsoft CMaps are present, only those will be returned.
             - If no Microsoft CMaps are found, the method will only return Macintosh CMaps if they are present.
         """
-        microsoft_cmaps: List[CMap] = []
-        macintosh_cmaps: List[CMap] = []
+        microsoft_cmaps: list[CMap] = []
+        macintosh_cmaps: list[CMap] = []
 
         try:
-            cmap_tables: List[CmapSubtable] = font["cmap"].tables
+            cmap_tables: list[CmapSubtable] = font["cmap"].tables
 
             for table in cmap_tables:
                 encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
@@ -568,7 +568,7 @@ class FontParser:
 # The Chinese (cp936 or cp950) and Korean (cp949) aren't in this dict since they doesn't have any unique char.
 # This dict have been generated with "proof/[Symbol Font] Find unique char by ansi code page.py"
 # The name of those glyph is from this list: https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/4036a9ca80a62f64f9de4f7321a9a045ad0ecfd6/glyphlist.txt
-UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE: dict[str, Set[str]] = {
+UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE: dict[str, set[str]] = {
     "cp874": {'angkhankhuthai', 'lolingthai', 'thanthakhatthai', 'phosamphaothai', 'phophanthai', 'paiyannoithai', 'phinthuthai', 'threethai', 'kokaithai', 'topatakthai', 'lochulathai', 'nonuthai', 'thothungthai', 'lakkhangyaothai', 'ngonguthai', 'thothanthai', 'khokhaithai', 'khokhwaithai', 'oangthai', 'sixthai', 'saraueethai', 'saraaathai', 'wowaenthai', 'chochangthai', 'fourthai', 'maihanakatthai', 'nonenthai', 'maiekthai', 'sosalathai', 'sorusithai', 'saraamthai', 'saraethai', 'saraithai', 'fofanthai', 'fofathai', 'poplathai', 'thothongthai', 'roruathai', 'chochingthai', 'nikhahitthai', 'saraiithai', 'yamakkanthai', 'luthai', 'onethai', 'sosothai', 'maitaikhuthai', 'seventhai', 'khorakhangthai', 'yoyingthai', 'sarauthai', 'dochadathai', 'ruthai', 'maichattawathai',
     'bobaimaithai', 'sarauethai', 'saraaimaimuanthai', 'chochoethai', 'twothai', 'sarauuthai', 'phophungthai', 'saraothai', 'khomutthai', 'thophuthaothai', 'fongmanthai', 'fivethai', 'honokhukthai', 'zerothai', 'maiyamokthai', 'hohipthai', 'khokhonthai', 'ninethai', 'bahtthai', 'saraaethai', 'dodekthai', 'chochanthai', 'eightthai', 'yoyakthai', 'khokhuatthai', 'saraaimaimalaithai', 'maithothai', 'thothahanthai', 'sosuathai', 'saraathai', 'totaothai', 'maitrithai', 'momathai', 'thonangmonthothai'},
 

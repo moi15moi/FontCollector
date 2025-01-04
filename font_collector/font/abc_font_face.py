@@ -22,7 +22,9 @@ from freetype import (
 )
 from fontTools.ttLib.ttFont import TTFont
 from langcodes import Language, tag_is_valid
-from typing import Iterable, List, Optional, Set, TYPE_CHECKING
+from typing import List, Optional, Set, TYPE_CHECKING
+
+from collections.abc import Iterable
 import logging
 
 if TYPE_CHECKING:
@@ -47,8 +49,8 @@ class ABCFontFace(ABC):
     """
     # Make mypy happy
     __font_index: int
-    __family_names: List[Name]
-    __exact_names: List[Name]
+    __family_names: list[Name]
+    __exact_names: list[Name]
     __weight: int
     __is_italic: bool
     __is_glyph_emboldened: bool
@@ -62,12 +64,12 @@ class ABCFontFace(ABC):
 
     @property
     @abstractmethod
-    def family_names(self) -> List[Name]:
+    def family_names(self) -> list[Name]:
         pass
 
     @property
     @abstractmethod
-    def exact_names(self) -> List[Name]:
+    def exact_names(self) -> list[Name]:
         pass
 
     @property
@@ -144,7 +146,7 @@ class ABCFontFace(ABC):
 
 
     @staticmethod
-    def _get_best_name(names: List[Name]) -> Name:
+    def _get_best_name(names: list[Name]) -> Name:
         """
         Args:
             names: A list of Names. Can be the family_names or exact_names.
@@ -177,7 +179,7 @@ class ABCFontFace(ABC):
 
 
     @staticmethod
-    def _get_name_from_lang(names: List[Name], lang_code: str, exact_match: bool) -> Optional[Name]:
+    def _get_name_from_lang(names: list[Name], lang_code: str, exact_match: bool) -> Optional[Name]:
         """
         Args:
             names: A list of Names. Can be the family_names or exact_names.
@@ -236,7 +238,7 @@ class ABCFontFace(ABC):
         self,
         text: Iterable[str],
         support_only_ascii_char_for_symbol_font: bool = False
-    ) -> Set[str]:
+    ) -> set[str]:
         """
         Args:
             text: An iterable of characters.
@@ -251,7 +253,7 @@ class ABCFontFace(ABC):
         if self.font_file is None:
             raise ValueError("This font_face isn't linked to any FontFile.")
 
-        char_not_found: Set[str] = set()
+        char_not_found: set[str] = set()
 
         library = FT_Library()
         face = FT_Face()
