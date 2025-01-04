@@ -10,7 +10,6 @@ from font_collector import (
     set_loglevel,
 )
 from pathlib import Path
-from typing import List, Set
 
 # If you don't want to get any log, set the loglevel to logging.CRITICAL
 set_loglevel(logging.CRITICAL)

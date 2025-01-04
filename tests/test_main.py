@@ -1,10 +1,6 @@
-import json
 import os
-import pytest
-import shutil
 import subprocess
 from pathlib import Path
-from font_collector import Mkvpropedit, FontFile
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

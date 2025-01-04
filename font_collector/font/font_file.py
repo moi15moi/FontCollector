@@ -3,7 +3,7 @@ from .factory_abc_font_face import FactoryABCFontFace
 from collections import Counter
 from pathlib import Path
 from time import time
-from typing import List, Optional, Type, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .abc_font_face import ABCFontFace

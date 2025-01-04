@@ -11,7 +11,7 @@ from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib import instancer
 from itertools import product
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import FontFile

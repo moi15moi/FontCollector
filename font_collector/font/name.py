@@ -4,7 +4,7 @@ from .lcid import WINDOWS_LANGUAGES_TO_LCID_CODE, WINDOWS_LCID_CODE_TO_LANGUAGES
 from enum import IntEnum
 from fontTools.ttLib.tables._n_a_m_e import _MAC_LANGUAGES, _MAC_LANGUAGE_CODES, NameRecord
 from langcodes import closest_supported_match, Language
-from typing import Dict, Optional, Type
+from typing import Optional
 
 MAC_LCID_CODE_TO_LANGUAGES: dict[int, str] = _MAC_LANGUAGES
 MAC_LANGUAGES_TO_LCID_CODE: dict[str, int] = _MAC_LANGUAGE_CODES

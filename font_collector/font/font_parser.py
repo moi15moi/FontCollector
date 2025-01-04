@@ -17,7 +17,7 @@ from itertools import product
 from langcodes import Language
 from pathlib import Path
 from struct import error as struct_error
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional
 
 
 class FontParser:

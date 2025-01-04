@@ -22,7 +22,7 @@ from freetype import (
 )
 from fontTools.ttLib.ttFont import TTFont
 from langcodes import Language, tag_is_valid
-from typing import List, Optional, Set, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from collections.abc import Iterable
 import logging

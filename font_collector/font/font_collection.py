@@ -6,7 +6,7 @@ from .font_file import FontFile
 from .font_loader import FontLoader
 from .font_result import FontResult
 from .selection_strategy import FontSelectionStrategy
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 from collections.abc import Generator
 

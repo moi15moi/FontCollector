@@ -26,7 +26,7 @@ from ass_tag_analyzer import (
     WrapStyle,
 )
 from copy import deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 
 __all__ = ["ABCAssDocument"]
@@ -44,7 +44,6 @@ class ABCAssDocument(ABC):
             The subtitle WrapStyle.
             If the subtitle doesn't contain an WrapStyle, it return None
         """
-        pass
 
     def get_sub_wrap_style(self) -> WrapStyle:
         """
@@ -64,7 +63,6 @@ class ABCAssDocument(ABC):
         Returns:
             The number of styles.
         """
-        pass
 
 
     def __verify_if_style_exist(self, i: int) -> None:
@@ -93,7 +91,6 @@ class ABCAssDocument(ABC):
         Returns:
             The number of lines.
         """
-        pass
 
 
     def __verify_if_line_exist(self, i: int) -> None:

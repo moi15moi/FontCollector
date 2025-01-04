@@ -8,7 +8,6 @@ from .font_file import FontFile
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List, Set
 
 from collections.abc import Iterable
 
