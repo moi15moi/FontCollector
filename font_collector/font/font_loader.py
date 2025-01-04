@@ -8,7 +8,9 @@ from .font_file import FontFile
 from find_system_fonts_filename import get_system_fonts_filename
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Iterable, List, Set
+from typing import List, Set
+
+from collections.abc import Iterable
 
 __all__ = ["FontLoader"]
 _logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class CacheFileContent:
         font_collector_version: The version of the font collector that created the cache.
         cached_fonts: A list of FontFile objects representing the cached fonts.
     """
-    def __init__(self, font_collector_version: str, cached_fonts: List[FontFile]):
+    def __init__(self, font_collector_version: str, cached_fonts: list[FontFile]):
         self.font_collector_version = font_collector_version
         self.cached_fonts = cached_fonts
 
@@ -33,7 +35,7 @@ class FontLoader:
     """
 
     @staticmethod
-    def load_font_cache_file(cache_file: Path) -> List[FontFile]:
+    def load_font_cache_file(cache_file: Path) -> list[FontFile]:
         """Load the cache file and retrieve the list of cached fonts from it.
         Note: If the cache file is invalid, the file will be deleted
 
@@ -43,7 +45,7 @@ class FontLoader:
             A list of FontFile objects representing the cached fonts.
         """
 
-        cached_fonts: List[FontFile] = []
+        cached_fonts: list[FontFile] = []
         if not cache_file.is_file():
             raise FileNotFoundError(f'The file "{cache_file}" does not exist')
 
@@ -72,7 +74,7 @@ class FontLoader:
 
 
     @staticmethod
-    def save_font_cache_file(cache_file: Path, cache_fonts: List[FontFile]) -> None:
+    def save_font_cache_file(cache_file: Path, cache_fonts: list[FontFile]) -> None:
         """Serialize and save the font cache data to a specified file.
 
         This method creates a cache file with the provided path and stores the font cache data.
@@ -87,7 +89,7 @@ class FontLoader:
 
 
     @staticmethod
-    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs: bool = False) -> List[FontFile]:
+    def load_additional_fonts(additional_fonts_path: Iterable[Path], scan_subdirs: bool = False) -> list[FontFile]:
         """Load additional fonts from the specified paths, including subdirectories if specified.
 
         Args:
@@ -101,7 +103,7 @@ class FontLoader:
         def is_file_font(file_name: Path) -> bool:
             return file_name.suffix.lstrip(".").strip().casefold() in ["ttf", "otf", "ttc", "otc"]
 
-        additional_fonts: List[FontFile] = []
+        additional_fonts: list[FontFile] = []
 
         for font_path in additional_fonts_path:
             if font_path.is_file():
@@ -132,13 +134,13 @@ class FontLoader:
 
 
     @staticmethod
-    def load_system_fonts() -> List[FontFile]:
+    def load_system_fonts() -> list[FontFile]:
         """
         Returns:
             A list of FontFile objects representing the system fonts.
         """
-        system_fonts: List[FontFile] = []
-        fonts_paths: Set[Path] = {Path(font_path) for font_path in get_system_fonts_filename()}
+        system_fonts: list[FontFile] = []
+        fonts_paths: set[Path] = {Path(font_path) for font_path in get_system_fonts_filename()}
         system_font_cache_file = FontLoader.get_system_font_cache_file_path()
 
         if system_font_cache_file.is_file():
@@ -183,14 +185,14 @@ class FontLoader:
 
 
     @staticmethod
-    def load_generated_fonts() -> List[FontFile]:
+    def load_generated_fonts() -> list[FontFile]:
         """
         Returns:
             A list of FontFile objects representing the generated fonts.
             These fonts are created when the user converts a variable font to a normal font
                 via the VariableFontFace.variable_font_to_collection() method.
         """
-        generated_fonts: List[FontFile] = []
+        generated_fonts: list[FontFile] = []
         generated_font_cache_file = FontLoader.get_generated_font_cache_file_path()
 
         if generated_font_cache_file.is_file():

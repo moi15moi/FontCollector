@@ -20,7 +20,7 @@ def main():
     ass_path = Path("ASS_FILE_PATH.ass")
     mkv_path = Path("MKV_FILE_PATH.mkv")
 
-    additional_fonts_path: List[Path] = []
+    additional_fonts_path: list[Path] = []
     additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
 
     # If you need additional fonts (font that aren't installed in the system), specify them in the additional_fonts
@@ -30,7 +30,7 @@ def main():
     subtitle = AssDocument.from_file(ass_path) # if you have a object that represent the .ass file, you can also use ABCAssDocument
     used_styles = subtitle.get_used_style()
 
-    fonts_file_found: Set[FontFile] = set()
+    fonts_file_found: set[FontFile] = set()
 
     for style, usage_data in used_styles.items():
         font_result = font_collection.get_used_font_by_style(style, font_selection_strategy)

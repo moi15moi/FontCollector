@@ -34,7 +34,7 @@ def main() -> None:
         _logger.addHandler(file_handler)
         _logger.info(f"{Path.cwd()}>{' '.join(argv)}")
 
-    font_results: List[FontResult] = []
+    font_results: list[FontResult] = []
     additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
     additional_fonts.extend(FontLoader.load_additional_fonts(additional_fonts_recursive_path, True))
     font_collection = FontCollection(use_system_font=use_system_font, additional_fonts=additional_fonts)
@@ -79,7 +79,7 @@ def main() -> None:
         else:
             _logger.info(f"{nbr_font_not_found} fonts could not be found.")
 
-    fonts_file_found: Set[FontFile] = set()
+    fonts_file_found: set[FontFile] = set()
 
     for font_result in font_results:
         if font_result.font_face.font_file is None:

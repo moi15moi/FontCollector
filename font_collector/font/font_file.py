@@ -23,7 +23,7 @@ class FontFile:
     def __init__(
         self,
         filename: Path,
-        font_faces: List[ABCFontFace],
+        font_faces: list[ABCFontFace],
         is_collection_font: bool,
         last_loaded_time: Optional[float] = None
     ) -> None:
@@ -58,7 +58,7 @@ class FontFile:
         return self.__filename
 
     @property
-    def font_faces(self) -> List[ABCFontFace]:
+    def font_faces(self) -> list[ABCFontFace]:
         return self.__font_faces
 
     @property
@@ -70,7 +70,7 @@ class FontFile:
         return self.__last_loaded_time
 
     @classmethod
-    def from_font_path(cls: Type[FontFile], filename: Path) -> FontFile:
+    def from_font_path(cls: type[FontFile], filename: Path) -> FontFile:
         font_faces, is_collection_font = FactoryABCFontFace.from_font_path(filename)
         return cls(filename, font_faces, is_collection_font)
 

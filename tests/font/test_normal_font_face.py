@@ -4,7 +4,7 @@ import string
 from font_collector import InvalidNormalFontFaceException, FontFile, FontType, InvalidLanguageCode, Name, NormalFontFace
 from langcodes import Language
 from pathlib import Path
-from typing import Hashable
+from collections.abc import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

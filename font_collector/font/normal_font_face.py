@@ -22,8 +22,8 @@ class NormalFontFace(ABCFontFace):
     def __init__(
         self,
         font_index: int,
-        family_names: List[Name],
-        exact_names: List[Name],
+        family_names: list[Name],
+        exact_names: list[Name],
         weight: int,
         is_italic: bool,
         is_glyph_emboldened: bool,
@@ -46,11 +46,11 @@ class NormalFontFace(ABCFontFace):
         return self.__font_index
 
     @property
-    def family_names(self) -> List[Name]:
+    def family_names(self) -> list[Name]:
         return self.__family_names
 
     @property
-    def exact_names(self) -> List[Name]:
+    def exact_names(self) -> list[Name]:
         # if the font is a TrueType, it will be the "full_name". if the font is a OpenType, it will be the "postscript name"
         return self.__exact_names
 

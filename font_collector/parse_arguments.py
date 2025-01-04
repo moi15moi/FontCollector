@@ -3,10 +3,12 @@ from .mkvpropedit import Mkvpropedit
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
+
+from collections.abc import Iterable
 
 
-def __parse_input_file(ass_input: List[Path]) -> List[Path]:
+def __parse_input_file(ass_input: list[Path]) -> list[Path]:
 
     ass_files_path = []
     for input in ass_input:
@@ -27,8 +29,8 @@ def __parse_input_file(ass_input: List[Path]) -> List[Path]:
     return ass_files_path
 
 
-def parse_arguments() -> Tuple[
-    List[Path],
+def parse_arguments() -> tuple[
+    list[Path],
     Path,
     Union[Path, None],
     bool,

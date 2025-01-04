@@ -9,7 +9,7 @@ class ChineseVariant(Enum):
     SIMPLIFIED = auto()
 
     @classmethod
-    def from_lang_code(cls: Type[ChineseVariant], lang_code: Language) -> ChineseVariant:
+    def from_lang_code(cls: type[ChineseVariant], lang_code: Language) -> ChineseVariant:
         if lang_code.language != "zh":
             raise ValueError(f"The language {lang_code} isn't chinese.")
 

@@ -14,15 +14,15 @@ class UsageData:
 
     def __init__(
         self,
-        characters_used: Set[str],
-        lines: Set[int],
+        characters_used: set[str],
+        lines: set[int],
     ) -> None:
         self.characters_used = characters_used
         self.lines = lines
 
 
     @property
-    def ordered_lines(self) -> List[int]:
+    def ordered_lines(self) -> list[int]:
         """
         Returns:
             A sorted list containing the indices of lines in a .ass file.

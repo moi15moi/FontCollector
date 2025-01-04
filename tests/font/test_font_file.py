@@ -5,7 +5,7 @@ from font_collector import FontFile, FontType, Name, NormalFontFace, VariableFon
 from langcodes import Language
 from pathlib import Path
 from time import time
-from typing import Hashable
+from collections.abc import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 filename = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "Asap-VariableFont_wdth,wght.ttf"))

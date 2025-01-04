@@ -11,7 +11,7 @@ class FontType(Enum):
     OPENTYPE = auto()
 
     @classmethod
-    def from_font(cls: Type[FontType], font: TTFont) -> FontType:
+    def from_font(cls: type[FontType], font: TTFont) -> FontType:
         """
         Args:
             font: An fontTools object.

@@ -17,7 +17,7 @@ _logger = logging.getLogger(__name__)
 
 class FactoryABCFontFace:
     @staticmethod
-    def from_font_path(font_path: Path) -> Tuple[List[ABCFontFace], bool]:
+    def from_font_path(font_path: Path) -> tuple[list[ABCFontFace], bool]:
         """
         Args:
             font_path: Font path. The font can be a .ttf, .otf, .ttc or .otc file
@@ -25,7 +25,7 @@ class FactoryABCFontFace:
             A tuple containing a list of NormalFontFace or VariableFontFace objects representing the font file
             at the given path and a boolean indicating whether the font is a collection font (TTC/OTC fonts)
         """
-        ttFonts: List[TTFont] = []
+        ttFonts: list[TTFont] = []
 
         font = TTFont(font_path, fontNumber=0)
         ttFonts.append(font)
@@ -40,7 +40,7 @@ class FactoryABCFontFace:
                     font = TTFont(font_path, fontNumber=index)
                     ttFonts.append(font)
 
-        fonts: List[ABCFontFace] = []
+        fonts: list[ABCFontFace] = []
         try:
             for font_index, ttFont in enumerate(ttFonts):
 
@@ -113,7 +113,7 @@ class FactoryABCFontFace:
         )
 
 
-    def __create_variable_fonts(ttFont: TTFont, font_index: int) -> List[VariableFontFace]:
+    def __create_variable_fonts(ttFont: TTFont, font_index: int) -> list[VariableFontFace]:
         """
         Args:
             ttFont: An fontTools object
@@ -122,7 +122,7 @@ class FactoryABCFontFace:
             An list of Font instance that represent the ttFont.
         """
 
-        fonts: Set[VariableFontFace] = set()
+        fonts: set[VariableFontFace] = set()
         # GDI support only microsoft variable font
         families_prefix = FontParser.get_var_font_family_prefix(ttFont["name"].names, PlatformID.MICROSOFT)
 
@@ -133,7 +133,7 @@ class FactoryABCFontFace:
             raise InvalidVariableFontFaceException(f"The font isn't an opentype or truetype. It is {font_type.name}")
 
         # Ex axis_values_coordinates: [([AxisValue], {"wght", 400.0})]
-        axis_values_coordinates: List[Tuple[List[Any], Dict[str, float]]] = []
+        axis_values_coordinates: list[tuple[list[Any], dict[str, float]]] = []
 
         for instance in ttFont["fvar"].instances:
             axis_value_table = FontParser.get_axis_value_from_coordinates(ttFont, instance.coordinates)

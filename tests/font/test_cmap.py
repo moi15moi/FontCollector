@@ -1,6 +1,6 @@
 from font_collector import PlatformID
 from font_collector.font.cmap import CMap
-from typing import Hashable
+from collections.abc import Hashable
 
 
 def test__init__():

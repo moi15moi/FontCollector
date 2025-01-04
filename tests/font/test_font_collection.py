@@ -16,7 +16,7 @@ from font_collector import (
 from langcodes import Language
 from pathlib import Path
 from time import sleep
-from typing import Hashable
+from collections.abc import Hashable
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
