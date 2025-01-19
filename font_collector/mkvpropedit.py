@@ -61,13 +61,14 @@ class Mkvpropedit:
             raise FileExistsError(f'The file "{mkv_filename}" is not an mkv file.')
 
         # We only want to remove ttf, ttc or otf file
-        # This is from mpv: https://github.com/mpv-player/mpv/blob/305332f8a06e174c5c45c9c4547293502ac7ecdb/sub/sd_ass.c#L101
+        # This is from mpv: https://github.com/mpv-player/mpv/blob/c438732b239bf4e7f3d574f8fcc141f92366018a/sub/sd_ass.c#L133-L145
 
         mkvpropedit_args = [
             Mkvpropedit.path,
             str(mkv_filename.resolve()),
             "--delete-attachment", "mime-type:application/x-truetype-font",
             "--delete-attachment", "mime-type:application/vnd.ms-opentype",
+            "--delete-attachment", "mime-type:application/x-font-otf",
             "--delete-attachment", "mime-type:application/x-font-ttf",
             "--delete-attachment", "mime-type:application/x-font",
             "--delete-attachment", "mime-type:application/font-sfnt",
