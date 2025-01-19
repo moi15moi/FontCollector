@@ -41,7 +41,7 @@ def main() -> None:
         _logger.info(f"{Path.cwd()}>{' '.join(argv)}")
     
     try:
-        font_results: list[FontResult] = []
+        fonts_file_found: set[FontFile] = set()
         additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
         additional_fonts.extend(FontLoader.load_additional_fonts(additional_fonts_recursive_path, True))
         font_collection = FontCollection(use_system_font=use_system_font, additional_fonts=additional_fonts)
@@ -64,8 +64,6 @@ def main() -> None:
                     _logger.error(f"Could not find font '{style.fontname}'")
                     _logger.error(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
                 else:
-                    font_results.append(font_result)
-
                     if font_result.need_faux_bold:
                         _logger.warning(f"Faux bold used for '{style.fontname}'.")
                     elif font_result.mismatch_bold:
@@ -81,24 +79,22 @@ def main() -> None:
                     if len(missing_glyphs) > 0:
                         _logger.warning(f"'{style.fontname}' is missing the following glyphs used: {missing_glyphs}")
 
+
+                    if font_result.font_face.font_file is None:
+                        raise ValueError(f"This font_face \"{font_result.font_face}\" isn't linked to any FontFile.")
+
+                    if convert_variable_to_collection and isinstance(font_result.font_face, VariableFontFace):
+                        font_name = font_result.font_face.get_best_family_prefix_from_lang().value
+                        font_filename = output_directory.joinpath(f"{font_name}.ttc")
+                        generated_font_file = font_result.font_face.variable_font_to_collection(font_filename)
+                        fonts_file_found.add(generated_font_file)
+                    else:
+                        fonts_file_found.add(font_result.font_face.font_file)
+
             if nbr_font_not_found == 0:
                 _logger.info(f"All fonts found")
             else:
                 _logger.info(f"{nbr_font_not_found} fonts could not be found.")
-
-        fonts_file_found: set[FontFile] = set()
-
-        for font_result in font_results:
-            if font_result.font_face.font_file is None:
-                raise ValueError(f"This font_face \"{font_result.font_face}\" isn't linked to any FontFile.")
-
-            if convert_variable_to_collection and isinstance(font_result.font_face, VariableFontFace):
-                font_name = font_result.font_face.get_best_family_prefix_from_lang().value
-                font_filename = output_directory.joinpath(f"{font_name}.ttc")
-                generated_font_file = font_result.font_face.variable_font_to_collection(font_filename)
-                fonts_file_found.add(generated_font_file)
-            else:
-                fonts_file_found.add(font_result.font_face.font_file)
 
         if mkv_path is not None:
             if delete_fonts:
