@@ -1,4 +1,3 @@
-import os
 from argparse import ArgumentParser
 from collections.abc import Iterable
 from datetime import datetime
@@ -73,7 +72,7 @@ def parse_arguments() -> tuple[
         "--output",
         "-o",
         type=Path,
-        default=os.getcwd(),
+        default=Path.cwd(),
         help="""
     Destination path of the font. If -o and -mkv aren't specified, it will be the current path.
     """,
