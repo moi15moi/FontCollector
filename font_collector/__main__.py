@@ -9,9 +9,9 @@ from .font import (
     FontCollection,
     FontFile,
     FontLoader,
-    FontResult,
     FontSelectionStrategyLibass,
-    VariableFontFace
+    VariableFontFace,
+    font_weight_to_name
 )
 from .mkvpropedit import Mkvpropedit
 from .parse_arguments import parse_arguments
@@ -39,7 +39,7 @@ def main() -> None:
         file_handler.setFormatter(_handler.formatter)
         _logger.addHandler(file_handler)
         _logger.info(f"{Path.cwd()}>{' '.join(argv)}")
-    
+
     try:
         fonts_file_found: set[FontFile] = set()
         additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
@@ -65,11 +65,11 @@ def main() -> None:
                     _logger.error(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
                 else:
                     if font_result.need_faux_bold:
-                        _logger.warning(f"Faux bold used for '{style.fontname}'.")
+                        _logger.warning(f"Faux bold used for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
                     elif font_result.mismatch_bold:
-                        _logger.warning(f"'{style.fontname}' does not have a bold variant.")
+                        _logger.warning(f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
                     if font_result.mismatch_italic:
-                        _logger.warning(f"'{style.fontname}' does not have an italic variant.")
+                        _logger.warning(f"Mismatched italic for '{style.fontname}' (requested {'non-' if style.italic else ''}italic, got {'non-' if font_result.font_face.is_italic else ''}italic).")
 
                     if font_result.need_faux_bold or font_result.mismatch_bold or font_result.mismatch_italic:
                         _logger.warning(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
