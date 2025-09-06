@@ -4,7 +4,8 @@ description = "FontCollector for Advanced SubStation Alpha file."
 authors = [
     { name = "moi15moi", email = "moi15moismokerlolilol@gmail.com" },
 ]
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -26,7 +27,6 @@ classifiers=[
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
-        "License :: OSI Approved :: MIT License",
         "Typing :: Typed",
 ]
 dynamic = ["version"]
@@ -39,7 +39,7 @@ Source = "https://github.com/moi15moi/FontCollector/"
 Tracker = "https://github.com/moi15moi/FontCollector/issues/"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
