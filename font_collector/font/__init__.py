@@ -10,3 +10,4 @@ from .font_result import *
 from .font_type import *
 from .name import *
 from .variable_font_face import *
+from .weight_helper import *
