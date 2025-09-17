@@ -61,18 +61,24 @@ def main() -> None:
                 # Did not found the font
                 if font_result is None:
                     nbr_font_not_found += 1
-                    _logger.error(f"Could not find font '{style.fontname}'")
-                    _logger.error(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
+                    _logger.error(
+                        f"Could not find font '{style.fontname}'\n"
+                        f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}"
+                    )
                 else:
+                    log_msg = ""
                     if font_result.need_faux_bold:
-                        _logger.warning(f"Faux bold used for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
+                        log_msg = f"Faux bold used for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))})."
                     elif font_result.mismatch_bold:
-                        _logger.warning(f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
+                        log_msg = f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))})."
                     if font_result.mismatch_italic:
-                        _logger.warning(f"Mismatched italic for '{style.fontname}' (requested {'non-' if style.italic else ''}italic, got {'non-' if font_result.font_face.is_italic else ''}italic).")
+                        log_msg = f"Mismatched italic for '{style.fontname}' (requested {'non-' if style.italic else ''}italic, got {'non-' if font_result.font_face.is_italic else ''}italic)."
 
-                    if font_result.need_faux_bold or font_result.mismatch_bold or font_result.mismatch_italic:
-                        _logger.warning(f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}")
+                    if log_msg:
+                        _logger.warning(
+                            f"{log_msg}\n"
+                            f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}"
+                        )
 
 
                     missing_glyphs = font_result.font_face.get_missing_glyphs(usage_data.characters_used)
