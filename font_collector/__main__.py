@@ -98,9 +98,9 @@ def main() -> None:
                         fonts_file_found.add(font_result.font_face.font_file)
 
             if nbr_font_not_found == 0:
-                _logger.info(f"All fonts found")
+                _logger.info(f"All font(s) found")
             else:
-                _logger.info(f"{nbr_font_not_found} fonts could not be found.")
+                _logger.error(f"{nbr_font_not_found} font(s) could not be found.")
 
         if mkv_path is not None:
             if delete_fonts:
