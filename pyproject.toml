@@ -9,7 +9,7 @@ license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "ass < 1",
+    "ass>=1.0.0, < 2",
     "ass-tag-analyzer < 1",
     "fontTools>=4.55.0, < 5",
     "freetype-py>2, < 3",
