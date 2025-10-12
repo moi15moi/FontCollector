@@ -1,4 +1,5 @@
 import pytest
+
 from font_collector import font_weight_to_name
 
 
