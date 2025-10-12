@@ -33,6 +33,7 @@ dynamic = ["version"]
 
 [project.scripts]
 fontcollector = "font_collector.__main__:main"
+mkvfontvalidator = "font_collector.mkvfontvalidator:main"
 
 [project.urls]
 Source = "https://github.com/moi15moi/FontCollector/"
