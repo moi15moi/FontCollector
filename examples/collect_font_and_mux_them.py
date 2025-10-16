@@ -8,7 +8,7 @@ from font_collector import (
     FontFile,
     FontLoader,
     FontSelectionStrategyLibass,
-    Mkvpropedit,
+    MKVPropedit,
     set_loglevel
 )
 
@@ -47,9 +47,9 @@ def main():
 
 
     # If the mkv already contains font, you can remove them
-    Mkvpropedit.delete_fonts_of_mkv(mkv_path)
+    MKVPropedit.delete_all_fonts_of_mkv(mkv_path)
 
-    Mkvpropedit.merge_fonts_into_mkv(fonts_file_found, mkv_path)
+    MKVPropedit.merge_fonts_into_mkv(fonts_file_found, mkv_path)
 
 
 if __name__ == "__main__":

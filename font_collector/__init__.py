@@ -3,10 +3,10 @@ import logging
 # Packages
 from .ass import *
 from .font import *
+from .mkvtoolnix import *
 from .system_lang import *
 # Files
 from .exceptions import *
-from .mkvpropedit import *
 from ._version import __version__
 from fontTools.misc.loggingTools import configLogger
 
@@ -16,6 +16,9 @@ class IndentMultilineFormatter(logging.Formatter):
         super().__init__("%(levelname)s - %(message)s")
 
     def format(self, record: logging.LogRecord) -> str:
+        if not record.msg:
+            return ""
+
         s = super().format(record)
         head, *tail = s.splitlines()
         indent = " " * (len(record.levelname) + 3)  # "LEVEL - " length

@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-from .mkvpropedit import Mkvpropedit
+from .mkvtoolnix.mkv_utils import MKVUtils
 
 
 def __parse_input_file(ass_input: list[Path]) -> list[Path]:
@@ -78,10 +78,10 @@ def parse_arguments() -> tuple[
     """,
     )
     parser.add_argument(
-        "-mkvpropedit",
+        "-mkvtoolnix",
         type=Path,
         help="""
-    Path to mkvpropedit.exe if not in variable environments. If -mkv is not specified, it will do nothing.
+    Path to the MKVToolNix folder if not in variable environments. If -mkv is not specified, it will do nothing.
     """,
     )
     parser.add_argument(
@@ -164,10 +164,10 @@ def parse_arguments() -> tuple[
     convert_variable_to_collection = args.dont_convert_variable_to_collection
     logging_file_path = args.logging
 
-    if args.mkvpropedit:
+    if args.mkvtoolnix:
         if not mkv_path:
-            raise RuntimeError("-mkvpropedit requires --mkv option.")
-        Mkvpropedit.path = args.mkvpropedit
+            raise RuntimeError("-mkvtoolnix requires --mkv option.")
+        MKVUtils.MKVTOOLNIX_FOLDER = args.mkvtoolnix
 
     return (
         ass_files_path,
