@@ -72,7 +72,7 @@ def main() -> None:
                     elif font_result.mismatch_bold:
                         log_msg = f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))})."
                     if font_result.mismatch_italic:
-                        log_msg = f"Mismatched italic for '{style.fontname}' (requested {'non-' if style.italic else ''}italic, got {'non-' if font_result.font_face.is_italic else ''}italic)."
+                        log_msg = f"Mismatched italic for '{style.fontname}' (requested {'' if style.italic else 'non-'}italic, got {'' if font_result.font_face.is_italic else 'non-'}italic)."
 
                     if log_msg:
                         _logger.warning(
