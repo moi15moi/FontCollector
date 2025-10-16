@@ -483,7 +483,7 @@ class FontParser:
 
             if error:
                 continue
-            font_glyph_names.add(buffer.value.decode("ascii").casefold())
+            font_glyph_names.add(buffer.value.decode("ascii").lower())
 
         count_codepage: dict[str, int] = {}
         for code_page, glyph_names in UNIQUE_ADOBE_GLYPH_NAME_BY_CODE_PAGE.items():

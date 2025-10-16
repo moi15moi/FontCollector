@@ -12,13 +12,13 @@ def __parse_input_file(ass_input: list[Path]) -> list[Path]:
     ass_files_path = []
     for input in ass_input:
         if input.is_file():
-            if input.suffix.casefold() == ".ass":
+            if input.suffix.lower() == ".ass":
                 ass_files_path.append(input)
             else:
                 raise FileExistsError("Error: The input file is not an .ass file.")
         elif input.is_dir():
             for file in input.iterdir():
-                if file.suffix.casefold() == ".ass":
+                if file.suffix.lower() == ".ass":
                     ass_files_path.append(file)
         else:
             raise FileNotFoundError(

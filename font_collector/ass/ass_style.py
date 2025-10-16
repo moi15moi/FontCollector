@@ -41,15 +41,15 @@ class AssStyle:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AssStyle):
             return False
-        return (self.fontname.casefold(), self.weight, self.italic) == (
-            other.fontname.casefold(),
+        return (self.fontname.lower(), self.weight, self.italic) == (
+            other.fontname.lower(),
             other.weight,
             other.italic,
         )
 
 
     def __hash__(self) -> int:
-        return hash((self.fontname.casefold(), self.weight, self.italic))
+        return hash((self.fontname.lower(), self.weight, self.italic))
 
 
     def __repr__(self) -> str:
