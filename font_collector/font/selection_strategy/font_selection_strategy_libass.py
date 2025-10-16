@@ -16,10 +16,10 @@ class FontSelectionStrategyLibass(FontSelectionStrategy):
     """
 
     def is_font_name_match(self, font_face: ABCFontFace, style_font_name: str) -> bool:
-        family_name_match = any(style_font_name.casefold() == family_name.value.casefold() for family_name in font_face.family_names)
+        family_name_match = any(style_font_name.lower() == family_name.value.lower() for family_name in font_face.family_names)
 
         if not family_name_match:
-            exact_name_match = any(style_font_name.casefold() == exact_name.value.casefold() for exact_name in font_face.exact_names)
+            exact_name_match = any(style_font_name.lower() == exact_name.value.lower() for exact_name in font_face.exact_names)
 
         return family_name_match or exact_name_match
 

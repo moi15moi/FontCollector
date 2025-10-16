@@ -102,7 +102,7 @@ class FontLoader:
             A list of FontFile objects representing the loaded fonts.
         """
         def is_file_font(file_name: Path) -> bool:
-            return file_name.suffix.lstrip(".").strip().casefold() in ["ttf", "otf", "ttc", "otc"]
+            return file_name.suffix.lstrip(".").strip().lower() in ["ttf", "otf", "ttc", "otc"]
 
         additional_fonts: list[FontFile] = []
 

@@ -118,7 +118,7 @@ class ABCAssDocument(ABC):
         #  VSFilter set style name to default if empty: https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1892
         # If the case for "Default" is different (ex: "deFaulT"), VSFilter force it to be "Default": https://sourceforge.net/p/guliverkli2/code/HEAD/tree/src/subtitles/STS.cpp#l1491
         line_style_name = line_style_name.lstrip("\t ").lstrip("*")
-        if len(line_style_name) == 0 or line_style_name.casefold() == "default":
+        if len(line_style_name) == 0 or line_style_name.lower() == "default":
             line_style_name = "Default"
         return line_style_name
 
