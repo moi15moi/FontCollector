@@ -7,7 +7,9 @@ from typing import Optional, Union
 from .mkvtoolnix.mkv_utils import MKVUtils
 
 
-def __parse_input_file(ass_input: list[Path]) -> list[Path]:
+def __parse_input_file(ass_input: Optional[list[Path]]) -> list[Path]:
+    if ass_input is None:
+        return []
 
     ass_files_path = []
     for input in ass_input:
@@ -33,6 +35,7 @@ def parse_arguments() -> tuple[
     Path,
     Union[Path, None],
     bool,
+    bool,
     Iterable[Path],
     Iterable[Path],
     bool,
@@ -56,7 +59,6 @@ def parse_arguments() -> tuple[
         "-i",
         nargs="+",
         type=Path,
-        required=True,
         help="""
     Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
     """,
@@ -66,6 +68,14 @@ def parse_arguments() -> tuple[
         type=Path,
         help="""
     Video where the fonts will be merge. Must be a Matroska file.
+    """,
+    )
+    parser.add_argument(
+        "--use-ass-in-mkv",
+        "-ass-mkv",
+        action="store_true",
+        help="""
+    If specified, it will use the .ass file muxed to the mkv and collect those fonts and mux them to the mkv. If not specified, it will do nothing.
     """,
     )
     parser.add_argument(
@@ -150,12 +160,9 @@ def parse_arguments() -> tuple[
 
     # Parse args
     ass_files_path = __parse_input_file(args.input)
-
-    if len(ass_files_path) == 0:
-        raise RuntimeError("The specified file(s)/folder(s) doesn't exist or the folder(s) doesn't contains any .ass file.")
-
     output_directory = args.output
     mkv_path = args.mkv
+    use_ass_in_mkv = args.use_ass_in_mkv
     delete_fonts = args.delete_fonts
     additional_fonts = args.additional_fonts
     additional_fonts_recursive = args.additional_fonts_recursive
@@ -163,6 +170,12 @@ def parse_arguments() -> tuple[
     collect_draw_fonts = args.collect_draw_fonts
     convert_variable_to_collection = args.dont_convert_variable_to_collection
     logging_file_path = args.logging
+
+    if len(ass_files_path) == 0 and not use_ass_in_mkv:
+        raise RuntimeError("The specified file(s)/folder(s) doesn't exist or the folder(s) doesn't contains any .ass file.")
+    
+    if use_ass_in_mkv and mkv_path is None:
+        raise RuntimeError("You need to add the flag `-mkv` to use the flag `--use-ass-in-mkv`.")
 
     if args.mkvtoolnix:
         if not mkv_path:
@@ -173,6 +186,7 @@ def parse_arguments() -> tuple[
         ass_files_path,
         output_directory,
         mkv_path,
+        use_ass_in_mkv,
         delete_fonts,
         additional_fonts,
         additional_fonts_recursive,

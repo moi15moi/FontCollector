@@ -2,6 +2,7 @@ import logging
 import shutil
 from pathlib import Path
 from sys import argv
+from tempfile import TemporaryDirectory
 
 from . import _handler
 from .ass.ass_document import AssDocument
@@ -12,7 +13,7 @@ from .font import (
     FontLoader,
     FontSelectionStrategyLibass
 )
-from .mkvtoolnix.mkvpropedit import MKVPropedit
+from .mkvtoolnix import MKVPropedit, MKVExtract
 from .parse_arguments import parse_arguments
 
 _logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ def main() -> None:
         ass_files_path,
         output_directory,
         mkv_path,
+        use_ass_in_mkv,
         delete_fonts,
         additional_fonts_path,
         additional_fonts_recursive_path,
@@ -52,6 +54,20 @@ def main() -> None:
 
             fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, convert_variable_to_collection, output_directory))
             _logger.info("")
+        
+        if use_ass_in_mkv:
+            with TemporaryDirectory() as tmp_dir:
+                assert isinstance(mkv_path, Path)
+                mkv_ass_files = MKVExtract.get_mkv_ass_files(mkv_path, Path(tmp_dir))
+                for mkv_ass_file in mkv_ass_files:
+                    subtitle = AssDocument.from_file(mkv_ass_file.filename)
+                    log_msg = f"Loaded successfully the .ass stream at index {mkv_ass_file.mkv_id}"
+                    if mkv_ass_file.track_name:
+                        log_msg += f" - \"{mkv_ass_file.track_name}\""
+                    _logger.info(log_msg)
+
+                    fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, convert_variable_to_collection, output_directory))
+                    _logger.info("")
 
         if mkv_path is not None:
             if delete_fonts:
