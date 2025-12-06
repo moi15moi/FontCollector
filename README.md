@@ -17,7 +17,7 @@ pip install FontCollector
 ## FontCollector Usage
 ```console
 $ fontcollector --help
-usage: fontcollector [-h] --input INPUT [INPUT ...] [-mkv MKV] [--output OUTPUT] [-mkvtoolnix MKVTOOLNIX] [--delete-fonts] [--additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]]
+usage: fontcollector [-h] [--input INPUT [INPUT ...]] [-mkv MKV] [--use-ass-in-mkv] [--output OUTPUT] [-mkvtoolnix MKVTOOLNIX] [--delete-fonts] [--additional-fonts ADDITIONAL_FONTS [ADDITIONAL_FONTS ...]]
                      [--additional-fonts-recursive ADDITIONAL_FONTS_RECURSIVE [ADDITIONAL_FONTS_RECURSIVE ...]] [--exclude-system-fonts] [--collect-draw-fonts] [--dont-convert-variable-to-collection] [--logging [LOGGING]]
 
 FontCollector for Advanced SubStation Alpha file.
@@ -28,6 +28,8 @@ options:
                         Subtitles file. Must be an ASS file/directory. You can specify more than one .ass file/path.
   -mkv MKV
                         Video where the fonts will be merge. Must be a Matroska file.
+  --use-ass-in-mkv, -ass-mkv
+                        If specified, it will use the .ass file muxed to the mkv and collect those fonts and mux them to the mkv. If not specified, it will do nothing.
   --output OUTPUT, -o OUTPUT
                         Destination path of the font. If -o and -mkv aren't specified, it will be the current path.
   -mkvtoolnix MKVTOOLNIX
