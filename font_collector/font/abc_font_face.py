@@ -307,8 +307,10 @@ class ABCFontFace(ABC):
                 if cmap_encoding == "unicode":
                     codepoint = ord(char)
                 else:
+                    symbol_cmap = False
                     if cmap_encoding == "unknown":
                         if platform_id == 3 and encoding_id == 0:
+                            symbol_cmap = True
                             if support_only_ascii_char_for_symbol_font and not char.isascii():
                                 continue
                             cmap_encoding = FontParser.get_symbol_cmap_encoding(face)
@@ -320,10 +322,15 @@ class ABCFontFace(ABC):
                             # cmap not supported
                             continue
 
-                    try:
-                        codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
-                    except UnicodeEncodeError:
-                        continue
+                    if symbol_cmap and (0xF020 <= ord(char) and ord(char) <= 0xF0FF):
+                        # If the character is already a "symbol" character (a.k.a is between 0xF020 and 0xF0FF),
+                        # GDI directly use it's codepoint.
+                        codepoint = ord(char)
+                    else:
+                        try:
+                            codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
+                        except UnicodeEncodeError:
+                            continue
 
                 # GDI/Libass modify the codepoint for microsoft symbol cmap.
                 # See: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
