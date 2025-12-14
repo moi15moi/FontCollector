@@ -137,6 +137,13 @@ def test_font_get_missing_glyphs_cmap_encoding_0():
     missing_glyphs = font_face.get_missing_glyphs("Έκθεση για Απασχόληση Dream Top Co. Οι επιλογές À a", True)
     assert missing_glyphs == set("ΈκθεσηγιαπασχόλησηΟιεπιλογέςÀΑ")
 
+    # 0xF152 > 0xF0FF and there is a entry of this character in the cmap. We must ignore it.
+    missing_glyphs = font_face.get_missing_glyphs(chr(0xF152))
+    assert missing_glyphs == set(chr(0xF152))
+
+    # GDI support to directly have the character with the 0xF000 flag
+    missing_glyphs = font_face.get_missing_glyphs(chr(0xF0FF))
+    assert missing_glyphs == set()
 
 def test_font_get_missing_glyphs_cmap_encoding_1():
     font_cmap_encoding_1 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf"))
