@@ -13,7 +13,7 @@ from .font import (
     FontLoader,
     FontSelectionStrategyLibass
 )
-from .mkvtoolnix import MKVPropedit, MKVExtract
+from .mkvtoolnix import MKVExtract, MKVPropedit
 from .parse_arguments import parse_arguments
 
 _logger = logging.getLogger(__name__)
