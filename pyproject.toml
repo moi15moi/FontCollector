@@ -11,9 +11,9 @@ requires-python = ">=3.10"
 dependencies = [
     "ass>=1.0.0, < 2",
     "ass-tag-analyzer < 1",
-    "fontTools>=4.55.0, < 5",
+    "fontTools>=4.61.1, < 5",
     "freetype-py>2, < 3",
-    "FindSystemFontsFilename>=0.3.2, < 1",
+    "FindSystemFontsFilename>=0.3.3, < 1",
     "langcodes>=3.5.0, < 4",
 ]
 classifiers=[
