@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from ass import Dialogue, Document, parse_file, parse_string
 from ass_tag_analyzer import WrapStyle

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 from itertools import product
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from fontTools.ttLib.ttCollection import TTCollection
 from fontTools.ttLib.ttFont import TTFont

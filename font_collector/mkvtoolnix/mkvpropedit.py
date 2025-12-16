@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional
 
 from ..font.font_file import FontFile
 from .mkv_utils import MKVUtils

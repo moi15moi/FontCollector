@@ -4,7 +4,7 @@ from pathlib import Path
 from platform import system
 from shutil import which
 from subprocess import CompletedProcess
-from typing import Any, Optional
+from typing import Any
 from warnings import warn
 
 from .exit_code import ExitCode

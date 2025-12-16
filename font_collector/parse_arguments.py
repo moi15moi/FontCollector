@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 from .mkvtoolnix.mkv_utils import MKVUtils
 
