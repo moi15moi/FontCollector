@@ -4,7 +4,7 @@ from ctypes import byref, c_uint, create_string_buffer
 from itertools import product
 from pathlib import Path
 from struct import error as struct_error
-from typing import Any, Optional
+from typing import Any
 
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord

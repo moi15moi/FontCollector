@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from ctypes import byref
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from fontTools.ttLib.ttFont import TTFont
 from freetype import (

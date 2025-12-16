@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from .mkv_ass_file import MKVASSFile
 from .mkv_font_file import MKVFontFile

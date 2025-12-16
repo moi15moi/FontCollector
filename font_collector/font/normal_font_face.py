@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from ..exceptions import InvalidNormalFontFaceException
 from .abc_font_face import ABCFontFace

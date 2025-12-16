@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from sys import argv
 from tempfile import TemporaryDirectory
-from typing import Optional
 
 from . import _handler
 from .ass.ass_document import AssDocument
