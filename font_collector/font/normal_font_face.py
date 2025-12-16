@@ -73,7 +73,7 @@ class NormalFontFace(ABCFontFace):
         return self.__font_type
 
     @property
-    def font_file(self) -> Optional[FontFile]:
+    def font_file(self) -> FontFile | None:
         return self.__font_file
 
     def link_face_to_a_font_file(self, value: FontFile) -> None:

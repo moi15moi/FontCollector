@@ -27,7 +27,7 @@ class FontFile:
         filename: Path,
         font_faces: list[ABCFontFace],
         is_collection_font: bool,
-        last_loaded_time: Optional[float] = None
+        last_loaded_time: float | None = None
     ) -> None:
         """Initializes the FontFile instance.
 

@@ -327,10 +327,10 @@ class FontParser:
     @staticmethod
     def get_filtered_names(
         names_record: list[NameRecord],
-        platformID: Optional[PlatformID] = None,
-        platEncID: Optional[int] = None,
-        nameID: Optional[NameID] = None,
-        langID: Optional[int] = None,
+        platformID: PlatformID | None = None,
+        platEncID: int | None = None,
+        nameID: NameID | None = None,
+        langID: int | None = None,
         skip_unsupported_name_record: bool = True
     ) -> list[Name]:
         """Retrieve and decode NameRecord objects based on specified filtering criteria.
@@ -461,7 +461,7 @@ class FontParser:
 
 
     @staticmethod
-    def get_symbol_cmap_encoding(face: FT_Face) -> Optional[str]:
+    def get_symbol_cmap_encoding(face: FT_Face) -> str | None:
         """
         Args:
             face: An Font face
@@ -545,7 +545,7 @@ class FontParser:
 
 
     @staticmethod
-    def get_cmap_encoding(platform_id: int, encoding_id: int) -> Optional[str]:
+    def get_cmap_encoding(platform_id: int, encoding_id: int) -> str | None:
         """
         Args:
             platform_id: CMap platform id

@@ -18,7 +18,7 @@ class MKVExtract:
     PROGRAM_NAME = "mkvextract"
 
     @staticmethod
-    def get_program_path() -> Optional[Path]:
+    def get_program_path() -> Path | None:
         """
         Retrieves the full path to the `mkvextract` executable.
 

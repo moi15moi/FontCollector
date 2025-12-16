@@ -16,7 +16,7 @@ class MKVMerge:
     PROGRAM_NAME = "mkvmerge"
 
     @staticmethod
-    def get_program_path() -> Optional[Path]:
+    def get_program_path() -> Path | None:
         """
         Retrieves the full path to the `mkvmerge` executable.
 

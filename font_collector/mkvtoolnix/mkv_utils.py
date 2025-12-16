@@ -41,7 +41,7 @@ class MKVUtils():
         "S_ASS"
     ]
 
-    MKVTOOLNIX_FOLDER: Optional[Path] = None
+    MKVTOOLNIX_FOLDER: Path | None = None
 
 
     @staticmethod
@@ -76,7 +76,7 @@ class MKVUtils():
 
 
     @staticmethod
-    def get_program_path(program_name: str) -> Optional[Path]:
+    def get_program_path(program_name: str) -> Path | None:
         """Retrieves the full path of the specified program.
 
         Args:
