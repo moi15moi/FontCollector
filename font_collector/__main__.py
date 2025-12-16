@@ -54,7 +54,7 @@ def main() -> None:
 
             fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, convert_variable_to_collection, output_directory))
             _logger.info("")
-        
+
         if use_ass_in_mkv:
             with TemporaryDirectory() as tmp_dir:
                 assert isinstance(mkv_path, Path)

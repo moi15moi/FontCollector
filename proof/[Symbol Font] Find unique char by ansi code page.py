@@ -16,9 +16,9 @@ def generate_supported_char_by_code_page(code_pages: list[int]) -> dict[int, set
 
             if code_page not in supported_char_by_code_page:
                 supported_char_by_code_page[code_page] = set()
-            
+
             supported_char_by_code_page[code_page].add(char)
-        
+
     return supported_char_by_code_page
 
 
@@ -31,7 +31,7 @@ def generate_unique_char_by_code_page(supported_char_by_code_page: dict[int, set
         for other_codepoint, other_char_set in supported_char_by_code_page.items():
             if other_codepoint == codepoint:
                 continue
-            
+
             unique_char_by_code_page[codepoint] -= other_char_set
 
     return unique_char_by_code_page
@@ -50,11 +50,11 @@ def generate_unique_adobe_glyph_name_by_code_page(unique_char_by_code_page: dict
                     if adobe_codepoint == ord(char):
                         unique_adobe_glyph_name_by_code_page[codepoint].add(legacy_adobe_glyph_name.lower())
                         found = True
-            
+
             if not found:
                 print(char)
                 print(hex(ord(char)))
-    
+
     return unique_adobe_glyph_name_by_code_page
 
 
