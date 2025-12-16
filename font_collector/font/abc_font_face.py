@@ -57,7 +57,7 @@ class ABCFontFace(ABC):
     __is_italic: bool
     __is_glyph_emboldened: bool
     __font_type: FontType
-    __font_file: Optional[FontFile]
+    __font_file: FontFile | None
 
     @property
     @abstractmethod
@@ -96,7 +96,7 @@ class ABCFontFace(ABC):
 
     @property
     @abstractmethod
-    def font_file(self) -> Optional[FontFile]:
+    def font_file(self) -> FontFile | None:
         pass
 
     @abstractmethod
@@ -119,7 +119,7 @@ class ABCFontFace(ABC):
         pass
 
 
-    def get_family_name_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
+    def get_family_name_from_lang(self, lang_code: str, exact_match: bool = False) -> Name | None:
         """
         See the doc of _get_name_from_lang
         """
@@ -133,7 +133,7 @@ class ABCFontFace(ABC):
         return self._get_best_name(self.family_names)
 
 
-    def get_exact_name_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
+    def get_exact_name_from_lang(self, lang_code: str, exact_match: bool = False) -> Name | None:
         """
         See the doc of _get_name_from_lang
         """
@@ -181,7 +181,7 @@ class ABCFontFace(ABC):
 
 
     @staticmethod
-    def _get_name_from_lang(names: list[Name], lang_code: str, exact_match: bool) -> Optional[Name]:
+    def _get_name_from_lang(names: list[Name], lang_code: str, exact_match: bool) -> Name | None:
         """
         Args:
             names: A list of Names. Can be the family_names or exact_names.
@@ -207,7 +207,7 @@ class ABCFontFace(ABC):
         MATCH_MAJOR_LANG_OR_SAME_CHINESE_VARIANT = 1
         MATCH_DIFF_CHINESE_VARIANT = 2
         match_level = float('inf')
-        best_name: Optional[Name] = None
+        best_name: Name | None = None
 
         for name in names:
             if name.lang_code.language == requested_lang.language:

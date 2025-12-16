@@ -40,7 +40,7 @@ class ABCAssDocument(ABC):
     """
 
     @abstractmethod
-    def _get_sub_wrap_style(self) -> Optional[WrapStyle]:
+    def _get_sub_wrap_style(self) -> WrapStyle | None:
         """
         Returns:
             The subtitle WrapStyle.

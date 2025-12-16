@@ -91,7 +91,7 @@ class Name:
 
 
     @staticmethod
-    def get_name_record_encoding(name: NameRecord) -> Optional[str]:
+    def get_name_record_encoding(name: NameRecord) -> str | None:
         """
         Args:
             names: Name record from the naming table

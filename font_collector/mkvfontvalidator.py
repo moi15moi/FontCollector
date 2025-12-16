@@ -74,7 +74,7 @@ def main() -> None:
     mkv_path: Path = args.mkv
     need_draw_fonts: bool = args.need_draw_fonts
     delete_fonts_not_used: bool = args.delete_fonts_not_used
-    logging_file_path: Optional[Path] = args.logging
+    logging_file_path: Path | None = args.logging
 
     if args.mkvtoolnix:
         MKVUtils.MKVTOOLNIX_FOLDER = args.mkvtoolnix

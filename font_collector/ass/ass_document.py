@@ -32,7 +32,7 @@ class AssDocument(ABCAssDocument):
         return cls(subtitle)
 
 
-    def _get_sub_wrap_style(self) -> Optional[WrapStyle]:
+    def _get_sub_wrap_style(self) -> WrapStyle | None:
         try:
             sub_wrap_style = WrapStyle(self.subtitle.wrap_style)
         except KeyError:

@@ -124,7 +124,7 @@ class VariableFontFace(ABCFontFace):
         return self.__font_type
 
     @property
-    def font_file(self) -> Optional[FontFile]:
+    def font_file(self) -> FontFile | None:
         return self.__font_file
 
     def link_face_to_a_font_file(self, value: FontFile) -> None:
@@ -148,7 +148,7 @@ class VariableFontFace(ABCFontFace):
         return self.__named_instance_coordinates
 
 
-    def get_family_prefix_from_lang(self, lang_code: str, exact_match: bool = False) -> Optional[Name]:
+    def get_family_prefix_from_lang(self, lang_code: str, exact_match: bool = False) -> Name | None:
         """
         See the doc of _get_name_from_lang in abc_font
         """

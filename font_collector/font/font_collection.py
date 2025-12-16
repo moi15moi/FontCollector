@@ -46,7 +46,7 @@ class FontCollection:
         self.reload_system_font = reload_system_font
         self.use_generated_fonts = use_generated_fonts
         self.additional_fonts = additional_fonts
-        self.__system_fonts: Optional[list[FontFile]] = None
+        self.__system_fonts: list[FontFile] | None = None
 
 
     def __iter__(self) -> Generator[FontFile, None, None]:
@@ -89,7 +89,7 @@ class FontCollection:
         raise AttributeError("You cannot set the fonts. If you want to add font, set additional_fonts")
 
 
-    def get_used_font_by_style(self, style: AssStyle, strategy: FontSelectionStrategy) -> Optional[FontResult]:
+    def get_used_font_by_style(self, style: AssStyle, strategy: FontSelectionStrategy) -> FontResult | None:
         """
         Args:
             style: An AssStyle
@@ -99,7 +99,7 @@ class FontCollection:
             If no fonts are found, it returns None.
         """
         score_min = float('inf')
-        selected_font_face: Optional[ABCFontFace] = None
+        selected_font_face: ABCFontFace | None = None
         for font_file in self.fonts:
             for font_face in font_file.font_faces:
                 score = strategy.get_similarity_score(font_face, style)

@@ -20,7 +20,7 @@ def collect_subtitle_fonts(
         font_strategy: FontSelectionStrategy,
         collect_draw_fonts: bool,
         convert_variable_to_collection: bool = False,
-        output_variable_font_directory: Optional[Path] = None
+        output_variable_font_directory: Path | None = None
     ) -> set[FontFile]:
     """
     Collect the fonts used in a given subtitle (ASS) document.

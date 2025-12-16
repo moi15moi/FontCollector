@@ -5,7 +5,7 @@ __all__ = ["MKVASSFile"]
 
 class MKVASSFile:
 
-    def __init__(self, filename: Path, mkv_id: int, track_name: Optional[str]) -> None:
+    def __init__(self, filename: Path, mkv_id: int, track_name: str | None) -> None:
         self.filename = filename
         self.mkv_id = mkv_id
         self.track_name = track_name

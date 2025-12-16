@@ -7,7 +7,7 @@ from typing import Optional, Union
 from .mkvtoolnix.mkv_utils import MKVUtils
 
 
-def __parse_input_file(ass_input: Optional[list[Path]]) -> list[Path]:
+def __parse_input_file(ass_input: list[Path] | None) -> list[Path]:
     if ass_input is None:
         return []
 
@@ -33,7 +33,7 @@ def __parse_input_file(ass_input: Optional[list[Path]]) -> list[Path]:
 def parse_arguments() -> tuple[
     list[Path],
     Path,
-    Union[Path, None],
+    Path | None,
     bool,
     bool,
     Iterable[Path],
@@ -41,7 +41,7 @@ def parse_arguments() -> tuple[
     bool,
     bool,
     bool,
-    Optional[Path]
+    Path | None
 ]:
     """
     Returns:

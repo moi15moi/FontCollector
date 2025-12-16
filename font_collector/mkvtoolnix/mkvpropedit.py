@@ -18,7 +18,7 @@ class MKVPropedit:
     PROGRAM_NAME = "mkvpropedit"
 
     @staticmethod
-    def get_program_path() -> Optional[Path]:
+    def get_program_path() -> Path | None:
         """
         Retrieves the full path to the `mkvpropedit` executable.
 
