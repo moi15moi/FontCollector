@@ -172,7 +172,7 @@ def parse_arguments() -> tuple[
 
     if len(ass_files_path) == 0 and not use_ass_in_mkv:
         raise RuntimeError("The specified file(s)/folder(s) doesn't exist or the folder(s) doesn't contains any .ass file.")
-    
+
     if use_ass_in_mkv and mkv_path is None:
         raise RuntimeError("You need to add the flag `-mkv` to use the flag `--use-ass-in-mkv`.")
 
