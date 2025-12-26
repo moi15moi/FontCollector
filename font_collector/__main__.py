@@ -38,7 +38,8 @@ def main() -> None:
         file_handler = logging.FileHandler(logging_file_path, mode="a", encoding="utf-8")
         file_handler.setLevel(_handler.level)
         file_handler.setFormatter(_handler.formatter)
-        _logger.addHandler(file_handler)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(file_handler)
         _logger.info(f"{Path.cwd()}>{' '.join(argv)}")
 
     try:
