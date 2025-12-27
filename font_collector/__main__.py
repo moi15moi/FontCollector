@@ -13,7 +13,7 @@ from .font import (
     FontLoader,
     FontSelectionStrategyLibass
 )
-from .mkvtoolnix import MKVExtract, MKVPropedit
+from .mkvtoolnix import MKVExtract, MKVFontFile, MKVPropedit
 from .parse_arguments import parse_arguments
 
 _logger = logging.getLogger(__name__)
@@ -31,7 +31,8 @@ def main() -> None:
         use_system_font,
         collect_draw_fonts,
         convert_variable_to_collection,
-        logging_file_path
+        logging_file_path,
+        use_fonts_muxed_to_mkv
     ) = parse_arguments()
 
     if logging_file_path:
@@ -46,6 +47,12 @@ def main() -> None:
         fonts_file_found: set[FontFile] = set()
         additional_fonts = FontLoader.load_additional_fonts(additional_fonts_path)
         additional_fonts.extend(FontLoader.load_additional_fonts(additional_fonts_recursive_path, True))
+        if use_fonts_muxed_to_mkv:
+            assert mkv_path is not None # Make mypy happy
+            tmp_dir_mkv = TemporaryDirectory()
+            mkv_font_files = MKVExtract.get_mkv_font_files(mkv_path, Path(tmp_dir_mkv.name))
+            additional_fonts.extend(FontLoader.load_additional_fonts([f.filename for f in mkv_font_files]))
+
         font_collection = FontCollection(use_system_font=use_system_font, additional_fonts=additional_fonts)
         font_strategy = FontSelectionStrategyLibass()
 
@@ -53,7 +60,7 @@ def main() -> None:
             subtitle = AssDocument.from_file(ass_path)
             _logger.info(f"Loaded successfully {ass_path}")
 
-            fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, convert_variable_to_collection, output_directory))
+            fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, True, convert_variable_to_collection, output_directory))
             _logger.info("")
 
         if use_ass_in_mkv:
@@ -67,13 +74,28 @@ def main() -> None:
                         log_msg += f" - \"{mkv_ass_file.track_name}\""
                     _logger.info(log_msg)
 
-                    fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, convert_variable_to_collection, output_directory))
+                    fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, collect_draw_fonts, True, convert_variable_to_collection, output_directory))
                     _logger.info("")
 
         if mkv_path is not None:
             if delete_fonts:
                 MKVPropedit.delete_all_fonts_of_mkv(mkv_path)
-            MKVPropedit.merge_fonts_into_mkv(fonts_file_found, mkv_path)
+
+            fonts_file_to_mux: set[FontFile] = set()
+            if use_fonts_muxed_to_mkv:
+                for font in fonts_file_found:
+                    if not any(font.filename.samefile(mkv_font.filename) for mkv_font in mkv_font_files):
+                        fonts_file_to_mux.add(font)
+
+                mkv_fonts_file_to_delete: list[MKVFontFile] = []
+                for mkv_font in mkv_font_files:
+                    if not any(mkv_font.filename.samefile(font.filename) for font in fonts_file_found):
+                        mkv_fonts_file_to_delete.append(mkv_font)
+                if len(mkv_fonts_file_to_delete) > 0:
+                    MKVPropedit.delete_fonts_of_mkv(mkv_path, [f.mkv_id for f in mkv_fonts_file_to_delete])
+
+            if len(fonts_file_to_mux) > 0:
+                MKVPropedit.merge_fonts_into_mkv(fonts_file_to_mux, mkv_path)
         else:
             if not output_directory.is_dir():
                 output_directory.mkdir()
@@ -85,6 +107,9 @@ def main() -> None:
                         shutil.copy(font.filename, font_filename)
     except Exception as e:
         _logger.error("An unexpected error occured", exc_info=True)
+    finally:
+        if tmp_dir_mkv is not None:
+            tmp_dir_mkv.cleanup()
 
 if __name__ == "__main__":
     main()

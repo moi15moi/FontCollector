@@ -104,7 +104,7 @@ def main() -> None:
                     log_msg += f" - \"{mkv_ass_file.track_name}\""
                 _logger.info(log_msg)
 
-                fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, need_draw_fonts, False, None))
+                fonts_file_found.update(collect_subtitle_fonts(subtitle, font_collection, font_strategy, need_draw_fonts, False, False, None))
                 _logger.info("")
 
             font_not_used: list[MKVFontFile] = []

@@ -18,8 +18,9 @@ def collect_subtitle_fonts(
         font_collection: FontCollection,
         font_strategy: FontSelectionStrategy,
         collect_draw_fonts: bool,
+        prefer_non_system_fonts: bool,
         convert_variable_to_collection: bool = False,
-        output_variable_font_directory: Path | None = None
+        output_variable_font_directory: Path | None = None,
     ) -> set[FontFile]:
     """
     Collect the fonts used in a given subtitle (ASS) document.
@@ -45,7 +46,7 @@ def collect_subtitle_fonts(
 
     for style, usage_data in used_styles.items():
 
-        font_result = font_collection.get_used_font_by_style(style, font_strategy)
+        font_result = font_collection.get_used_font_by_style(style, font_strategy, prefer_non_system_fonts)
 
         # Did not found the font
         if font_result is None:

@@ -40,11 +40,12 @@ def parse_arguments() -> tuple[
     bool,
     bool,
     bool,
-    Path | None
+    Path | None,
+    bool
 ]:
     """
     Returns:
-        ass_files_path, output_directory, mkv_path, delete_fonts, additional_fonts, use_system_fonts
+        ass_files_path, output_directory, mkv_path, use_ass_in_mkv, delete_mkv_fonts, additional_fonts, additional_fonts_recursive, use_system_fonts, collect_draw_fonts, convert_variable_to_collection, logging_file_path, use_fonts_muxed_to_mkv
     """
 
     start_time = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
@@ -154,6 +155,13 @@ def parse_arguments() -> tuple[
     Destination path of log. If it isn't specified, it will be YYYY-MM-DD--HH-MM-SS_font_collector.log.
     """,
     )
+    parser.add_argument(
+        "--use-fonts-muxed-to-mkv",
+        action="store_true",
+        help="""
+    If specified, use the fonts muxed to the mkv as a source. The muxed fonts that aren't used will be deleted of the mkv.
+    """,
+    )
 
     args = parser.parse_args()
 
@@ -162,19 +170,26 @@ def parse_arguments() -> tuple[
     output_directory = args.output
     mkv_path = args.mkv
     use_ass_in_mkv = args.use_ass_in_mkv
-    delete_fonts = args.delete_fonts
+    delete_mkv_fonts = args.delete_fonts
     additional_fonts = args.additional_fonts
     additional_fonts_recursive = args.additional_fonts_recursive
     use_system_fonts = args.exclude_system_fonts
     collect_draw_fonts = args.collect_draw_fonts
     convert_variable_to_collection = args.dont_convert_variable_to_collection
     logging_file_path = args.logging
+    use_fonts_muxed_to_mkv = args.use_fonts_muxed_to_mkv
 
     if len(ass_files_path) == 0 and not use_ass_in_mkv:
         raise RuntimeError("The specified file(s)/folder(s) doesn't exist or the folder(s) doesn't contains any .ass file.")
 
     if use_ass_in_mkv and mkv_path is None:
         raise RuntimeError("You need to add the flag `-mkv` to use the flag `--use-ass-in-mkv`.")
+
+    if use_fonts_muxed_to_mkv and mkv_path is None:
+        raise RuntimeError("You need to add the flag `-mkv` to use the flag `--use-fonts-muxed-to-mkv`.")
+
+    if use_fonts_muxed_to_mkv and delete_mkv_fonts:
+        raise RuntimeError("You can't use the flag `--delete-fonts` with the flag `--use-fonts-muxed-to-mkv`.")
 
     if args.mkvtoolnix:
         if not mkv_path:
@@ -186,11 +201,12 @@ def parse_arguments() -> tuple[
         output_directory,
         mkv_path,
         use_ass_in_mkv,
-        delete_fonts,
+        delete_mkv_fonts,
         additional_fonts,
         additional_fonts_recursive,
         use_system_fonts,
         collect_draw_fonts,
         convert_variable_to_collection,
-        logging_file_path
+        logging_file_path,
+        use_fonts_muxed_to_mkv
     )

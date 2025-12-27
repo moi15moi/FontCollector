@@ -89,7 +89,7 @@ class FontCollection:
         raise AttributeError("You cannot set the fonts. If you want to add font, set additional_fonts")
 
 
-    def get_used_font_by_style(self, style: AssStyle, strategy: FontSelectionStrategy) -> FontResult | None:
+    def get_used_font_by_style(self, style: AssStyle, strategy: FontSelectionStrategy, prefer_non_system_fonts: bool = False) -> FontResult | None:
         """
         Args:
             style: An AssStyle
@@ -116,6 +116,12 @@ class FontCollection:
                             raise ValueError(f"The font_face \"{font_face}\" isn't linked to any FontFile.")
                         if selected_font_face.font_file is None:
                             raise ValueError(f"The selected_font_face \"{selected_font_face}\" isn't linked to any FontFile.")
+                        if prefer_non_system_fonts:
+                            is_selected_font_face_from_system = selected_font_face.font_file in self.system_fonts
+                            is_font_face_from_system = font_face.font_file in self.system_fonts
+
+                            if not is_font_face_from_system and is_selected_font_face_from_system:
+                                selected_font_face = font_face
                         # GDI prefers the oldest font when the score between 2 fonts is exactly the same.
                         # However, for us, it is impossible to know when a font has been installed.
                         # GDI, DirectWrite, CoreText and Fontconfig don't offer a way to retrieve the installation date of a font.
