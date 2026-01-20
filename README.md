@@ -11,6 +11,7 @@ This tool allows to recover and/or mux the fonts necessary in an mkv.
 ```
 pip install FontCollector
 ```
+PS: If you get the error ``error: externally-managed-environment (PEP 668)``, you might wanna use [``pipx``](https://pipx.pypa.io/stable/installation/) instead of ``pip``.
 ## Dependencies
 -  [MKVToolNix](https://mkvtoolnix.download/downloads.html)
 
