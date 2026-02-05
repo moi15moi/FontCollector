@@ -111,6 +111,6 @@ class MKVExtract:
                 cmd.append(f'{mkv_ass_file.mkv_id}:{mkv_ass_file.filename}')
                 mkv_ass_files.append(mkv_ass_file)
 
-
-        MKVUtils.run_command(MKVExtract.PROGRAM_NAME, cmd)
+        if len(mkv_ass_files) > 0:
+            MKVUtils.run_command(MKVExtract.PROGRAM_NAME, cmd)
         return mkv_ass_files
