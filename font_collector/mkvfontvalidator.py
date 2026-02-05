@@ -90,6 +90,8 @@ def main() -> None:
         with TemporaryDirectory() as tmp_dir:
 
             mkv_ass_files = MKVExtract.get_mkv_ass_files(mkv_path, Path(tmp_dir))
+            if len(mkv_ass_files) == 0:
+                _logger.warning("The mkv doesn't contain any .ass file")
             mkv_font_files = MKVExtract.get_mkv_font_files(mkv_path, Path(tmp_dir))
 
             fonts_file_found: set[FontFile] = set()
