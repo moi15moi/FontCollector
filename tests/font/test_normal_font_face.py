@@ -184,6 +184,18 @@ def test_font_get_missing_glyphs_cmap_legacy_arabic_simplified():
     assert missing_glyphs == set("a")
 
 
+def test_font_get_missing_glyphs_cmap_legacy_arabic_traditional():
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "legacy-arabic-traditional-AGACairoRegular.ttf"))
+    font_file = FontFile.from_font_path(font_path)
+
+    assert len(font_file.font_faces) == 1
+    font_face = font_file.font_faces[0]
+    assert isinstance(font_face, NormalFontFace)
+
+    missing_glyphs = font_face.get_missing_glyphs("جa")
+    assert missing_glyphs == set("a")
+
+
 def test_font_get_missing_glyphs_cmap_encoding_mac_platform():
     font_mac_platform = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_mac.TTF"))
     font_file = FontFile.from_font_path(font_mac_platform)
