@@ -185,6 +185,32 @@ def test_font_get_missing_glyphs_cmap_encoding_2():
     assert missing_glyphs == {"é"}
 
 
+def test_font_get_missing_glyphs_cmap_encoding_3():
+    font_cmap_encoding_3 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "微软简标宋 - PlatEncID 3.TTF"))
+    font_file = FontFile.from_font_path(font_cmap_encoding_3)
+
+    assert len(font_file.font_faces) == 1
+    font_face = font_file.font_faces[0]
+    assert isinstance(font_face, NormalFontFace)
+
+    # Try "ｦ" since cp936 doesn't support this char
+    missing_glyphs = font_face.get_missing_glyphs("AÉé㈤ｦ")
+    assert missing_glyphs == {"É", "ｦ"}
+
+
+def test_font_get_missing_glyphs_cmap_encoding_4():
+    font_cmap_encoding_4 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "文鼎中特廣告體 - PlatEncID 4.ttf"))
+    font_file = FontFile.from_font_path(font_cmap_encoding_4)
+
+    assert len(font_file.font_faces) == 1
+    font_face = font_file.font_faces[0]
+    assert isinstance(font_face, NormalFontFace)
+
+    # Try "ｦ" since cp950 doesn't support this char
+    missing_glyphs = font_face.get_missing_glyphs("é￥卷ｦ")
+    assert missing_glyphs == {"é", "ｦ"}
+
+
 def test_font_get_missing_glyphs_cmap_legacy_arabic_simplified():
     font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "legacy-arabic-simplified-SimplifiedArabic.ttf"))
     font_file = FontFile.from_font_path(font_path)
