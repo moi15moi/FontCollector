@@ -10,13 +10,14 @@ from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 from fontTools.ttLib.ttFont import TTFont
 from fontTools.varLib.instancer.names import ELIDABLE_AXIS_VALUE_NAME
-from freetype import Face, FT_Face, FT_Get_Glyph_Name
+from freetype import FT_Get_First_Char, FT_UInt, Face, FT_Face, FT_Get_Glyph_Name
 from freetype.ft_enums.ft_style_flags import FT_STYLE_FLAGS
 from langcodes import Language
 
 from ..exceptions import InvalidNameRecord, InvalidVariableFontFaceException
 from .cmap import CMap
-from .name import Name, NameID, PlatformID
+from .legacy_cmap_mapping import arabic_simplified_cmap_mapping, arabic_traditional_cmap_mapping
+from .name import MacintoshEncodingID, MicrosoftEncodingID, Name, NameID, PlatformID
 
 
 class FontParser:
@@ -26,20 +27,16 @@ class FontParser:
 
     DEFAULT_WEIGHT = 400
     DEFAULT_ITALIC = False
-    CMAP_ENCODING_MAP: dict[PlatformID, dict[int, str]] = {
-        PlatformID.MACINTOSH: {
-            0: "mac_roman",
-        },
-        PlatformID.MICROSOFT: {
-            0: "unknown",
-            1: "unicode",
-            2: "cp932",
-            3: "cp936",
-            4: "cp950",
-            5: "cp949",
-            6: "cp1361",
-            10: "unicode",
-        },
+    MICROSOFT_CMAP_ENCODING_MAP: dict[int, str] = {
+        MicrosoftEncodingID.SHIFT_JIS: "cp932",
+        MicrosoftEncodingID.PRC: "cp936",
+        MicrosoftEncodingID.BIG5: "cp950",
+        MicrosoftEncodingID.WANSUNG: "cp949",
+        MicrosoftEncodingID.JOHAB: "cp1361",
+    }
+    LEGACY_CHARSET_CMAPS: dict[int, dict[int, int]] = {
+        178: arabic_simplified_cmap_mapping,
+        179: arabic_traditional_cmap_mapping,
     }
 
 
@@ -522,8 +519,7 @@ class FontParser:
             cmap_tables: list[CmapSubtable] = font["cmap"].tables
 
             for table in cmap_tables:
-                encoding = FontParser.get_cmap_encoding(table.platformID, table.platEncID)
-                if encoding is not None:
+                if FontParser.is_cmap_supported(table.platformID, table.platEncID):
                     cmap = CMap(table.platformID, table.platEncID)
                     if table.platformID == PlatformID.MICROSOFT:
                         microsoft_cmaps.append(cmap)
@@ -534,8 +530,7 @@ class FontParser:
                 face = Face(f, font_index)
 
             for charmap in face.charmaps:
-                encoding = FontParser.get_cmap_encoding(charmap.platform_id, charmap.encoding_id)
-                if encoding is not None:
+                if FontParser.is_cmap_supported(charmap.platform_id, charmap.encoding_id):
                     cmap = CMap(charmap.platform_id, charmap.encoding_id)
                     if charmap.platform_id == PlatformID.MICROSOFT:
                         microsoft_cmaps.append(cmap)
@@ -545,22 +540,103 @@ class FontParser:
 
 
     @staticmethod
-    def get_cmap_encoding(platform_id: int, encoding_id: int) -> str | None:
+    def is_cmap_supported(platform_id: int, encoding_id: int) -> bool:
         """
         Args:
             platform_id: CMap platform id
             encoding_id: CMap encoding id
         Returns:
-            The cmap encoding.
-            If GDI does not support the platform_id and/or platform_encoding_id, return None.
-            Warning, if it return "unknown", it means that the cmap is from a symbol font.
-                Call get_symbol_cmap_encoding() to know what is the encoding.
-        Notes:
-            - GDI only supports all encodings for the Microsoft CMap.
-            - For the Macintosh platform, it only supports the platform encoding 1.
+            True if the cmap is supported by GDI.
+            Otherwhise, False.
         """
-        if platform_id in FontParser.CMAP_ENCODING_MAP:
-            return FontParser.CMAP_ENCODING_MAP[PlatformID(platform_id)].get(encoding_id, None)
+        if platform_id == PlatformID.MICROSOFT:
+            return encoding_id in (
+                MicrosoftEncodingID.SYMBOL,
+                MicrosoftEncodingID.UNICODE_BMP,
+                MicrosoftEncodingID.SHIFT_JIS,
+                MicrosoftEncodingID.PRC,
+                MicrosoftEncodingID.BIG5,
+                MicrosoftEncodingID.WANSUNG,
+                MicrosoftEncodingID.JOHAB,
+                MicrosoftEncodingID.UNICODE_FULL,
+            )
+        elif platform_id == PlatformID.MACINTOSH:
+            return encoding_id == MacintoshEncodingID.ROMAN
+        return False
+
+    @staticmethod
+    def get_glyph_id_for_legacy_cmap(font: TTFont, character: str) -> tuple[bool, int | None]:
+        """
+        Args:
+            font: A fontTools object representing the font.
+            character: A single character.
+        Returns:
+            A tuple (is_legacy, glyph_id).
+            is_legacy is True if the font is a legacy font.
+            glyph_id is the character's remapped PUA codepoint if the charset's mapping contains it.
+                It is None if is_legacy is False, and also None if is_legacy is True but the character
+                isn't in that charset's mapping.
+        Note:
+            This method is identical to https://github.com/libass/libass/blob/b2fe9d8770678a7b5271387d38c20657ebf3429a/libass/ass_font.c#L250-L270
+        """
+        if "OS/2" not in font:
+            return False, None
+
+        charset = (font["OS/2"].fsSelection >> 8) & 0xFF
+        mapping = FontParser.LEGACY_CHARSET_CMAPS.get(charset)
+        if mapping is None:
+            return False, None
+
+        glyph_id = mapping.get(ord(character))
+        return True, glyph_id
+
+
+    @staticmethod
+    def get_glyph_id_for_symbol_cmap(font: TTFont, face: FT_Face, character: str, support_only_ascii_char_for_symbol_font: bool) -> int | None:
+        """
+        Args:
+            font: A fontTools object representing the font.
+            face: An Font face.
+            character: A single character.
+            support_only_ascii_char_for_symbol_font: See ABCFontFace.get_missing_glyphs.
+        Returns:
+            The glyph_id GDI would look up for this character in a microsoft symbol cmap.
+        Note:
+            This method is identical to https://github.com/libass/libass/blob/b2fe9d8770678a7b5271387d38c20657ebf3429a/libass/ass_font.c#L272-L320
+        """
+        is_legacy, legacy_codepoint = FontParser.get_glyph_id_for_legacy_cmap(font, character)
+        if is_legacy:
+            return legacy_codepoint
+
+        gindex = FT_UInt()
+        first_char = FT_Get_First_Char(face, byref(gindex))
+
+        match first_char & 0xFF00:
+            case 0xF000:
+                offset = 0xF000
+            case 0xE000 | 0x0000:
+                offset = 0
+            case _:
+                offset = first_char - 0x20
+
+        is_symbol_glyph_set = bool(offset) or (
+            "OS/2" in font and font["OS/2"].panose.bFamilyType == 5 and (font["OS/2"].fsSelection & 0xFF) == 0
+        )
+        if not is_symbol_glyph_set:
+            return ord(character)
+
+        cmap_encoding = FontParser.get_symbol_cmap_encoding(face) or "cp1252"
+        try:
+            codepoint = int.from_bytes(character.encode(cmap_encoding), "big")
+        except UnicodeEncodeError:
+            codepoint = None
+
+        if codepoint is not None and codepoint <= 0xFF:
+            if not support_only_ascii_char_for_symbol_font or character.isascii():
+                return offset + codepoint
+        elif 0xF020 <= ord(character) <= 0xF0FF:
+            return offset + (ord(character) & 0xFF)
+
         return None
 
 
