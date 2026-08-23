@@ -119,7 +119,7 @@ def test_link_face_to_a_font_file():
     assert font_face_2.font_file == font_file
 
 
-def test_font_get_missing_glyphs_cmap_encoding_0():
+def test_font_get_missing_glyphs_cmap_encoding_0_offset_0xf000():
     font_cmap_encoding_0 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_0.ttf"))
     font_file = FontFile.from_font_path(font_cmap_encoding_0)
 
