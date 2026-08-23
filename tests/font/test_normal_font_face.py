@@ -145,6 +145,19 @@ def test_font_get_missing_glyphs_cmap_encoding_0_offset_0xf000():
     missing_glyphs = font_face.get_missing_glyphs(chr(0xF0FF))
     assert missing_glyphs == set()
 
+
+def test_font_get_missing_glyphs_cmap_encoding_0_offset_0x0000():
+    font_path = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "symbol-first-char-0x0000-Baoloc.ttf"))
+    font_file = FontFile.from_font_path(font_path)
+
+    assert len(font_file.font_faces) == 1
+    font_face = font_file.font_faces[0]
+    assert isinstance(font_face, NormalFontFace)
+
+    missing_glyphs = font_face.get_missing_glyphs("AÉ}@\\«»°:え")
+    assert missing_glyphs == set("え")
+
+
 def test_font_get_missing_glyphs_cmap_encoding_1():
     font_cmap_encoding_1 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf"))
     font_file = FontFile.from_font_path(font_cmap_encoding_1)
