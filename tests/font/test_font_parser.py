@@ -229,52 +229,52 @@ def test_get_supported_cmaps():
     assert cmaps == [CMap(3, 1)]
 
 
-def test_get_cmap_encoding():
+def test_is_cmap_supported():
     # It could be any format
     cmap_format = 0
     cmap = CmapSubtable.newSubtable(cmap_format)
 
     # Non-supported platform
     cmap.platformID = PlatformID.UNICODE
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == None
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == False
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 0
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unknown"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 1
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unicode"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 2
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp932"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 3
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp936"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 4
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp950"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 5
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp949"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 6
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "cp1361"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MICROSOFT
     cmap.platEncID = 10
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "unicode"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     cmap.platformID = PlatformID.MACINTOSH
     cmap.platEncID = 0
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == "mac_roman"
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == True
 
     # Non-supported platEncID
     cmap.platformID = PlatformID.MACINTOSH
     cmap.platEncID = 1
-    assert FontParser.get_cmap_encoding(cmap.platformID, cmap.platEncID) == None
+    assert FontParser.is_cmap_supported(cmap.platformID, cmap.platEncID) == False

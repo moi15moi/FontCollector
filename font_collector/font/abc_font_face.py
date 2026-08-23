@@ -27,7 +27,7 @@ from .chinese_variant import ChineseVariant
 from .cmap import CMap
 from .font_parser import FontParser
 from .font_type import FontType
-from .name import Name
+from .name import MacintoshEncodingID, MicrosoftEncodingID, Name, PlatformID
 
 if TYPE_CHECKING:
     from .font_file import FontFile
@@ -298,44 +298,37 @@ class ABCFontFace(ABC):
                 platform_id = charmap.contents.platform_id
                 encoding_id = charmap.contents.encoding_id
 
-                cmap_encoding = FontParser.get_cmap_encoding(platform_id, encoding_id)
-
-                # cmap not supported
-                if cmap_encoding is None:
-                    continue
-
-                if cmap_encoding == "unicode":
-                    codepoint = ord(char)
-                else:
-                    symbol_cmap = False
-                    if cmap_encoding == "unknown":
-                        if platform_id == 3 and encoding_id == 0:
-                            symbol_cmap = True
-                            if support_only_ascii_char_for_symbol_font and not char.isascii():
-                                continue
-                            cmap_encoding = FontParser.get_symbol_cmap_encoding(face)
-
+                if platform_id == PlatformID.MICROSOFT:
+                    match encoding_id:
+                        case MicrosoftEncodingID.SYMBOL:
+                            codepoint = FontParser.get_glyph_id_for_symbol_cmap(ttFont, face, char, support_only_ascii_char_for_symbol_font)
+                        case MicrosoftEncodingID.UNICODE_BMP:
+                            is_legacy, legacy_codepoint = FontParser.get_glyph_id_for_legacy_cmap(ttFont, char)
+                            codepoint = legacy_codepoint if is_legacy else ord(char)
+                        case MicrosoftEncodingID.UNICODE_FULL:
+                            codepoint = ord(char)
+                        case _:
+                            cmap_encoding = FontParser.MICROSOFT_CMAP_ENCODING_MAP.get(encoding_id)
                             if cmap_encoding is None:
-                                # Fallback if guess fails
-                                cmap_encoding = "cp1252"
-                        else:
-                            # cmap not supported
-                            continue
+                                raise ValueError(f"The encodingID {encoding_id} doesn't exist for microsoft platform. This should never happen.")
+                            try:
+                                codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
+                            except UnicodeEncodeError:
+                                codepoint = None
+                elif platform_id == PlatformID.MACINTOSH:
+                    match encoding_id:
+                        case MacintoshEncodingID.ROMAN:
+                            try:
+                                codepoint = int.from_bytes(char.encode("mac_roman"), "big")
+                            except UnicodeEncodeError:
+                                codepoint = None
+                        case _:
+                            raise ValueError(f"The encodingID {encoding_id} doesn't exist for mac platform. This should never happen.")
+                else:
+                    raise ValueError(f"The platformID {platform_id} isn't supported by GDI. This should never happen.")
 
-                    if symbol_cmap and (0xF020 <= ord(char) and ord(char) <= 0xF0FF):
-                        # If the character is already a "symbol" character (a.k.a is between 0xF020 and 0xF0FF),
-                        # GDI directly use it's codepoint.
-                        codepoint = ord(char)
-                    else:
-                        try:
-                            codepoint = int.from_bytes(char.encode(cmap_encoding), "big")
-                        except UnicodeEncodeError:
-                            continue
-
-                # GDI/Libass modify the codepoint for microsoft symbol cmap.
-                # See: https://github.com/libass/libass/blob/04a208d5d200360d2ac75f8f6cfc43dd58dd9225/libass/ass_font.c#L249-L250
-                if platform_id == 3 and encoding_id == 0:
-                    codepoint = 0xF000 | codepoint
+                if codepoint is None:
+                    continue
 
                 index = FT_Get_Char_Index(face, codepoint)
 

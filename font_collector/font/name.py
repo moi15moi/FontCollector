@@ -19,13 +19,30 @@ MAC_LCID_CODE_TO_LANGUAGES: dict[int, str] = _MAC_LANGUAGES
 MAC_LANGUAGES_TO_LCID_CODE: dict[str, int] = _MAC_LANGUAGE_CODES
 
 
-__all__ = ["Name", "NameID", "PlatformID"]
+__all__ = ["MacintoshEncodingID", "MicrosoftEncodingID", "Name", "NameID", "PlatformID"]
 
 class PlatformID(IntEnum):
     # From https://learn.microsoft.com/en-us/typography/opentype/spec/name#platform-ids
     UNICODE = 0
     MACINTOSH = 1
     MICROSOFT = 3
+
+
+class MacintoshEncodingID(IntEnum):
+    # From https://learn.microsoft.com/en-us/typography/opentype/spec/name#macintosh-encoding-ids-script-manager-codes
+    ROMAN = 0
+
+
+class MicrosoftEncodingID(IntEnum):
+    # From https://learn.microsoft.com/en-us/typography/opentype/spec/name#windows-encoding-ids
+    SYMBOL = 0
+    UNICODE_BMP = 1
+    SHIFT_JIS = 2
+    PRC = 3
+    BIG5 = 4
+    WANSUNG = 5
+    JOHAB = 6
+    UNICODE_FULL = 10
 
 
 class NameID(IntEnum):
@@ -100,21 +117,21 @@ class Name:
         """
         # From: https://github.com/MicrosoftDocs/typography-issues/issues/956#issuecomment-1205678068
         if name.platformID == PlatformID.MICROSOFT:
-            if name.platEncID == 3:
+            if name.platEncID == MicrosoftEncodingID.PRC:
                 return "cp936"
-            elif name.platEncID == 4:
+            elif name.platEncID == MicrosoftEncodingID.BIG5:
                 if name.nameID == NameID.SUBFAMILY_NAME:
                     return "utf_16_be"
                 else:
                     return "cp950"
-            elif name.platEncID == 5:
+            elif name.platEncID == MicrosoftEncodingID.WANSUNG:
                 if name.nameID == NameID.SUBFAMILY_NAME:
                     return "utf_16_be"
                 else:
                     return "cp949"
             else:
                 return "utf_16_be"
-        elif name.platformID == PlatformID.MACINTOSH and name.platEncID == 0:
+        elif name.platformID == PlatformID.MACINTOSH and name.platEncID == MacintoshEncodingID.ROMAN:
             # From: https://github.com/libass/libass/issues/679#issuecomment-1442262479
             return "iso-8859-1"
 
