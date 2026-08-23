@@ -32,11 +32,16 @@ def test_load_additional_fonts():
         Path(os.path.join(font_directory, "font_without axis_value.ttf")),
         Path(os.path.join(font_directory, "fvar_with_0_instance.ttf")),
         Path(os.path.join(font_directory, "invalid_cmap.ttf")),
+        Path(os.path.join(font_directory, "legacy-arabic-simplified-SimplifiedArabic.ttf")),
+        Path(os.path.join(font_directory, "legacy-arabic-traditional-AGACairoRegular.ttf")),
         Path(os.path.join(font_directory, "opentype_font_collection.ttc")),
         Path(os.path.join(font_directory, "PENBOX.otf")),
         Path(os.path.join(font_directory, "SFProDisplay-Bold.ttf")),
         Path(os.path.join(font_directory, "SFProDisplay-BoldItalic.ttf")),
+        Path(os.path.join(font_directory, "symbol-first-char-0x0000-Baoloc.ttf")),
         Path(os.path.join(font_directory, "truetype_font_collection.ttc")),
+        Path(os.path.join(font_directory, "微软简标宋 - PlatEncID 3.TTF")),
+        Path(os.path.join(font_directory, "文鼎中特廣告體 - PlatEncID 4.ttf")),
     ]
     assert sorted(result) == sorted(expected_result)
 
