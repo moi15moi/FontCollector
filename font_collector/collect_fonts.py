@@ -55,17 +55,17 @@ def collect_subtitle_fonts(
                 f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}"
             )
         else:
-            log_msg = ""
+            log_msgs = []
             if font_result.need_faux_bold:
-                log_msg = f"Faux bold used for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))})."
+                log_msgs.append(f"Faux bold used for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
             elif font_result.mismatch_bold:
-                log_msg = f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))})."
+                log_msgs.append(f"Mismatched weight for '{style.fontname}' (requested weight {style.weight}-{(font_weight_to_name(style.weight))}, got {font_result.font_face.weight}-{(font_weight_to_name(font_result.font_face.weight))}).")
             if font_result.mismatch_italic:
-                log_msg = f"Mismatched italic for '{style.fontname}' (requested {'' if style.italic else 'non-'}italic, got {'' if font_result.font_face.is_italic else 'non-'}italic)."
+                log_msgs.append(f"Mismatched italic for '{style.fontname}' (requested {'' if style.italic else 'non-'}italic, got {'' if font_result.font_face.is_italic else 'non-'}italic).")
 
-            if log_msg:
+            if log_msgs:
                 _logger.warning(
-                    f"{log_msg}\n"
+                    "\n".join(log_msgs) + "\n"
                     f"Used on lines: {' '.join(str(line) for line in usage_data.ordered_lines)}"
                 )
 
