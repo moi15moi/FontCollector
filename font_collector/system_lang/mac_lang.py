@@ -1,4 +1,5 @@
 from ctypes import (
+    CDLL,
     c_bool,
     c_char_p,
     c_long,
@@ -16,7 +17,7 @@ from .abc_system_lang import ABCSystemLang
 
 
 class MacLang(ABCSystemLang):
-    __core_foundation = None
+    __core_foundation: CDLL | None = None
     kCFStringEncodingUTF8 = 0x08000100 # https://developer.apple.com/documentation/corefoundation/cfstringbuiltinencodings/kcfstringencodingutf8?language=objc
 
     @staticmethod

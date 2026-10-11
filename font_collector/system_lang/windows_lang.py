@@ -1,11 +1,11 @@
-from ctypes import windll, wintypes  # type: ignore
+from ctypes import CDLL, windll, wintypes  # type: ignore
 
 from ..font.name import Name, PlatformID
 from .abc_system_lang import ABCSystemLang
 
 
 class WindowsLang(ABCSystemLang):
-    __kernel32 = None
+    __kernel32: CDLL | None = None
 
     @staticmethod
     def get_lang() -> str:
