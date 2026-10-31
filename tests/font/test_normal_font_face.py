@@ -170,6 +170,16 @@ def test_font_get_missing_glyphs_cmap_encoding_1():
     assert missing_glyphs == set()
 
 
+def test_font_get_missing_glyphs_ignorable():
+    font_cmap_encoding_1 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_1.ttf"))
+    font_file = FontFile.from_font_path(font_cmap_encoding_1)
+    font_face = font_file.font_faces[0]
+
+    # The font doesn't have glyphs for these, but libass/vsfilter doesn't use a glyph to render them.
+    missing_glyphs = font_face.get_missing_glyphs("\u00AD\u200B\u202B\u202C\u200F\u2060\uFEFF\U000E0001")
+    assert missing_glyphs == set()
+
+
 def test_font_get_missing_glyphs_cmap_encoding_2():
     font_cmap_encoding_2 = Path(os.path.join(os.path.dirname(dir_path), "file", "fonts", "font_cmap_encoding_2.TTF"))
     font_file = FontFile.from_font_path(font_cmap_encoding_2)

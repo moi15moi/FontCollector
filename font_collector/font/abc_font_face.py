@@ -289,6 +289,9 @@ class ABCFontFace(ABC):
             supported_charmaps.append(charmap)
 
         for char in text:
+            if FontParser.is_char_ignorable(char):
+                continue
+
             char_found = False
 
             for charmap in supported_charmaps:

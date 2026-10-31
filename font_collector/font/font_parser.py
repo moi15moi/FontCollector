@@ -540,6 +540,43 @@ class FontParser:
 
 
     @staticmethod
+    def is_char_ignorable(character: str) -> bool:
+        """
+        Args:
+            character: A single character.
+        Returns:
+            True if libass/vsfilter doesn't use a glyph to render this character.
+            Otherwise, False.
+        Note:
+            This method is identical to https://github.com/libass/libass/blob/fe25f50686b1a6babef2f9b703abead0e97e0fec/libass/ass_shaper.c#L822-L839
+        """
+        symbol = ord(character)
+        high = symbol >> 8
+        if high == 0x00:
+            return symbol == 0x00AD
+        elif high == 0x03:
+            return symbol == 0x034F
+        elif high == 0x06:
+            return symbol == 0x061C
+        elif high == 0x17:
+            return 0x17B4 <= symbol <= 0x17B5
+        elif high == 0x18:
+            return 0x180B <= symbol <= 0x180E
+        elif high == 0x20:
+            return (0x200B <= symbol <= 0x200F or
+                    0x202A <= symbol <= 0x202E or
+                    0x2060 <= symbol <= 0x206F)
+        elif high == 0xFE:
+            return 0xFE00 <= symbol <= 0xFE0F or symbol == 0xFEFF
+        elif high == 0xFF:
+            return 0xFFF0 <= symbol <= 0xFFF8
+        elif high == 0x1D1:
+            return 0x1D173 <= symbol <= 0x1D17A
+        else:
+            return 0xE0000 <= symbol <= 0xE0FFF
+
+
+    @staticmethod
     def is_cmap_supported(platform_id: int, encoding_id: int) -> bool:
         """
         Args:
